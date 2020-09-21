@@ -1,0 +1,20 @@
+include: package:lint/analysis_options_package.yaml
+
+analyzer:
+  exclude:
+    - "test/.test_coverage.dart"
+    - "build/**"
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  errors:
+    missing_return: error
+    missing_required_param: error
+
+lint:
+  rules:
+    prefer_single_quotes: false
+    prefer_double_quotes: true
+    unawaited_futures: true
+    package_api_docs: true
+    public_member_api_docs: true
