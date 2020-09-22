@@ -24,8 +24,8 @@ class FixImports {
         .shaSum(inDigest)
         .relativize(
           packageName: packageName,
-          filePath: file.path,
-          libDirPath: libDir.path,
+          file: file,
+          libDir: libDir,
         )
         .organizeImports()
         .shaSum(outDigest)
@@ -56,10 +56,10 @@ extension _ImportFixExtensions on Stream<String> {
 
   Stream<String> relativize({
     @required String packageName,
-    @required String filePath,
-    @required String libDirPath,
+    @required File file,
+    @required Directory libDir,
   }) async* {
-    if (!isWithin(libDirPath, filePath)) {
+    if (!isWithin(libDir.path, file.path)) {
       yield* this;
       return;
     }
@@ -74,8 +74,10 @@ extension _ImportFixExtensions on Stream<String> {
         final quote = match[1];
         final importPath = match[2];
         final ending = match[3];
-        final relativeImport =
-            relative(importPath, from: filePath).replaceAll("\\", "/");
+        final relativeImport = relative(
+          join("lib", importPath),
+          from: file.parent.path,
+        ).replaceAll("\\", "/");
 
         yield "import $quote$relativeImport$quote$ending;";
       } else {

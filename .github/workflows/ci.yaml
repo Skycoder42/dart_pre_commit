@@ -1,0 +1,33 @@
+name: Continous Integration
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: cedx/setup-dart@v2
+      - uses: actions/checkout@v2
+      - run: pub get
+      - run: dartanalyzer lib bin test
+      - run: pub run test
+      - run: pub run test_coverage
+        if: runner.os == 'ubuntu-latest'
+      - uses: ChicagoFlutter/lcov-cop@v1.0.2
+        if: runner.os == 'ubuntu-latest'
+        with:
+          min_coverage: 95
