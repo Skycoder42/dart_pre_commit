@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
+
+import 'logger.dart';
+
 Stream<String> runProgram(
   String program,
   List<String> arguments, {
+  @required Logger logger,
   bool failOnExit = true,
 }) async* {
   final process = await Process.start(program, arguments);
-  process.stderr.pipe(stderr);
+  logger.pipeStderr(process.stderr);
   if (failOnExit) {
     process.exitCode.then((code) {
       if (code != 0) {

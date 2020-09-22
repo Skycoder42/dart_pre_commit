@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'logger.dart';
+import 'task_error.dart';
+
 class Format {
-  const Format();
+  final Logger logger;
+
+  const Format(this.logger);
 
   Future<bool> call(File file) async {
     final process = await Process.start(
@@ -13,7 +18,7 @@ class Format {
         file.path,
       ],
     );
-    process.stderr.pipe(stderr);
+    logger.pipeStderr(process.stderr);
     process.stdout.drain<void>();
     final exitCode = await process.exitCode;
     switch (exitCode) {
@@ -22,7 +27,7 @@ class Format {
       case 1:
         return true;
       default:
-        throw "Failed to format ${file.path}";
+        throw TaskError("dartfmt failed to format the file", file);
     }
   }
 }

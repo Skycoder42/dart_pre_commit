@@ -1,60 +1,93 @@
 import 'dart:io';
 
+import 'package:dart_lint_hooks/src/analyze.dart';
 import 'package:yaml/yaml.dart';
 
 import 'fix_imports.dart';
 import 'format.dart';
+import 'logger.dart';
 import 'run_program.dart';
+import 'task_error.dart';
+
+enum LintResult {
+  clean,
+  linter,
+  hasChanges,
+  hasUnstagedChanges,
+  error,
+}
 
 class LintHooks {
   final bool fixImports;
   final bool format;
   final bool analyze;
+  final bool continueOnError;
+  final Logger logger;
 
-  LintHooks({
+  const LintHooks({
     this.fixImports = true,
     this.format = true,
     this.analyze = true,
+    this.continueOnError = false,
+    this.logger = const Logger.standard(),
   });
 
-  Future<bool> call() async {
+  Future<LintResult> call() async {
     try {
-      const runFormat = Format();
+      final runFormat = Format(logger);
       final runFixImports = await _obtainFixImports();
 
+      var lintState = LintResult.clean;
+
       final files = await _collectFiles();
-      var hasPartiallyModified = false;
       for (final entry in files.entries) {
         final file = File(entry.key);
-        if (!file.path.endsWith(".dart")) {
-          continue;
-        }
+        try {
+          logger.log("Scanning ${file.path}...");
+          var modified = false;
+          if (fixImports) {
+            modified = await runFixImports(file) || modified;
+          }
+          if (format) {
+            modified = await runFormat(file) || modified;
+          }
 
-        stdout.writeln("Fixing up ${file.path}");
-        var modified = false;
-        if (fixImports) {
-          modified = await runFixImports(file) || modified;
-        }
-        if (format) {
-          modified = await runFormat(file) || modified;
-        }
-
-        if (modified) {
-          if (entry.value) {
-            hasPartiallyModified = true;
-            stdout.writeln("\tWARNING: modified partially staged file");
+          if (modified) {
+            if (entry.value) {
+              logger.log("(!) Fixing up partially staged file ${file.path}");
+              lintState =
+                  _updateResult(lintState, LintResult.hasUnstagedChanges);
+            } else {
+              logger.log("Fixing up ${file.path}");
+              lintState = _updateResult(lintState, LintResult.hasChanges);
+              await _git(["add", file.path]).drain<void>();
+            }
+          }
+        } on TaskError catch (error) {
+          logger.logError(error);
+          if (!continueOnError) {
+            return LintResult.error;
           } else {
-            await _git(["add", file.path]).drain<void>();
+            lintState = _updateResult(lintState, LintResult.error);
           }
         }
       }
 
-      if (analyze) {}
+      if (analyze) {
+        final analyzer = Analyze(
+          files: files.keys.toList(),
+          logger: logger,
+        );
 
-      return !hasPartiallyModified;
-    } catch (e) {
-      stderr.writeln(e.toString());
-      return false;
+        if (await analyzer()) {
+          lintState = _updateResult(lintState, LintResult.linter);
+        }
+      }
+
+      return lintState;
+    } on TaskError catch (error) {
+      logger.logError(error);
+      return LintResult.error;
     }
   }
 
@@ -69,9 +102,9 @@ class LintHooks {
   }
 
   Stream<String> _git([List<String> arguments = const []]) =>
-      runProgram("git", arguments);
+      runProgram("git", arguments, logger: logger);
 
-  Future<FixImports> _obtainFixImports() async {
+  static Future<FixImports> _obtainFixImports() async {
     final pubspecFile = File("pubspec.yaml");
     final yamlData = loadYamlDocument(
       await pubspecFile.readAsString(),
@@ -83,4 +116,7 @@ class LintHooks {
       packageName: yamlData.value["name"] as String,
     );
   }
+
+  static LintResult _updateResult(LintResult current, LintResult updated) =>
+      updated.index > current.index ? updated : current;
 }
