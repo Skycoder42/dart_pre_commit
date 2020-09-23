@@ -1,9 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
 import 'logger.dart';
+import 'program_runner.dart';
 
 class AnalyzeResult {
   String severity;
@@ -24,10 +25,12 @@ class AnalyzeResult {
 class Analyze {
   final List<String> files;
   final Logger logger;
+  final ProgramRunner runner;
 
   const Analyze({
-    this.files,
-    this.logger,
+    @required this.files,
+    @required this.logger,
+    @required this.runner,
   });
 
   Future<bool> call() async {
@@ -56,19 +59,14 @@ class Analyze {
   }
 
   Stream<AnalyzeResult> _runAnalyze() async* {
-    final process = await Process.start(
+    yield* runner.stream(
       Platform.isWindows ? "dartanalyzer.bat" : "dartanalyzer",
       [
         "--format",
         "machine",
         ...files,
       ],
-    );
-    logger.pipeStderr(process.stderr);
-    yield* process.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .parseResult();
+    ).parseResult();
   }
 }
 

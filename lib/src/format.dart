@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'logger.dart';
+import 'program_runner.dart';
 import 'task_error.dart';
 
 class Format {
-  final Logger logger;
+  final ProgramRunner runner;
 
-  const Format(this.logger);
+  const Format(this.runner);
 
   Future<bool> call(File file) async {
-    final process = await Process.start(
+    final exitCode = await runner.run(
       Platform.isWindows ? "dartfmt.bat" : "dartfmt",
       [
         "--overwrite",
@@ -18,9 +18,6 @@ class Format {
         file.path,
       ],
     );
-    logger.pipeStderr(process.stderr);
-    process.stdout.drain<void>();
-    final exitCode = await process.exitCode;
     switch (exitCode) {
       case 0:
         return false;

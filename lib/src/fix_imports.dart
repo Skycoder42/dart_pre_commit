@@ -122,9 +122,6 @@ extension _ImportFixExtensions on Stream<String> {
     while (code.isNotEmpty && code.last.trim().isEmpty) {
       code.removeLast();
     }
-    while (prefixCode.isNotEmpty && prefixCode.last.trim().isEmpty) {
-      prefixCode.removeLast();
-    }
 
     // sort individual imports
     dartImports.sort((a, b) => a.compareTo(b));

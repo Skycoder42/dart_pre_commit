@@ -6,7 +6,7 @@ import 'package:yaml/yaml.dart';
 import 'fix_imports.dart';
 import 'format.dart';
 import 'logger.dart';
-import 'run_program.dart';
+import 'program_runner.dart';
 import 'task_error.dart';
 
 enum LintResult {
@@ -24,17 +24,20 @@ class LintHooks {
   final bool continueOnError;
   final Logger logger;
 
-  const LintHooks({
+  final ProgramRunner _runner;
+
+  LintHooks({
     this.fixImports = true,
     this.format = true,
     this.analyze = true,
     this.continueOnError = false,
     this.logger = const Logger.standard(),
-  });
+    ProgramRunner runner,
+  }) : _runner = runner ?? ProgramRunner(logger);
 
   Future<LintResult> call() async {
     try {
-      final runFormat = Format(logger);
+      final runFormat = Format(_runner);
       final runFixImports = await _obtainFixImports();
 
       var lintState = LintResult.clean;
@@ -77,6 +80,7 @@ class LintHooks {
         final analyzer = Analyze(
           files: files.keys.toList(),
           logger: logger,
+          runner: _runner,
         );
 
         if (await analyzer()) {
@@ -102,7 +106,7 @@ class LintHooks {
   }
 
   Stream<String> _git([List<String> arguments = const []]) =>
-      runProgram("git", arguments, logger: logger);
+      _runner.stream("git", arguments);
 
   static Future<FixImports> _obtainFixImports() async {
     final pubspecFile = File("pubspec.yaml");
