@@ -18,21 +18,23 @@ void main() {
   final mockLogger = MockLogger();
   final mockRunner = MockRunner();
 
+  Analyze sut;
+
   setUp(() {
     reset(mockLogger);
     reset(mockRunner);
 
     when(mockRunner.stream(any, any))
         .thenAnswer((_) => Stream.fromIterable(const []));
-  });
 
-  test("Run dartanalyzer with correct arguments", () async {
-    final sut = Analyze(
-      files: const [],
+    sut = Analyze(
       logger: mockLogger,
       runner: mockRunner,
     );
-    final result = await sut();
+  });
+
+  test("Run dartanalyzer with correct arguments", () async {
+    final result = await sut(const []);
 
     expect(result, false);
     verify(mockRunner.stream(
@@ -50,14 +52,7 @@ void main() {
   test("Throws error on invalid analyzer output", () async {
     when(mockRunner.stream(any, any))
         .thenAnswer((_) => Stream.fromIterable(const ["INVALID"]));
-
-    final sut = Analyze(
-      files: const [],
-      logger: mockLogger,
-      runner: mockRunner,
-    );
-
-    expect(() => sut(), throwsA(isA<TaskError>()));
+    expect(() => sut(const []), throwsA(isA<TaskError>()));
   });
 
   test("Only analyzes existing directories", () async {
@@ -66,13 +61,7 @@ void main() {
     Directory.current = tempDir;
     try {
       await Directory("lib").create();
-
-      final sut = Analyze(
-        files: const [],
-        logger: mockLogger,
-        runner: mockRunner,
-      );
-      final result = await sut();
+      final result = await sut(const []);
 
       expect(result, false);
       verify(mockRunner.stream(
@@ -99,17 +88,11 @@ void main() {
       ]),
     );
 
-    final sut = Analyze(
-      files: [
-        "a.dart",
-        join("b", "b.dart"),
-        join("d", "d", "d.dart"),
-      ],
-      logger: mockLogger,
-      runner: mockRunner,
-    );
-
-    final result = await sut();
+    final result = await sut([
+      "a.dart",
+      join("b", "b.dart"),
+      join("d", "d", "d.dart"),
+    ]);
     expect(result, true);
     verify(mockLogger.log("Running linter..."));
     verify(mockLogger.log("1 - a1 - a.dart:10:11 - A1"));
@@ -126,15 +109,7 @@ void main() {
       ]),
     );
 
-    final sut = Analyze(
-      files: [
-        "a.dart",
-      ],
-      logger: mockLogger,
-      runner: mockRunner,
-    );
-
-    final result = await sut();
+    final result = await sut(["a.dart"]);
     expect(result, false);
     verify(mockLogger.log(any)).called(2);
   });

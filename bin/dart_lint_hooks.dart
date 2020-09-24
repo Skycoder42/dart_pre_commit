@@ -55,7 +55,7 @@ Future<int> _run(List<String> args) async {
       return 0;
     }
 
-    final lintHooks = LintHooks(
+    final lintHooks = await LintHooks.atomic(
       fixImports: options["fix-imports"] as bool,
       format: options["format"] as bool,
       analyze: options["analyze"] as bool,

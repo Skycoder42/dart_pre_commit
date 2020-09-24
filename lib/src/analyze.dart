@@ -24,17 +24,15 @@ class AnalyzeResult {
 }
 
 class Analyze {
-  final List<String> files;
   final Logger logger;
   final ProgramRunner runner;
 
   const Analyze({
-    @required this.files,
     @required this.logger,
     @required this.runner,
   });
 
-  Future<bool> call() async {
+  Future<bool> call(Iterable<String> files) async {
     final lints = {
       for (final file in files) file: <AnalyzeResult>[],
     };
