@@ -22,3 +22,4 @@ doc/api/
 
 # Other
 test/.test_coverage.dart
+coverage/

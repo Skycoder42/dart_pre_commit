@@ -30,4 +30,5 @@ jobs:
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
         if: matrix.os == 'ubuntu-latest'
         with:
+          exclude: "lib/src/logger.dart"
           min_coverage: 95

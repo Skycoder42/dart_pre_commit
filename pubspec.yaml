@@ -12,6 +12,7 @@ dependencies:
   yaml: ^2.2.1
   meta: ^1.2.3
   args: ^1.6.0
+  get_it: ^5.0.1
 
 dev_dependencies:
   lint: ^1.2.0

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_lint_hooks/src/analyze.dart';
+import 'package:get_it/get_it.dart';
 import 'package:yaml/yaml.dart';
 
 import 'fix_imports.dart';
@@ -22,22 +23,25 @@ class LintHooks {
   final bool format;
   final bool analyze;
   final bool continueOnError;
-  final Logger logger;
 
+  final Logger _logger;
   final ProgramRunner _runner;
+  final Format _runFormat;
 
   LintHooks({
     this.fixImports = true,
     this.format = true,
     this.analyze = true,
     this.continueOnError = false,
-    this.logger = const Logger.standard(),
+    Logger logger,
     ProgramRunner runner,
-  }) : _runner = runner ?? ProgramRunner(logger);
+    Format runFormat,
+  })  : _logger = logger ?? GetIt.I.get<Logger>(),
+        _runner = runner ?? GetIt.I.get<ProgramRunner>(),
+        _runFormat = runFormat ?? GetIt.I.get<Format>();
 
   Future<LintResult> call() async {
     try {
-      final runFormat = Format(_runner);
       final runFixImports = await _obtainFixImports();
 
       var lintState = LintResult.clean;
@@ -46,28 +50,28 @@ class LintHooks {
       for (final entry in files.entries) {
         final file = File(entry.key);
         try {
-          logger.log("Scanning ${file.path}...");
+          _logger.log("Scanning ${file.path}...");
           var modified = false;
           if (fixImports) {
             modified = await runFixImports(file) || modified;
           }
           if (format) {
-            modified = await runFormat(file) || modified;
+            modified = await _runFormat(file) || modified;
           }
 
           if (modified) {
             if (entry.value) {
-              logger.log("(!) Fixing up partially staged file ${file.path}");
+              _logger.log("(!) Fixing up partially staged file ${file.path}");
               lintState =
                   _updateResult(lintState, LintResult.hasUnstagedChanges);
             } else {
-              logger.log("Fixing up ${file.path}");
+              _logger.log("Fixing up ${file.path}");
               lintState = _updateResult(lintState, LintResult.hasChanges);
               await _git(["add", file.path]).drain<void>();
             }
           }
         } on TaskError catch (error) {
-          logger.logError(error);
+          _logger.logError(error);
           if (!continueOnError) {
             return LintResult.error;
           } else {
@@ -79,7 +83,7 @@ class LintHooks {
       if (analyze) {
         final analyzer = Analyze(
           files: files.keys.toList(),
-          logger: logger,
+          logger: _logger,
           runner: _runner,
         );
 
@@ -90,7 +94,7 @@ class LintHooks {
 
       return lintState;
     } on TaskError catch (error) {
-      logger.logError(error);
+      _logger.logError(error);
       return LintResult.error;
     }
   }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_lint_hooks/src/task_error.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
@@ -35,7 +36,7 @@ class Analyze {
 
   Future<bool> call() async {
     final lints = {
-      for (final file in files) file: const <AnalyzeResult>[],
+      for (final file in files) file: <AnalyzeResult>[],
     };
     logger.log("Running linter...");
     await for (final entry in _runAnalyze()) {
@@ -49,7 +50,7 @@ class Analyze {
       if (entry.value.isNotEmpty) {
         for (final lint in entry.value) {
           ++lintCnt;
-          logger.log(lint);
+          logger.log(lint.toString());
         }
       }
     }
@@ -59,12 +60,22 @@ class Analyze {
   }
 
   Stream<AnalyzeResult> _runAnalyze() async* {
+    final allDirs = await Stream.fromIterable([
+      Directory("lib"),
+      Directory("bin"),
+      Directory("test"),
+    ])
+        .asyncMap((d) async => [await d.exists(), d.path])
+        .where((e) => e[0] as bool)
+        .map((e) => e[1] as String)
+        .toList();
+
     yield* runner.stream(
       Platform.isWindows ? "dartanalyzer.bat" : "dartanalyzer",
       [
         "--format",
         "machine",
-        ...files,
+        ...allDirs,
       ],
     ).parseResult();
   }
@@ -75,7 +86,7 @@ extension ResultTransformer on Stream<String> {
     await for (final line in this) {
       final elements = line.trim().split("|");
       if (elements.length < 8) {
-        throw "Invalid output from dartanalyzer: $line";
+        throw TaskError("Invalid output from dartanalyzer: $line");
       }
       yield AnalyzeResult()
         ..severity = elements[0]
