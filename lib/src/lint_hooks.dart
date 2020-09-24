@@ -112,8 +112,7 @@ class LintHooks {
     final stagedChanges = _git(["diff", "--name-only", "--cached"]);
     return {
       await for (var path in stagedChanges)
-        if (path.isNotEmpty && path.endsWith(".dart"))
-          path: indexChanges.contains(path),
+        if (path.endsWith(".dart")) path: indexChanges.contains(path),
     };
   }
 
