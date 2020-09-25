@@ -10,6 +10,7 @@ import 'logger.dart';
 import 'program_runner.dart';
 import 'task_error.dart';
 
+// The result
 enum LintResult {
   clean,
   hasChanges,
@@ -18,8 +19,9 @@ enum LintResult {
   error,
 }
 
-extension _LintResultX on LintResult {
+extension LintResultX on LintResult {
   LintResult raiseTo(LintResult target) => target.index > index ? target : this;
+  bool get isSuccess => index <= LintResult.hasChanges.index;
 }
 
 class LintHooks {

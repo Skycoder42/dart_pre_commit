@@ -3,7 +3,6 @@ include: package:lint/analysis_options_package.yaml
 analyzer:
   exclude:
     - "test/.test_coverage.dart"
-    - "build/**"
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false

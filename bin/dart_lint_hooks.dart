@@ -63,7 +63,7 @@ Future<int> _run(List<String> args) async {
     );
 
     final result = await lintHooks();
-    return result.index;
+    return result.isSuccess ? 0 : 1;
   } on FormatException catch (e) {
     stderr.writeln("${e.message}\n");
     stderr.write(parser.usage);
