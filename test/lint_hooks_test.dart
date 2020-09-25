@@ -326,62 +326,14 @@ void main() {
     });
   });
 
-  group("LintResult", () {
-    testWithData<Tuple3<LintResult, LintResult, LintResult>>(
-        "raise applies hihger value", const [
-      Tuple3(
-        LintResult.clean,
-        LintResult.hasChanges,
-        LintResult.hasChanges,
-      ),
-      Tuple3(
-        LintResult.hasChanges,
-        LintResult.hasUnstagedChanges,
-        LintResult.hasUnstagedChanges,
-      ),
-      Tuple3(
-        LintResult.hasUnstagedChanges,
-        LintResult.linter,
-        LintResult.linter,
-      ),
-      Tuple3(
-        LintResult.linter,
-        LintResult.error,
-        LintResult.error,
-      ),
-      Tuple3(
-        LintResult.error,
-        LintResult.linter,
-        LintResult.error,
-      ),
-      Tuple3(
-        LintResult.linter,
-        LintResult.hasUnstagedChanges,
-        LintResult.linter,
-      ),
-      Tuple3(
-        LintResult.hasUnstagedChanges,
-        LintResult.hasChanges,
-        LintResult.hasUnstagedChanges,
-      ),
-      Tuple3(
-        LintResult.hasChanges,
-        LintResult.clean,
-        LintResult.hasChanges,
-      ),
-    ], (fixture) {
-      final risen = fixture.item1.raiseTo(fixture.item2);
-      expect(risen, fixture.item3);
-    });
-
-    testWithData<Tuple2<LintResult, bool>>("returns correct success", const [
-      Tuple2(LintResult.clean, true),
-      Tuple2(LintResult.hasChanges, true),
-      Tuple2(LintResult.hasUnstagedChanges, false),
-      Tuple2(LintResult.linter, false),
-      Tuple2(LintResult.error, false),
-    ], (fixture) {
-      expect(fixture.item1.isSuccess, fixture.item2);
-    });
+  testWithData<Tuple2<LintResult, bool>>(
+      "LintResult returns correct success status", const [
+    Tuple2(LintResult.clean, true),
+    Tuple2(LintResult.hasChanges, true),
+    Tuple2(LintResult.hasUnstagedChanges, false),
+    Tuple2(LintResult.linter, false),
+    Tuple2(LintResult.error, false),
+  ], (fixture) {
+    expect(fixture.item1.isSuccess, fixture.item2);
   });
 }
