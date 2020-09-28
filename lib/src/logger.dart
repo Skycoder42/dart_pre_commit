@@ -26,6 +26,6 @@ class _DefaultLogger implements Logger {
 
   @override
   void pipeStderr(Stream<List<int>> errStream) {
-    errStream.pipe(stderr);
+    stderr.addStream(errStream);
   }
 }
