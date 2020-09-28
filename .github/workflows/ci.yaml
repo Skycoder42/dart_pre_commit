@@ -25,7 +25,6 @@ jobs:
       - run: pub get
       - run: dartanalyzer lib bin test
       - run: pub run test
-        shell: bash
       - run: pub run test_coverage
         if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
