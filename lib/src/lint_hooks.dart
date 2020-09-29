@@ -94,7 +94,8 @@ class LintHooks {
   ///
   /// The [continueOnError] can be used to control error behaviour. See
   /// [this.continueOnError] for details.
-  const LintHooks({
+  @visibleForTesting
+  const LintHooks.internal({
     @required this.logger,
     @required this.runner,
     this.fixImports,
@@ -103,7 +104,20 @@ class LintHooks {
     this.continueOnError = false,
   });
 
-  static Future<LintHooks> atomic({
+  /// Constructs a new [LintHooks] instance.
+  ///
+  /// TODO
+  ///
+  /// The [logger] writes data to [stdout]/[stderr] by default, but a custom
+  /// logger can be specified to
+  ///
+  /// The [fixImports], [format] and [analyze] are true by default. If enabked
+  /// specified, the factory will create new instances of them and initialize
+  /// this hook. If false, they will be disabled (set to null) instead.
+  ///
+  /// The [continueOnError] can be used to control error behaviour. See
+  /// [this.continueOnError] for details.
+  static Future<LintHooks> create({
     bool fixImports = true,
     bool format = true,
     bool analyze = true,
@@ -111,7 +125,7 @@ class LintHooks {
     Logger logger = const Logger.standard(),
   }) async {
     final runner = ProgramRunner(logger);
-    return LintHooks(
+    return LintHooks.internal(
       logger: logger,
       runner: runner,
       fixImports: fixImports ? await _obtainFixImports() : null,
@@ -121,6 +135,21 @@ class LintHooks {
     );
   }
 
+  /// Executes all enabled hooks on the current repository.
+  ///
+  /// The command will run expecting [Directory.current] to be the git
+  /// repository to be processed. It collects all staged files and then runs all
+  /// enabled hooks on these files.
+  ///
+  /// The result is determined based on the collective result of all processed
+  /// files and hooks. A [LintResult.clean] result is only possible if all
+  /// operations are clean. If at least one staged file had to modified, the
+  /// result is [LintResult.hasChanges]. If at least one file was partially
+  /// staged, it will be [LintResult.hasUnstagedChanges] instead. The
+  /// [LintResult.linter] will be the result if the analyzer finds at least one
+  /// file with problems, regardless of error-level or whether files have
+  /// already been modified by other hooks. [LintResult.error] trumps all other
+  /// results, as at least one error means that the operation has failed.
   Future<LintResult> call() async {
     try {
       var lintState = LintResult.clean;

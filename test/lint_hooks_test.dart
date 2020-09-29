@@ -1,11 +1,12 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/dart_lint_hooks.dart';
 import 'package:dart_lint_hooks/src/analyze.dart';
 import 'package:dart_lint_hooks/src/fix_imports.dart';
 import 'package:dart_lint_hooks/src/format.dart';
+import 'package:dart_lint_hooks/src/lint_hooks.dart';
 import 'package:dart_lint_hooks/src/logger.dart';
 import 'package:dart_lint_hooks/src/program_runner.dart';
+import 'package:dart_lint_hooks/src/task_error.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
