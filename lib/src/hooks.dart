@@ -59,20 +59,13 @@ extension HookResultX on HookResult {
 /// a result. Check the documentation of [FixImports], [Format] and [Analyze]
 /// for more details on the actual supported hook operations.
 class Hooks {
+  final ProgramRunner _runner;
+  final FixImports _fixImports;
+  final Format _format;
+  final Analyze _analyze;
+
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
-
-  /// The [ProgramRunner] used to invoke git
-  final ProgramRunner runner;
-
-  /// An optional instance of [FixImports] to run as hook on staged files
-  final FixImports fixImports;
-
-  /// An optional instance of [Format] to run as hook on staged files
-  final Format format;
-
-  /// An optional instance of [Analyze] to run as hook on staged files
-  final Analyze analyze;
 
   /// Specifies, whether processing should continue on errors.
   ///
@@ -83,37 +76,41 @@ class Hooks {
   /// [HookResult.error].
   final bool continueOnError;
 
-  /// Constructs a new [Hooks] instance.
-  ///
-  /// The [logger] and [runner] parameters are required and need to be valid
-  /// instances of the respective classes.
-  ///
-  /// The [fixImports], [format] and [analyze] are optional. If specified, they
-  /// will be called as part of the hook, if null they are left out. This allows
-  /// you to control, which hooks to actually run.
-  ///
-  /// The [continueOnError] can be used to control error behaviour. See
-  /// [this.continueOnError] for details.
   @visibleForTesting
   const Hooks.internal({
     @required this.logger,
-    @required this.runner,
-    this.fixImports,
-    this.format,
-    this.analyze,
+    @required ProgramRunner runner,
+    FixImports fixImports,
+    Format format,
+    Analyze analyze,
     this.continueOnError = false,
-  });
+  })  : _runner = runner,
+        _fixImports = fixImports,
+        _format = format,
+        _analyze = analyze;
 
   /// Constructs a new [Hooks] instance.
   ///
-  /// TODO
+  /// You can use [fixImports], [format] and [analyze] to specify which hooks to
+  /// run. By default, all three of them are enabled.
+  ///
+  /// If [fixImports] is enabled, all staged files will be scanned for import
+  /// order and imports will be sorted, first by category (sdk, package,
+  /// relative) and then alphabetically. In addition, package imports of the
+  /// current package within lib will be converted to relative imports.
+  ///
+  /// If [format] is true, then all staged files will be formatted with
+  /// `dartfmt`, enabeling all possible fixes.
+  ///
+  /// If [analyze] is set, as final step, the `dartanalyzer` tool will be run
+  /// and collect lints for all staged files. If at least one staged file has
+  /// problems, the problems will be printed out and the command will fail.
+  /// Lints are not fixed automatically. Instead, you have to fix them yourself
+  /// or ignore them.
   ///
   /// The [logger] writes data to [stdout]/[stderr] by default, but a custom
-  /// logger can be specified to
-  ///
-  /// The [fixImports], [format] and [analyze] are true by default. If enabked
-  /// specified, the factory will create new instances of them and initialize
-  /// this hook. If false, they will be disabled (set to null) instead.
+  /// logger can be specified to customize how data is logged. See [Logger]
+  /// documentation for more details.
   ///
   /// The [continueOnError] can be used to control error behaviour. See
   /// [this.continueOnError] for details.
@@ -139,7 +136,8 @@ class Hooks {
   ///
   /// The command will run expecting [Directory.current] to be the git
   /// repository to be processed. It collects all staged files and then runs all
-  /// enabled hooks on these files.
+  /// enabled hooks on these files. See [Hooks.create()] for more details on
+  /// what hooks are available and how to configure this instance.
   ///
   /// The result is determined based on the collective result of all processed
   /// files and hooks. A [HookResult.clean] result is only possible if all
@@ -160,11 +158,11 @@ class Hooks {
         try {
           logger.log("Scanning ${file.path}...");
           var modified = false;
-          if (fixImports != null) {
-            modified = await fixImports(file) || modified;
+          if (_fixImports != null) {
+            modified = await _fixImports(file) || modified;
           }
-          if (format != null) {
-            modified = await format(file) || modified;
+          if (_format != null) {
+            modified = await _format(file) || modified;
           }
 
           if (modified) {
@@ -187,8 +185,8 @@ class Hooks {
         }
       }
 
-      if (analyze != null) {
-        if (await analyze(files.keys)) {
+      if (_analyze != null) {
+        if (await _analyze(files.keys)) {
           lintState = lintState._raiseTo(HookResult.linter);
         }
       }
@@ -210,7 +208,7 @@ class Hooks {
   }
 
   Stream<String> _git([List<String> arguments = const []]) =>
-      runner.stream("git", arguments);
+      _runner.stream("git", arguments);
 
   static Future<FixImports> _obtainFixImports() async {
     final pubspecFile = File("pubspec.yaml");

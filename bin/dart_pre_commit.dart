@@ -35,6 +35,13 @@ Future<int> _run(List<String> args) async {
           "Continue checks even if a task fails for a certain file. The whole hook will still fail, but only after all files have been processed.",
     )
     ..addSeparator("Other:")
+    ..addOption(
+      "directory",
+      abbr: "d",
+      help:
+          "Set the directory to run this command in. By default, it will run in the current working directory.",
+      valueHelp: "dir",
+    )
     ..addFlag(
       "version",
       abbr: "v",
@@ -53,6 +60,11 @@ Future<int> _run(List<String> args) async {
     if (options["help"] as bool) {
       stdout.write(parser.usage);
       return 0;
+    }
+
+    final dir = options["directory"] as String;
+    if (dir != null) {
+      Directory.current = dir;
     }
 
     final lintHooks = await Hooks.create(

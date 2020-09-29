@@ -295,19 +295,7 @@ void main() {
     test("creates members", () async {
       final sut = await Hooks.create();
       expect(sut.logger, isNotNull);
-      expect(sut.runner, isNotNull);
-      expect(sut.fixImports, isNotNull);
-      expect(sut.format, isNotNull);
-      expect(sut.analyze, isNotNull);
       expect(sut.continueOnError, false);
-
-      expect(sut.fixImports.libDir.path, "lib");
-      expect(sut.fixImports.packageName, "dart_pre_commit");
-
-      expect(sut.format.runner, sut.runner);
-
-      expect(sut.analyze.logger, sut.logger);
-      expect(sut.analyze.runner, sut.runner);
     });
 
     test("honors parameters", () async {
@@ -319,10 +307,6 @@ void main() {
         logger: null,
       );
       expect(sut.logger, isNull);
-      expect(sut.runner, isNotNull);
-      expect(sut.fixImports, isNull);
-      expect(sut.format, isNull);
-      expect(sut.analyze, isNull);
       expect(sut.continueOnError, true);
     });
   });
