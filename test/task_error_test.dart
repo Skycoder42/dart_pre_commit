@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/task_error.dart';
+import 'package:dart_pre_commit/src/task_error.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_lint_hooks/dart_lint_hooks.dart';
+import 'package:dart_pre_commit/dart_pre_commit.dart';
 
 void main(List<String> args) {
   _run(args).then((c) => exitCode = c);
@@ -39,7 +39,7 @@ Future<int> _run(List<String> args) async {
       "version",
       abbr: "v",
       negatable: false,
-      help: "Show the version of the dart_lint_hooks package.",
+      help: "Show the version of the dart_pre_commit package.",
     )
     ..addFlag(
       "help",
@@ -55,7 +55,7 @@ Future<int> _run(List<String> args) async {
       return 0;
     }
 
-    final lintHooks = await LintHooks.atomic(
+    final lintHooks = await Hooks.create(
       fixImports: options["fix-imports"] as bool,
       format: options["format"] as bool,
       analyze: options["analyze"] as bool,

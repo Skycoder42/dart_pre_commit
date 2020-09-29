@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/analyze.dart';
-import 'package:dart_lint_hooks/src/logger.dart';
-import 'package:dart_lint_hooks/src/program_runner.dart';
-import 'package:dart_lint_hooks/src/task_error.dart';
+import 'package:dart_pre_commit/src/analyze.dart';
+import 'package:dart_pre_commit/src/logger.dart';
+import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/task_error.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';

@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/analyze.dart';
-import 'package:dart_lint_hooks/src/fix_imports.dart';
-import 'package:dart_lint_hooks/src/format.dart';
-import 'package:dart_lint_hooks/src/lint_hooks.dart';
-import 'package:dart_lint_hooks/src/logger.dart';
-import 'package:dart_lint_hooks/src/program_runner.dart';
-import 'package:dart_lint_hooks/src/task_error.dart';
+import 'package:dart_pre_commit/src/analyze.dart';
+import 'package:dart_pre_commit/src/fix_imports.dart';
+import 'package:dart_pre_commit/src/format.dart';
+import 'package:dart_pre_commit/src/hooks.dart';
+import 'package:dart_pre_commit/src/logger.dart';
+import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/task_error.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
@@ -30,13 +30,13 @@ void main() {
   final mockFormat = MockFormat();
   final mockAnalyze = MockAnalyze();
 
-  LintHooks createSut({
+  Hooks createSut({
     bool fixImports = false,
     bool format = false,
     bool analyze = false,
     bool continueOnError = false,
   }) =>
-      LintHooks(
+      Hooks.internal(
         logger: mockLogger,
         runner: mockRunner,
         fixImports: fixImports ? mockFixImports : null,
@@ -63,7 +63,7 @@ void main() {
     final sut = createSut();
 
     final result = await sut();
-    expect(result, LintResult.clean);
+    expect(result, HookResult.clean);
 
     verify(mockRunner.stream("git", ["diff", "--name-only"]));
     verify(mockRunner.stream("git", ["diff", "--name-only", "--cached"]));
@@ -80,7 +80,7 @@ void main() {
     final sut = createSut();
 
     final result = await sut();
-    expect(result, LintResult.clean);
+    expect(result, HookResult.clean);
     verify(mockLogger.log("Scanning a.dart..."));
     verify(mockLogger.log("Scanning c.g.dart..."));
     verifyNoMoreInteractions(mockLogger);
@@ -97,7 +97,7 @@ void main() {
       final sut = createSut(fixImports: true);
 
       final result = await sut();
-      expect(result, LintResult.clean);
+      expect(result, HookResult.clean);
       final captures = verify(mockFixImports(captureAny))
           .captured
           .map((dynamic c) => (c as File).path)
@@ -112,7 +112,7 @@ void main() {
       final sut = createSut(fixImports: true);
 
       final result = await sut();
-      expect(result, LintResult.hasChanges);
+      expect(result, HookResult.hasChanges);
       verify(mockRunner.stream("git", ["add", "a.dart"]));
     });
 
@@ -124,7 +124,7 @@ void main() {
       final sut = createSut(fixImports: true);
 
       final result = await sut();
-      expect(result, LintResult.hasUnstagedChanges);
+      expect(result, HookResult.hasUnstagedChanges);
       verifyNever(mockRunner.stream("git", ["add", "a.dart"]));
     });
 
@@ -146,7 +146,7 @@ void main() {
       );
 
       final result = await sut();
-      expect(result, LintResult.error);
+      expect(result, HookResult.error);
       verify(mockFixImports(any)).called(fixture.item2);
     });
   });
@@ -162,7 +162,7 @@ void main() {
       final sut = createSut(format: true);
 
       final result = await sut();
-      expect(result, LintResult.clean);
+      expect(result, HookResult.clean);
       final captures = verify(mockFormat(captureAny))
           .captured
           .map((dynamic c) => (c as File).path)
@@ -177,7 +177,7 @@ void main() {
       final sut = createSut(format: true);
 
       final result = await sut();
-      expect(result, LintResult.hasChanges);
+      expect(result, HookResult.hasChanges);
       verify(mockRunner.stream("git", ["add", "a.dart"]));
     });
 
@@ -189,7 +189,7 @@ void main() {
       final sut = createSut(format: true);
 
       final result = await sut();
-      expect(result, LintResult.hasUnstagedChanges);
+      expect(result, HookResult.hasUnstagedChanges);
       verifyNever(mockRunner.stream("git", ["add", "a.dart"]));
     });
 
@@ -203,7 +203,7 @@ void main() {
       );
 
       final result = await sut();
-      expect(result, LintResult.hasUnstagedChanges);
+      expect(result, HookResult.hasUnstagedChanges);
       final capture = verify(mockFormat(captureAny))
           .captured
           .map((dynamic c) => (c as File).path)
@@ -229,7 +229,7 @@ void main() {
       );
 
       final result = await sut();
-      expect(result, LintResult.error);
+      expect(result, HookResult.error);
       verify(mockFormat(any)).called(fixture.item2);
     });
   });
@@ -245,7 +245,7 @@ void main() {
       final sut = createSut(analyze: true);
 
       final result = await sut();
-      expect(result, LintResult.clean);
+      expect(result, HookResult.clean);
       final capture = verify(mockAnalyze(captureAny))
           .captured
           .cast<Iterable<String>>()
@@ -259,7 +259,7 @@ void main() {
       final sut = createSut(analyze: true);
 
       final result = await sut();
-      expect(result, LintResult.linter);
+      expect(result, HookResult.linter);
     });
 
     test("returns linter if analyze and fixImport/format find something",
@@ -276,7 +276,7 @@ void main() {
       );
 
       final result = await sut();
-      expect(result, LintResult.linter);
+      expect(result, HookResult.linter);
     });
 
     test("returns error on TaskError", () async {
@@ -287,13 +287,13 @@ void main() {
       );
 
       final result = await sut();
-      expect(result, LintResult.error);
+      expect(result, HookResult.error);
     });
   });
 
   group("LintHooks.atomic", () {
     test("creates members", () async {
-      final sut = await LintHooks.atomic();
+      final sut = await Hooks.create();
       expect(sut.logger, isNotNull);
       expect(sut.runner, isNotNull);
       expect(sut.fixImports, isNotNull);
@@ -302,7 +302,7 @@ void main() {
       expect(sut.continueOnError, false);
 
       expect(sut.fixImports.libDir.path, "lib");
-      expect(sut.fixImports.packageName, "dart_lint_hooks");
+      expect(sut.fixImports.packageName, "dart_pre_commit");
 
       expect(sut.format.runner, sut.runner);
 
@@ -311,7 +311,7 @@ void main() {
     });
 
     test("honors parameters", () async {
-      final sut = await LintHooks.atomic(
+      final sut = await Hooks.create(
         fixImports: false,
         format: false,
         analyze: false,
@@ -327,13 +327,13 @@ void main() {
     });
   });
 
-  testWithData<Tuple2<LintResult, bool>>(
-      "LintResult returns correct success status", const [
-    Tuple2(LintResult.clean, true),
-    Tuple2(LintResult.hasChanges, true),
-    Tuple2(LintResult.hasUnstagedChanges, false),
-    Tuple2(LintResult.linter, false),
-    Tuple2(LintResult.error, false),
+  testWithData<Tuple2<HookResult, bool>>(
+      "HookResult returns correct success status", const [
+    Tuple2(HookResult.clean, true),
+    Tuple2(HookResult.hasChanges, true),
+    Tuple2(HookResult.hasUnstagedChanges, false),
+    Tuple2(HookResult.linter, false),
+    Tuple2(HookResult.error, false),
   ], (fixture) {
     expect(fixture.item1.isSuccess, fixture.item2);
   });

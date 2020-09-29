@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/analyze.dart';
 import 'package:meta/meta.dart';
 import 'package:yaml/yaml.dart';
 
+import 'analyze.dart';
 import 'fix_imports.dart';
 import 'format.dart';
 import 'logger.dart';
@@ -12,8 +12,8 @@ import 'task_error.dart';
 
 /// The result of a LintHooks call.
 ///
-/// See [LintResultX] for extension methods defined on the enum.
-enum LintResult {
+/// See [HookResultX] for extension methods defined on the enum.
+enum HookResult {
   /// All is ok, nothing was modified.
   clean,
 
@@ -32,8 +32,8 @@ enum LintResult {
   error,
 }
 
-/// Extension methods for [LintResult]
-extension LintResultX on LintResult {
+/// Extension methods for [HookResult]
+extension HookResultX on HookResult {
   /// Returns a boolean that indicates whether the result should be treated as
   /// success or as failure.
   ///
@@ -41,14 +41,14 @@ extension LintResultX on LintResult {
   ///
   /// Code                            | Success
   /// --------------------------------|---------
-  /// [LintResult.clean]              | true
-  /// [LintResult.hasChanges]         | true
-  /// [LintResult.hasUnstagedChanges] | false
-  /// [LintResult.linter]             | false
-  /// [LintResult.error]              | false
-  bool get isSuccess => index <= LintResult.hasChanges.index;
+  /// [HookResult.clean]              | true
+  /// [HookResult.hasChanges]         | true
+  /// [HookResult.hasUnstagedChanges] | false
+  /// [HookResult.linter]             | false
+  /// [HookResult.error]              | false
+  bool get isSuccess => index <= HookResult.hasChanges.index;
 
-  LintResult _raiseTo(LintResult target) =>
+  HookResult _raiseTo(HookResult target) =>
       target.index > index ? target : this;
 }
 
@@ -58,7 +58,7 @@ extension LintResultX on LintResult {
 /// repository for staged files and run all activated hooks on them, reporting
 /// a result. Check the documentation of [FixImports], [Format] and [Analyze]
 /// for more details on the actual supported hook operations.
-class LintHooks {
+class Hooks {
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
 
@@ -80,10 +80,10 @@ class LintHooks {
   /// process is aborted with an error. If however [continueOnError] is set to
   /// true, instead processing of that file will be skipped and all other files
   /// are still processed. In both cases, [call()] will resolve with
-  /// [LintResult.error].
+  /// [HookResult.error].
   final bool continueOnError;
 
-  /// Constructs a new [LintHooks] instance.
+  /// Constructs a new [Hooks] instance.
   ///
   /// The [logger] and [runner] parameters are required and need to be valid
   /// instances of the respective classes.
@@ -95,7 +95,7 @@ class LintHooks {
   /// The [continueOnError] can be used to control error behaviour. See
   /// [this.continueOnError] for details.
   @visibleForTesting
-  const LintHooks.internal({
+  const Hooks.internal({
     @required this.logger,
     @required this.runner,
     this.fixImports,
@@ -104,7 +104,7 @@ class LintHooks {
     this.continueOnError = false,
   });
 
-  /// Constructs a new [LintHooks] instance.
+  /// Constructs a new [Hooks] instance.
   ///
   /// TODO
   ///
@@ -117,7 +117,7 @@ class LintHooks {
   ///
   /// The [continueOnError] can be used to control error behaviour. See
   /// [this.continueOnError] for details.
-  static Future<LintHooks> create({
+  static Future<Hooks> create({
     bool fixImports = true,
     bool format = true,
     bool analyze = true,
@@ -125,7 +125,7 @@ class LintHooks {
     Logger logger = const Logger.standard(),
   }) async {
     final runner = ProgramRunner(logger);
-    return LintHooks.internal(
+    return Hooks.internal(
       logger: logger,
       runner: runner,
       fixImports: fixImports ? await _obtainFixImports() : null,
@@ -142,17 +142,17 @@ class LintHooks {
   /// enabled hooks on these files.
   ///
   /// The result is determined based on the collective result of all processed
-  /// files and hooks. A [LintResult.clean] result is only possible if all
+  /// files and hooks. A [HookResult.clean] result is only possible if all
   /// operations are clean. If at least one staged file had to modified, the
-  /// result is [LintResult.hasChanges]. If at least one file was partially
-  /// staged, it will be [LintResult.hasUnstagedChanges] instead. The
-  /// [LintResult.linter] will be the result if the analyzer finds at least one
+  /// result is [HookResult.hasChanges]. If at least one file was partially
+  /// staged, it will be [HookResult.hasUnstagedChanges] instead. The
+  /// [HookResult.linter] will be the result if the analyzer finds at least one
   /// file with problems, regardless of error-level or whether files have
-  /// already been modified by other hooks. [LintResult.error] trumps all other
+  /// already been modified by other hooks. [HookResult.error] trumps all other
   /// results, as at least one error means that the operation has failed.
-  Future<LintResult> call() async {
+  Future<HookResult> call() async {
     try {
-      var lintState = LintResult.clean;
+      var lintState = HookResult.clean;
       final files = await _collectFiles();
 
       for (final entry in files.entries) {
@@ -170,33 +170,33 @@ class LintHooks {
           if (modified) {
             if (entry.value) {
               logger.log("(!) Fixing up partially staged file ${file.path}");
-              lintState = lintState._raiseTo(LintResult.hasUnstagedChanges);
+              lintState = lintState._raiseTo(HookResult.hasUnstagedChanges);
             } else {
               logger.log("Fixing up ${file.path}");
-              lintState = lintState._raiseTo(LintResult.hasChanges);
+              lintState = lintState._raiseTo(HookResult.hasChanges);
               await _git(["add", file.path]).drain<void>();
             }
           }
         } on TaskError catch (error) {
           logger.logError(error);
           if (!continueOnError) {
-            return LintResult.error;
+            return HookResult.error;
           } else {
-            lintState = lintState._raiseTo(LintResult.error);
+            lintState = lintState._raiseTo(HookResult.error);
           }
         }
       }
 
       if (analyze != null) {
         if (await analyze(files.keys)) {
-          lintState = lintState._raiseTo(LintResult.linter);
+          lintState = lintState._raiseTo(HookResult.linter);
         }
       }
 
       return lintState;
     } on TaskError catch (error) {
       logger.logError(error);
-      return LintResult.error;
+      return HookResult.error;
     }
   }
 

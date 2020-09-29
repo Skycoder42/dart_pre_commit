@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/task_error.dart';
-
 import 'logger.dart';
+import 'task_error.dart';
 
 class ProgramRunner {
   final Logger _logger;

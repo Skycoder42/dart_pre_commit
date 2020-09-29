@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/task_error.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
 import 'logger.dart';
 import 'program_runner.dart';
+import 'task_error.dart';
 
 class AnalyzeResult {
   String severity;

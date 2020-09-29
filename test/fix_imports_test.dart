@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_lint_hooks/src/fix_imports.dart';
+import 'package:dart_pre_commit/src/fix_imports.dart';
 import 'package:meta/meta.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart';
