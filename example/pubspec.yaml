@@ -1,0 +1,10 @@
+name: dart_pre_commit_example
+description: dart_pre_commit example
+version: 0.0.1
+homepage: https://github.com/Skycoder42/dart_pre_commit
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dev_dependencies:
+  lint: ^1.2.0

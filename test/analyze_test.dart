@@ -24,8 +24,12 @@ void main() {
     reset(mockLogger);
     reset(mockRunner);
 
-    when(mockRunner.stream(any, any))
-        .thenAnswer((_) => Stream.fromIterable(const []));
+    when(mockRunner.stream(
+      any,
+      any,
+      failOnExit: anyNamed("failOnExit"),
+      useStderr: anyNamed("useStderr"),
+    )).thenAnswer((_) => Stream.fromIterable(const []));
 
     sut = Analyze(
       logger: mockLogger,
@@ -46,12 +50,18 @@ void main() {
         "bin",
         "test",
       ],
+      failOnExit: false,
+      useStderr: true,
     ));
   });
 
   test("Throws error on invalid analyzer output", () async {
-    when(mockRunner.stream(any, any))
-        .thenAnswer((_) => Stream.fromIterable(const ["INVALID"]));
+    when(mockRunner.stream(
+      any,
+      any,
+      failOnExit: anyNamed("failOnExit"),
+      useStderr: anyNamed("useStderr"),
+    )).thenAnswer((_) => Stream.fromIterable(const ["INVALID"]));
     expect(() => sut(const []), throwsA(isA<TaskError>()));
   });
 
@@ -71,6 +81,8 @@ void main() {
           "machine",
           "lib",
         ],
+        failOnExit: false,
+        useStderr: true,
       ));
     } finally {
       Directory.current = oldDir;
@@ -79,7 +91,12 @@ void main() {
   });
 
   test("Collects lints for specified files", () async {
-    when(mockRunner.stream(any, any)).thenAnswer(
+    when(mockRunner.stream(
+      any,
+      any,
+      failOnExit: anyNamed("failOnExit"),
+      useStderr: anyNamed("useStderr"),
+    )).thenAnswer(
       (_) => Stream.fromIterable([
         "A|1|A1|${absolute("a.dart")}|10|11|12|a1",
         "A|2|A2|${absolute("a.dart")}|20|21|22|a2",
@@ -95,15 +112,20 @@ void main() {
     ]);
     expect(result, true);
     verify(mockLogger.log("Running linter..."));
-    verify(mockLogger.log("1 - a1 - a.dart:10:11 - A1"));
-    verify(mockLogger.log("2 - a2 - a.dart:20:21 - A2"));
-    verify(mockLogger.log("3 - b3 - b${separator}b.dart:30:31 - B3"));
-    verify(mockLogger.log("3 lint(s) found."));
+    verify(mockLogger.log("  1 - a1 - a.dart:10:11 - a1"));
+    verify(mockLogger.log("  2 - a2 - a.dart:20:21 - a2"));
+    verify(mockLogger.log("  3 - b3 - b/b.dart:30:31 - b3"));
+    verify(mockLogger.log("3 issue(s) found."));
     verifyNoMoreInteractions(mockLogger);
   });
 
   test("Succeeds if only lints of none specified files are found", () async {
-    when(mockRunner.stream(any, any)).thenAnswer(
+    when(mockRunner.stream(
+      any,
+      any,
+      failOnExit: anyNamed("failOnExit"),
+      useStderr: anyNamed("useStderr"),
+    )).thenAnswer(
       (_) => Stream.fromIterable([
         "B|2|B2|${absolute("b.dart")}|20|21|22|b2",
       ]),

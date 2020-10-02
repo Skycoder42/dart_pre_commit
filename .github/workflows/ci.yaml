@@ -25,7 +25,7 @@ jobs:
       - run: pub get
       - run: dartanalyzer lib bin test
       - run: pub run test
-      - run: pub run test_coverage
+      - run: pub run test_coverage --exclude **/integration_test.dart
         if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
         if: matrix.os == 'ubuntu-latest'

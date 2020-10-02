@@ -43,6 +43,12 @@ Future<int> _run(List<String> args) async {
       valueHelp: "dir",
     )
     ..addFlag(
+      "detailed-exit-code",
+      abbr: "e",
+      help:
+          "Instead of simply 0/1 as exit code for 'commit ok' or 'commit needs user intervention', output exit codes according to the full hook result (See HookResult).",
+    )
+    ..addFlag(
       "version",
       abbr: "v",
       negatable: false,
@@ -67,15 +73,19 @@ Future<int> _run(List<String> args) async {
       Directory.current = dir;
     }
 
-    final lintHooks = await Hooks.create(
+    final hooks = await Hooks.create(
       fixImports: options["fix-imports"] as bool,
       format: options["format"] as bool,
       analyze: options["analyze"] as bool,
       continueOnError: options["continue-on-error"] as bool,
     );
 
-    final result = await lintHooks();
-    return result.isSuccess ? 0 : 1;
+    final result = await hooks();
+    if (options["detailed-exit-code"] as bool) {
+      return result.index;
+    } else {
+      return result.isSuccess ? 0 : 1;
+    }
   } on FormatException catch (e) {
     stderr.writeln("${e.message}\n");
     stderr.write(parser.usage);

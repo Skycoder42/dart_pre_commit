@@ -19,7 +19,7 @@ class AnalyzeResult {
 
   @override
   String toString() {
-    return "${category.toLowerCase()} - $description - $path:$line:$column - $type";
+    return "  ${category.toLowerCase()} - $description - $path:$line:$column - ${type.toLowerCase()}";
   }
 }
 
@@ -34,7 +34,7 @@ class Analyze {
 
   Future<bool> call(Iterable<String> files) async {
     final lints = {
-      for (final file in files) file: <AnalyzeResult>[],
+      for (final file in files) _toPosixPath(file): <AnalyzeResult>[],
     };
     logger.log("Running linter...");
     await for (final entry in _runAnalyze()) {
@@ -53,9 +53,12 @@ class Analyze {
       }
     }
 
-    logger.log("$lintCnt lint(s) found.");
+    logger.log("$lintCnt issue(s) found.");
     return lintCnt > 0;
   }
+
+  static String _toPosixPath(String path) =>
+      posix.joinAll(split(relative(path)));
 
   Stream<AnalyzeResult> _runAnalyze() async* {
     final allDirs = await Stream.fromIterable([
@@ -68,14 +71,18 @@ class Analyze {
         .map((e) => e[1] as String)
         .toList();
 
-    yield* runner.stream(
-      Platform.isWindows ? "dartanalyzer.bat" : "dartanalyzer",
-      [
-        "--format",
-        "machine",
-        ...allDirs,
-      ],
-    ).parseResult();
+    yield* runner
+        .stream(
+          Platform.isWindows ? "dartanalyzer.bat" : "dartanalyzer",
+          [
+            "--format",
+            "machine",
+            ...allDirs,
+          ],
+          failOnExit: false,
+          useStderr: true,
+        )
+        .parseResult();
   }
 }
 
@@ -90,7 +97,7 @@ extension ResultTransformer on Stream<String> {
         ..severity = elements[0]
         ..category = elements[1]
         ..type = elements[2]
-        ..path = relative(elements[3])
+        ..path = Analyze._toPosixPath(elements[3])
         ..line = int.parse(elements[4], radix: 10)
         ..column = int.parse(elements[5], radix: 10)
         ..length = int.parse(elements[6], radix: 10)
