@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:meta/meta.dart';
 import 'package:yaml/yaml.dart';
 
@@ -127,7 +128,13 @@ class Hooks {
       runner: runner,
       fixImports: fixImports ? await _obtainFixImports() : null,
       format: format ? Format(runner) : null,
-      analyze: analyze ? Analyze(logger: logger, runner: runner) : null,
+      analyze: analyze
+          ? Analyze(
+              logger: logger,
+              runner: runner,
+              fileResolver: FileResolver(),
+            )
+          : null,
       continueOnError: continueOnError,
     );
   }

@@ -1,45 +1,52 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
 import 'logger.dart';
 import 'program_runner.dart';
-import 'task_error.dart';
 
 class AnalyzeResult {
-  String severity;
   String category;
   String type;
   String path;
   int line;
   int column;
-  int length;
   String description;
 
   @override
   String toString() {
-    return "  ${category.toLowerCase()} - $description - $path:$line:$column - ${type.toLowerCase()}";
+    return "  $category - $description at $path:$line:$column - ($type)";
   }
 }
 
 class Analyze {
   final Logger logger;
   final ProgramRunner runner;
+  final FileResolver fileResolver;
 
   const Analyze({
     @required this.logger,
     @required this.runner,
+    @required this.fileResolver,
   });
 
   Future<bool> call(Iterable<String> files) async {
     final lints = {
-      for (final file in files) _toPosixPath(file): <AnalyzeResult>[],
+      await for (final file in fileResolver.resolveAll(files))
+        file: <AnalyzeResult>[],
     };
-    logger.log("Running linter...");
+    logger.log("Running dart analyze...");
     await for (final entry in _runAnalyze()) {
-      if (lints.containsKey(entry.path)) {
-        lints[entry.path].add(entry);
+      final lintList = lints.entries
+          .firstWhere(
+            (lint) => equals(entry.path, lint.key),
+            orElse: () => null,
+          )
+          ?.value;
+      if (lintList != null) {
+        lintList.add(entry);
       }
     }
 
@@ -57,51 +64,35 @@ class Analyze {
     return lintCnt > 0;
   }
 
-  static String _toPosixPath(String path) =>
-      posix.joinAll(split(relative(path)));
-
   Stream<AnalyzeResult> _runAnalyze() async* {
-    final allDirs = await Stream.fromIterable([
-      Directory("lib"),
-      Directory("bin"),
-      Directory("test"),
-    ])
-        .asyncMap((d) async => [await d.exists(), d.path])
-        .where((e) => e[0] as bool)
-        .map((e) => e[1] as String)
-        .toList();
-
+    stderr.writeln(Directory.current);
     yield* runner
         .stream(
-          Platform.isWindows ? "dartanalyzer.bat" : "dartanalyzer",
-          [
-            "--format",
-            "machine",
-            ...allDirs,
-          ],
+          "dart",
+          const ["analyze"],
           failOnExit: false,
-          useStderr: true,
         )
-        .parseResult();
+        .parseResult(fileResolver);
   }
 }
 
 extension ResultTransformer on Stream<String> {
-  Stream<AnalyzeResult> parseResult() async* {
+  Stream<AnalyzeResult> parseResult(FileResolver fileResolver) async* {
+    final regExp = RegExp(
+        r"^\s*(\w+)\s+-\s+([^-]+)\s+at\s+([^-:]+?):(\d+):(\d+)\s+-\s+\((\w+)\)\s*$");
     await for (final line in this) {
-      final elements = line.trim().split("|");
-      if (elements.length < 8) {
-        throw TaskError("Invalid output from dartanalyzer: $line");
+      final match = regExp.firstMatch(line);
+      if (match != null) {
+        final res = AnalyzeResult()
+          ..category = match[1]
+          ..type = match[6]
+          ..path = await fileResolver.resolve(match[3])
+          ..line = int.parse(match[4], radix: 10)
+          ..column = int.parse(match[5], radix: 10)
+          ..description = match[2];
+        stderr.writeln(res);
+        yield res;
       }
-      yield AnalyzeResult()
-        ..severity = elements[0]
-        ..category = elements[1]
-        ..type = elements[2]
-        ..path = Analyze._toPosixPath(elements[3])
-        ..line = int.parse(elements[4], radix: 10)
-        ..column = int.parse(elements[5], radix: 10)
-        ..length = int.parse(elements[6], radix: 10)
-        ..description = elements.sublist(7).join("|");
     }
   }
 }

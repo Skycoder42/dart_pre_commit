@@ -10,9 +10,9 @@ class Format {
 
   Future<bool> call(File file) async {
     final exitCode = await runner.run(
-      Platform.isWindows ? "dartfmt.bat" : "dartfmt",
+      "dart",
       [
-        "--overwrite",
+        "format",
         "--fix",
         "--set-exit-if-changed",
         file.path,

@@ -26,13 +26,13 @@ void main() {
     sut = Format(mockRunner);
   });
 
-  test("calls dartfmt with correct arguments", () async {
+  test("calls dart format with correct arguments", () async {
     final res = await sut(mockFile);
     expect(res, false);
     verify(mockRunner.run(
-      Platform.isWindows ? "dartfmt.bat" : "dartfmt",
+      "dart",
       const [
-        "--overwrite",
+        "format",
         "--fix",
         "--set-exit-if-changed",
         "mock.dart",
@@ -40,13 +40,13 @@ void main() {
     ));
   });
 
-  test("returns true if dartfmt returns 1", () async {
+  test("returns true if dart format returns 1", () async {
     when(mockRunner.run(any, any)).thenAnswer((_) async => 1);
     final res = await sut(mockFile);
     expect(res, true);
   });
 
-  test("throws exception if dartfmt returns >1", () async {
+  test("throws exception if dart format returns >1", () async {
     when(mockRunner.run(any, any)).thenAnswer((_) async => 42);
     expect(() => sut(mockFile), throwsA(isA<TaskError>()));
   });

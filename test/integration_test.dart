@@ -169,6 +169,6 @@ void main() {
     expect(code, HookResult.linter.index);
     expect(lines.length, 4);
     expect(lines[2],
-        "  hint - The value of the local variable 'x' isn't used. - lib/src/analyze.dart:2:7 - unused_local_variable");
+        "  info - The value of the local variable 'x' isn't used at lib${separator}src${separator}analyze.dart:2:7 - (unused_local_variable)");
   });
 }
