@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'dart:io';
 
 /// Basic interface to provide logging functionality to the hooks

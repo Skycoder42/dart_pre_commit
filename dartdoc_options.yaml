@@ -1,0 +1,2 @@
+dartdoc:
+  includeExternal: ["bin/dart_pre_commit.dart"]

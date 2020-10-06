@@ -13,20 +13,12 @@ class ProgramRunner {
     String program,
     List<String> arguments, {
     bool failOnExit = true,
-    bool useStderr = false,
   }) async* {
     final process = await Process.start(program, arguments);
-    if (useStderr) {
-      process.stdout.drain<void>();
-      yield* process.stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-    } else {
-      _logger.pipeStderr(process.stderr);
-      yield* process.stdout
-          .transform(utf8.decoder)
-          .transform(const LineSplitter());
-    }
+    _logger.pipeStderr(process.stderr);
+    yield* process.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
     if (failOnExit) {
       final exitCode = await process.exitCode;
       if (exitCode != 0) {

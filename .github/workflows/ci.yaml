@@ -25,8 +25,9 @@ jobs:
       - run: dart pub get
       - run: dart analyze
       - run: dart test --coverage=coverage
-      # - uses: ChicagoFlutter/lcov-cop@v1.0.2
-      #   if: matrix.os == 'ubuntu-latest'
-      #   with:
-      #     exclude: "lib/src/logger.dart"
-      #     min_coverage: 95
+      - run: dart pub run coverage:format_coverage --lcov --check-ignore --packages .packages --report-on lib --in coverage -out coverage/lcov.info
+      - uses: ChicagoFlutter/lcov-cop@v1.0.2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          exclude: "lib/src/logger.dart"
+          min_coverage: 95

@@ -1,8 +1,38 @@
+/// Documentation of the dart_pre_commit binary
+///
+/// You can run this script via `dart pub run dart_pre_commit [options]`. It
+/// will create an instance of [Hooks] and invoke it to perform the pre commit
+/// hooks. Check the documentation of the [Hooks] class for more details on what
+/// the sepecific hooks do.
+///
+/// In order to be able to configure how the hooks should be run, you can
+/// specify command line arguments to the script. The following tables list all
+/// available options, organized into the same groups as shown when running
+/// `dart pub run dart_pre_commit --help`.
+///
+/// ### Parsing Options
+///  Option                          | Default | Description
+/// ---------------------------------|---------|-------------
+/// `-i`, `--[no-]fix-imports`       | on      | Format and sort imports of staged files.
+/// `-f`, `--[no-]format`            | on      | Format staged files with dart format.
+/// `-a`, `--[no-]analyze`           | on      | Run dart analyze to find issue for the staged files.
+/// `-c`, `--[no-]continue-on-error` | off     | Continue checks even if a task fails for a certain file. The whole hook will still fail, but only after all files have been processed
+///
+/// ### Other
+///  Option                           | Default             | Description
+/// ----------------------------------|---------------------|-------------
+/// `-d`, `--directory=<dir>`         | `Directory.current` | Set the directory to run this command in. By default, it will run in the current working directory.
+/// `-e`, `--[no-]detailed-exit-code` | off                 | Instead of simply 0/1 as exit code for 'commit ok' or 'commit needs user intervention', output exit codes according to the full hook result (See [HookResult]).
+/// `-v`, `--version`                 | -                   | Show the version of the dart_pre_commit package.
+/// `-h`, `--help`                    | -                   | Show this help.
+library dart_pre_commit_bin;
+
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 
+/// @nodoc
 void main(List<String> args) {
   _run(args).then((c) => exitCode = c);
 }
@@ -20,13 +50,13 @@ Future<int> _run(List<String> args) async {
       "format",
       abbr: "f",
       defaultsTo: true,
-      help: "Format staged files with dartfmt.",
+      help: "Format staged files with dart format.",
     )
     ..addFlag(
       "analyze",
       abbr: "a",
       defaultsTo: true,
-      help: "Run dartanalyzer to find issue for the staged files.",
+      help: "Run dart analyze to find issue for the staged files.",
     )
     ..addFlag(
       "continue-on-error",

@@ -30,7 +30,6 @@ void main() {
       any,
       any,
       failOnExit: anyNamed("failOnExit"),
-      useStderr: anyNamed("useStderr"),
     )).thenAnswer((_) => Stream.fromIterable(const []));
 
     when(mockFileResolver.resolve(any))
@@ -63,7 +62,6 @@ void main() {
       any,
       any,
       failOnExit: anyNamed("failOnExit"),
-      useStderr: anyNamed("useStderr"),
     )).thenAnswer(
       (_) => Stream.fromIterable(const [
         "  A - a1 at a.dart:10:11 - (1)",
@@ -93,7 +91,6 @@ void main() {
       any,
       any,
       failOnExit: anyNamed("failOnExit"),
-      useStderr: anyNamed("useStderr"),
     )).thenAnswer(
       (_) => Stream.fromIterable([
         "  B - b3 at b/b.dart:30:31 - (3)",
