@@ -23,11 +23,13 @@ jobs:
       - uses: cedx/setup-dart@v2
       - uses: actions/checkout@v2
       - run: dart pub get
-      - run: dart analyze
+      - run: dart analyze --fatal-infos
       - run: dart test --coverage=coverage
-      - run: dart pub run coverage:format_coverage --lcov --check-ignore --packages .packages --report-on lib --in coverage -out coverage/lcov.info
+      - run: dart pub run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+        if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
         if: matrix.os == 'ubuntu-latest'
         with:
           exclude: "lib/src/logger.dart"
           min_coverage: 95
+      - run: dart pub publish --dry-run

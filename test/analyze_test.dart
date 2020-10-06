@@ -3,7 +3,6 @@ import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:mockito/mockito.dart';
-import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 import 'format_test.dart';
@@ -70,7 +69,6 @@ void main() {
         "  C - c4 at c/c/c.dart:40:41 - (4)",
       ]),
     );
-    var x = "";
 
     final result = await sut(const [
       "a.dart",
