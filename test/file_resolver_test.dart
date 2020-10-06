@@ -31,7 +31,7 @@ void main() {
 
       final sut = FileResolver();
       final resPath = await sut.resolve(l1.absolute.path);
-      expect(resPath, relative(f1.path));
+      expect(resPath, join("dir1", "file1.dart"));
     } finally {
       Directory.current = cwd;
     }
@@ -66,14 +66,8 @@ void main() {
         l2.absolute.path,
       ]).toList();
       expect(resPath, [
-        relative(
-          await f1.resolveSymbolicLinks(),
-          from: await testDir.resolveSymbolicLinks(),
-        ),
-        relative(
-          await f2.resolveSymbolicLinks(),
-          from: await testDir.resolveSymbolicLinks(),
-        ),
+        join("dir1", "file1.dart"),
+        join("dir2", "file2.dart"),
       ]);
     } finally {
       Directory.current = cwd;
