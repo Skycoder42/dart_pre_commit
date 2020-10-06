@@ -66,8 +66,14 @@ void main() {
         l2.absolute.path,
       ]).toList();
       expect(resPath, [
-        relative(f1.path, from: testDir.path),
-        relative(f2.path, from: testDir.path),
+        relative(
+          await f1.resolveSymbolicLinks(),
+          from: await testDir.resolveSymbolicLinks(),
+        ),
+        relative(
+          await f2.resolveSymbolicLinks(),
+          from: await testDir.resolveSymbolicLinks(),
+        ),
       ]);
     } finally {
       Directory.current = cwd;
