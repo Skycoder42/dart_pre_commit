@@ -65,11 +65,13 @@ class Analyze {
   }
 
   Stream<AnalyzeResult> _runAnalyze() async* {
-    stderr.writeln(Directory.current);
     yield* runner
         .stream(
           "dart",
-          const ["analyze"],
+          const [
+            "analyze",
+            "--fatal-infos",
+          ],
           failOnExit: false,
         )
         .parseResult(fileResolver);
@@ -90,7 +92,6 @@ extension ResultTransformer on Stream<String> {
           ..line = int.parse(match[4], radix: 10)
           ..column = int.parse(match[5], radix: 10)
           ..description = match[2];
-        stderr.writeln(res);
         yield res;
       }
     }

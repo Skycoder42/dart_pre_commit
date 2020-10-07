@@ -51,6 +51,7 @@ void main() {
       "dart",
       const [
         "analyze",
+        "--fatal-infos",
       ],
       failOnExit: false,
     ));

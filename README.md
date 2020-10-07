@@ -7,8 +7,8 @@ A small collection of pre commit hooks to format and lint dart code
 ## Features
 - Provides three built in hooks to run on staged files
   - Fix up imports (package/relative) and sort them
-  - Run `dartfmt`
-  - Run `dartanalyzer`
+  - Run `dart format`
+  - Run `dart analyze`
 - Only processes staged files
   - Automatically stages modified files again
   - Fails if partially staged files had to be modified
@@ -17,7 +17,7 @@ A small collection of pre commit hooks to format and lint dart code
 
 ## Installation
 Simply add `dart_pre_commit` to your `pubspec.yaml` (preferebly as 
-dev_depedency) and run `pub get` (or `flutter pub get`).
+dev_depedency) and run `dart pub get` (or `flutter pub get`).
 
 ## Usage
 To make use of the hooks, you have to activate them first. This package only 
@@ -29,7 +29,7 @@ The first example uses the [git_hooks](https://pub.dev/packages/git_hooks)
 package to activate the hook. Take the following steps to activate the hook:
 
 1. Add `git_hooks` as dev_dependency to your project
-2. Run `pub run git_hooks create` to initialize and activate git hooks for your
+2. Run `dart pub run git_hooks create` to initialize and activate git hooks for your
 project
 3. Modify `git_hooks.dart` to look like the following:
 ```.dart
@@ -57,7 +57,7 @@ The second example uses the [hanzo](https://pub.dev/packages/hanzo) package to
 activate the hook. Take the following steps to activate the hook:
 
 1. Add `hanzo` as dev_dependency to your project
-2. Run `pub run hanzo install` to initialize and activate git hooks for your
+2. Run `dart pub run hanzo install` to initialize and activate git hooks for your
 project
 3. Create a file named `./tool/pre_commit.dart` as follows:
 ```.dart
@@ -69,16 +69,16 @@ void main() {
   exitCode = result.isSuccess ? 0 : 1;  // report the result
 }
 ```
-4. Run `pub run hanzo -i pre_commit`
+4. Run `dart pub run hanzo -i pre_commit`
 
 ### Without any 3rd party tools
 The package also provides a script to run the hooks. You can check it out via
-`pub run dart_pre_commit --help`. To use it as git hook, without any other tool,
+`dart pub run dart_pre_commit --help`. To use it as git hook, without any other tool,
 you have to create a script called `pre-commit` in `.git/hooks` as follows:
 ```.dart
 #!/bin/bash
 
-exec pub run dart_pre_commit  # Add extra options as needed
+exec dart pub run dart_pre_commit  # Add extra options as needed
 ```
 
 ## Documentation
