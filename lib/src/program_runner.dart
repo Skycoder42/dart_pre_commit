@@ -33,7 +33,7 @@ class ProgramRunner {
   ) async {
     final process = await Process.start(program, arguments);
     _logger.pipeStderr(process.stderr);
-    process.stdout.drain<void>();
+    await process.stdout.drain<void>();
     return process.exitCode;
   }
 }
