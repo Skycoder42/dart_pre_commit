@@ -60,6 +60,7 @@ extension HookResultX on HookResult {
 /// a result. Check the documentation of [FixImports], [Format] and [Analyze]
 /// for more details on the actual supported hook operations.
 class Hooks {
+  final FileResolver _resolver;
   final ProgramRunner _runner;
   final FixImports _fixImports;
   final Format _format;
@@ -80,12 +81,14 @@ class Hooks {
   @visibleForTesting
   const Hooks.internal({
     @required this.logger,
+    @required FileResolver resolver,
     @required ProgramRunner runner,
     FixImports fixImports,
     Format format,
     Analyze analyze,
     this.continueOnError = false,
-  })  : _runner = runner,
+  })  : _resolver = resolver,
+        _runner = runner,
         _fixImports = fixImports,
         _format = format,
         _analyze = analyze;
@@ -122,9 +125,11 @@ class Hooks {
     bool continueOnError = false,
     Logger logger = const Logger.standard(),
   }) async {
+    final resolver = FileResolver();
     final runner = ProgramRunner(logger);
     return Hooks.internal(
       logger: logger,
+      resolver: resolver,
       runner: runner,
       fixImports: fixImports ? await _obtainFixImports() : null,
       format: format ? Format(runner) : null,
@@ -132,7 +137,7 @@ class Hooks {
           ? Analyze(
               logger: logger,
               runner: runner,
-              fileResolver: FileResolver(),
+              fileResolver: resolver,
             )
           : null,
       continueOnError: continueOnError,
@@ -210,7 +215,8 @@ class Hooks {
     final stagedChanges = _git(["diff", "--name-only", "--cached"]);
     return {
       await for (var path in stagedChanges)
-        if (path.endsWith(".dart")) path: indexChanges.contains(path),
+        if (path.endsWith(".dart") && await _resolver.exists(path))
+          path: indexChanges.contains(path),
     };
   }
 

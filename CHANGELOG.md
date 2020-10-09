@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [1.0.2] - 2020-10-09
+### Fixed
+- Fixed bug where the tool tried to format deleted files
+
 ## [1.0.1] - 2020-10-07
 ### Fixed
 - `dart analyze` now treats lint infos as errors

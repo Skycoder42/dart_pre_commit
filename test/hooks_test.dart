@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/analyze.dart';
+import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/fix_imports.dart';
 import 'package:dart_pre_commit/src/format.dart';
 import 'package:dart_pre_commit/src/hooks.dart';
@@ -15,6 +16,8 @@ import 'test_with_data.dart';
 
 class MockLogger extends Mock implements Logger {}
 
+class MockFileResolver extends Mock implements FileResolver {}
+
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
 class MockFixImports extends Mock implements FixImports {}
@@ -25,6 +28,7 @@ class MockAnalyze extends Mock implements Analyze {}
 
 void main() {
   final mockLogger = MockLogger();
+  final mockResolver = MockFileResolver();
   final mockRunner = MockProgramRunner();
   final mockFixImports = MockFixImports();
   final mockFormat = MockFormat();
@@ -38,6 +42,7 @@ void main() {
   }) =>
       Hooks.internal(
         logger: mockLogger,
+        resolver: mockResolver,
         runner: mockRunner,
         fixImports: fixImports ? mockFixImports : null,
         format: format ? mockFormat : null,
@@ -47,11 +52,13 @@ void main() {
 
   setUp(() {
     reset(mockLogger);
+    reset(mockResolver);
     reset(mockRunner);
     reset(mockFixImports);
     reset(mockFormat);
     reset(mockAnalyze);
 
+    when(mockResolver.exists(any)).thenAnswer((_) async => true);
     when(mockRunner.stream(any, any))
         .thenAnswer((_) => Stream.fromIterable(const []));
     when(mockFixImports(any)).thenAnswer((_) async => false);
@@ -83,6 +90,24 @@ void main() {
     expect(result, HookResult.clean);
     verify(mockLogger.log("Scanning a.dart..."));
     verify(mockLogger.log("Scanning c.g.dart..."));
+    verifyNoMoreInteractions(mockLogger);
+  });
+
+  test("only processes existing dart files", () async {
+    when(mockResolver.exists(any)).thenAnswer((i) async => false);
+    when(mockResolver.exists("b.dart")).thenAnswer((i) async => true);
+    when(mockRunner.stream(any, any)).thenAnswer(
+      (_) => Stream.fromIterable(const [
+        "a.dart",
+        "b.dart",
+        "c.dart",
+      ]),
+    );
+    final sut = createSut();
+
+    final result = await sut();
+    expect(result, HookResult.clean);
+    verify(mockLogger.log("Scanning b.dart..."));
     verifyNoMoreInteractions(mockLogger);
   });
 
