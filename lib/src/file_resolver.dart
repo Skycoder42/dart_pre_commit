@@ -5,11 +5,11 @@ import 'package:path/path.dart';
 class FileResolver {
   Future<bool> exists(String path) => File(path).exists();
 
-  Future<String> resolve(String path) async => relative(
+  Future<String> resolve(String path, [Directory from]) async => relative(
         await File(path).resolveSymbolicLinks(),
-        from: await Directory.current.resolveSymbolicLinks(),
+        from: await (from ?? Directory.current).resolveSymbolicLinks(),
       );
 
-  Stream<String> resolveAll(Iterable<String> paths) =>
-      Stream.fromIterable(paths).asyncMap(resolve);
+  Stream<String> resolveAll(Iterable<String> paths, [Directory from]) =>
+      Stream.fromIterable(paths).asyncMap((p) => resolve(p, from));
 }
