@@ -32,9 +32,9 @@ void main() {
     )).thenAnswer((_) => Stream.fromIterable(const []));
 
     when(mockFileResolver.resolve(any))
-        .thenAnswer((i) async => i.positionalArguments.single as String);
+        .thenAnswer((i) async => i.positionalArguments.first as String);
     when(mockFileResolver.resolveAll(any)).thenAnswer((i) =>
-        Stream.fromIterable(i.positionalArguments.single as Iterable<String>));
+        Stream.fromIterable(i.positionalArguments.first as Iterable<String>));
 
     sut = Analyze(
       logger: mockLogger,
