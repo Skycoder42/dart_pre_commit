@@ -12,4 +12,6 @@ class FileResolver {
 
   Stream<String> resolveAll(Iterable<String> paths, [Directory from]) =>
       Stream.fromIterable(paths).asyncMap((p) => resolve(p, from));
+
+  File file(String path) => File(path);
 }

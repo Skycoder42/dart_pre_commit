@@ -68,4 +68,9 @@ void main() {
     "windows":
         Skip("Creating symbolic links requires admin permission on windows")
   });
+
+  test('file creates file object', () {
+    final file = sut.file("test/path.ext");
+    expect(file.path, "test/path.ext");
+  });
 }

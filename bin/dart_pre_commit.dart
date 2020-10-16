@@ -16,6 +16,7 @@
 /// `-i`, `--[no-]fix-imports`       | on      | Format and sort imports of staged files.
 /// `-f`, `--[no-]format`            | on      | Format staged files with dart format.
 /// `-a`, `--[no-]analyze`           | on      | Run dart analyze to find issue for the staged files.
+/// `-p`, `--[no-]check-pull-up`     | off     | Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.
 /// `-c`, `--[no-]continue-on-error` | off     | Continue checks even if a task fails for a certain file. The whole hook will still fail, but only after all files have been processed
 ///
 /// ### Other
@@ -57,6 +58,12 @@ Future<int> _run(List<String> args) async {
       abbr: "a",
       defaultsTo: true,
       help: "Run dart analyze to find issue for the staged files.",
+    )
+    ..addFlag(
+      "check-pull-up",
+      abbr: "p",
+      help:
+          "Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.",
     )
     ..addFlag(
       "continue-on-error",

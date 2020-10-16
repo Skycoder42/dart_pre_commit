@@ -7,6 +7,7 @@ import 'package:dart_pre_commit/src/format.dart';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/pull_up_dependencies.dart';
 import 'package:dart_pre_commit/src/task_error.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -26,6 +27,8 @@ class MockFormat extends Mock implements Format {}
 
 class MockAnalyze extends Mock implements Analyze {}
 
+class MockPullUpDependencies extends Mock implements PullUpDependencies {}
+
 void main() {
   final mockLogger = MockLogger();
   final mockResolver = MockFileResolver();
@@ -33,11 +36,13 @@ void main() {
   final mockFixImports = MockFixImports();
   final mockFormat = MockFormat();
   final mockAnalyze = MockAnalyze();
+  final mockPullUpDependencies = MockPullUpDependencies();
 
   Hooks createSut({
     bool fixImports = false,
     bool format = false,
     bool analyze = false,
+    bool pullUpDependencies = false,
     bool continueOnError = false,
   }) =>
       Hooks.internal(
@@ -47,6 +52,7 @@ void main() {
         fixImports: fixImports ? mockFixImports : null,
         format: format ? mockFormat : null,
         analyze: analyze ? mockAnalyze : null,
+        pullUpDependencies: pullUpDependencies ? mockPullUpDependencies : null,
         continueOnError: continueOnError,
       );
 
@@ -64,6 +70,7 @@ void main() {
     when(mockFixImports(any)).thenAnswer((_) async => false);
     when(mockFormat(any)).thenAnswer((_) async => false);
     when(mockAnalyze(any)).thenAnswer((_) async => false);
+    when(mockPullUpDependencies()).thenAnswer((_) async => false);
   });
 
   test("calls git twice to collect changed files", () async {
@@ -316,6 +323,64 @@ void main() {
     });
   });
 
+  group("pullUpDependencies", () {
+    test("gets called if enabled", () async {
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verify(mockPullUpDependencies());
+    });
+
+    test("returns canPullUp if pullUpDependencies find something", () async {
+      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.canPullUp);
+    });
+
+    test(
+        "returns canPullUp if pullUpDependencies and fixImport/format find something",
+        () async {
+      when(mockRunner.stream(any, any))
+          .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
+      when(mockFixImports(any)).thenAnswer((_) async => true);
+      when(mockFormat(any)).thenAnswer((_) async => true);
+      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      final sut = createSut(
+        fixImports: true,
+        format: true,
+        pullUpDependencies: true,
+      );
+
+      final result = await sut();
+      expect(result, HookResult.canPullUp);
+    });
+
+    test("returns linter if analyze and pullUpDependencies find something",
+        () async {
+      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      when(mockAnalyze(any)).thenAnswer((_) async => true);
+      final sut = createSut(
+        analyze: true,
+        pullUpDependencies: true,
+      );
+
+      final result = await sut();
+      expect(result, HookResult.linter);
+    });
+
+    test("returns error on TaskError", () async {
+      when(mockPullUpDependencies())
+          .thenAnswer((_) async => throw const TaskError("error"));
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.error);
+    });
+  });
+
   group("LintHooks.atomic", () {
     test("creates members", () async {
       final sut = await Hooks.create();
@@ -341,6 +406,7 @@ void main() {
     Tuple2(HookResult.clean, true),
     Tuple2(HookResult.hasChanges, true),
     Tuple2(HookResult.hasUnstagedChanges, false),
+    Tuple2(HookResult.canPullUp, false),
     Tuple2(HookResult.linter, false),
     Tuple2(HookResult.error, false),
   ], (fixture) {

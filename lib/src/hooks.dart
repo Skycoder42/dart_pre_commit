@@ -1,14 +1,15 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:meta/meta.dart';
 import 'package:yaml/yaml.dart';
 
 import 'analyze.dart';
+import 'file_resolver.dart';
 import 'fix_imports.dart';
 import 'format.dart';
 import 'logger.dart';
 import 'program_runner.dart';
+import 'pull_up_dependencies.dart';
 import 'task_error.dart';
 
 /// The result of a LintHooks call.
@@ -25,6 +26,10 @@ enum HookResult {
   /// Files had to be fixed up, all succeeded but partially staged files had to
   /// be modified.
   hasUnstagedChanges,
+
+  /// At least one dependency found in pubspec.lock can be pulled up to the
+  /// pubspec.yaml
+  canPullUp,
 
   /// At least one staged file has analyze/lint errors and must be fixed.
   linter,
@@ -45,6 +50,7 @@ extension HookResultX on HookResult {
   /// [HookResult.clean]              | true
   /// [HookResult.hasChanges]         | true
   /// [HookResult.hasUnstagedChanges] | false
+  /// [HookResult.canPullUp]          | false
   /// [HookResult.linter]             | false
   /// [HookResult.error]              | false
   bool get isSuccess => index <= HookResult.hasChanges.index;
@@ -65,6 +71,7 @@ class Hooks {
   final FixImports _fixImports;
   final Format _format;
   final Analyze _analyze;
+  final PullUpDependencies _pullUpDependencies;
 
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
@@ -86,12 +93,14 @@ class Hooks {
     FixImports fixImports,
     Format format,
     Analyze analyze,
+    PullUpDependencies pullUpDependencies,
     this.continueOnError = false,
   })  : _resolver = resolver,
         _runner = runner,
         _fixImports = fixImports,
         _format = format,
-        _analyze = analyze;
+        _analyze = analyze,
+        _pullUpDependencies = pullUpDependencies;
 
   /// Constructs a new [Hooks] instance.
   ///
@@ -122,6 +131,7 @@ class Hooks {
     bool fixImports = true,
     bool format = true,
     bool analyze = true,
+    bool pullUpDependencies = false,
     bool continueOnError = false,
     Logger logger = const Logger.standard(),
   }) async {
@@ -135,6 +145,13 @@ class Hooks {
       format: format ? Format(runner) : null,
       analyze: analyze
           ? Analyze(
+              logger: logger,
+              runner: runner,
+              fileResolver: resolver,
+            )
+          : null,
+      pullUpDependencies: pullUpDependencies
+          ? PullUpDependencies(
               logger: logger,
               runner: runner,
               fileResolver: resolver,
@@ -166,7 +183,7 @@ class Hooks {
       final files = await _collectFiles();
 
       for (final entry in files.entries) {
-        final file = File(entry.key);
+        final file = File(entry.key); // TODO use resolver.file
         try {
           logger.log("Scanning ${file.path}...");
           var modified = false;
@@ -200,6 +217,12 @@ class Hooks {
       if (_analyze != null) {
         if (await _analyze(files.keys)) {
           lintState = lintState._raiseTo(HookResult.linter);
+        }
+      }
+
+      if (_pullUpDependencies != null) {
+        if (await _pullUpDependencies()) {
+          lintState = lintState._raiseTo(HookResult.canPullUp);
         }
       }
 
