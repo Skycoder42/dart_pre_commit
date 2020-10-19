@@ -99,7 +99,7 @@ class PullUpDependencies {
           if (resolvedVersion > currentVersion &&
               !resolvedVersion.isPreRelease) {
             ++updateCtr;
-            logger.log("${entry.key}: $currentVersion -> $resolvedVersion");
+            logger.log("  ${entry.key}: $currentVersion -> $resolvedVersion");
           }
         }
       }

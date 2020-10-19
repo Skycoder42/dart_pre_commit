@@ -6,13 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Support for check if the version of dart dependencies can be pulled up to a
-higher version from the lockfile
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 ### Security
+
+## [1.1.0] - 2020-10-19
+### Added
+- Support for check if the version of dart dependencies can be pulled up to a
+higher version from the lockfile
 
 ## [1.0.2] - 2020-10-09
 ### Fixed

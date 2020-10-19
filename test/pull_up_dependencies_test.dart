@@ -121,8 +121,8 @@ packages:
     final result = await sut();
     expect(result, true);
     verify(mockLogger.log("Checking for updates packages..."));
-    verify(mockLogger.log("b: 1.0.0 -> 1.0.1"));
-    verify(mockLogger.log("d: 1.0.0 -> 1.1.0"));
+    verify(mockLogger.log("  b: 1.0.0 -> 1.0.1"));
+    verify(mockLogger.log("  d: 1.0.0 -> 1.1.0"));
     verify(
         mockLogger.log("2 dependencies can be pulled up to newer versions!"));
     verifyNoMoreInteractions(mockLogger);

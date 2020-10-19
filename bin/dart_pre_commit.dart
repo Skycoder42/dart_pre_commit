@@ -114,6 +114,7 @@ Future<int> _run(List<String> args) async {
       fixImports: options["fix-imports"] as bool,
       format: options["format"] as bool,
       analyze: options["analyze"] as bool,
+      pullUpDependencies: options["check-pull-up"] as bool,
       continueOnError: options["continue-on-error"] as bool,
     );
 
