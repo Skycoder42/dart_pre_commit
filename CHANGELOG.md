@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [1.1.1] - 2020-10-22
+### Fixed
+- Fixed bug that caused a crash in `--check-pull-up` if dependencies declared in
+the `pubspec.yaml` are missing in `pubspec.lock` (#1)
+
 ## [1.1.0] - 2020-10-19
 ### Added
 - Support for check if the version of dart dependencies can be pulled up to a

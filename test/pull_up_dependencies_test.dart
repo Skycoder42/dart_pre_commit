@@ -167,4 +167,28 @@ packages:
     verify(mockLogger.log("Checking for updates packages..."));
     verifyNoMoreInteractions(mockLogger);
   });
+
+  test("Does not crash if pubspec.lock is missing dependency", () async {
+    when(mockResolver.file("pubspec.yaml")).thenAnswer((i) {
+      final res = MockFile();
+      when(res.readAsString()).thenAnswer((i) async => """
+dependencies:
+  a: ^1.0.0
+""");
+      return res;
+    });
+
+    when(mockResolver.file("pubspec.lock")).thenAnswer((i) {
+      final res = MockFile();
+      when(res.readAsString()).thenAnswer((i) async => """
+packages:
+""");
+      return res;
+    });
+
+    final result = await sut();
+    expect(result, false);
+    verify(mockLogger.log("Checking for updates packages..."));
+    verifyNoMoreInteractions(mockLogger);
+  });
 }

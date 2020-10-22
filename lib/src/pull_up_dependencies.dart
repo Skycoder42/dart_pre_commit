@@ -93,10 +93,11 @@ class PullUpDependencies {
     for (final entry in node.entries) {
       if (entry.value is String) {
         final versionString = entry.value as String;
-        if (versionString.startsWith("^")) {
+        if (versionString?.startsWith("^") ?? false) {
           final currentVersion = Version.parse(versionString.substring(1));
           final resolvedVersion = resolvedVersions[entry.key];
-          if (resolvedVersion > currentVersion &&
+          if (resolvedVersion != null &&
+              resolvedVersion > currentVersion &&
               !resolvedVersion.isPreRelease) {
             ++updateCtr;
             logger.log("  ${entry.key}: $currentVersion -> $resolvedVersion");
