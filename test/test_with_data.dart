@@ -6,13 +6,13 @@ void testWithData<TFixture>(
   dynamic description,
   List<TFixture> fixtures,
   dynamic Function(TFixture fixture) body, {
-  String testOn,
-  Timeout timeout,
-  dynamic skip,
-  dynamic tags,
-  Map<String, dynamic> onPlatform,
-  int retry,
-  String Function(TFixture fixture) fixtureToString,
+  String? testOn,
+  Timeout? timeout,
+  dynamic? skip,
+  dynamic? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+  String Function(TFixture fixture)? fixtureToString,
 }) {
   assert(fixtures.isNotEmpty);
   group(description, () {

@@ -2,33 +2,30 @@ import 'package:dart_pre_commit/src/analyze.dart';
 import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:test/test.dart';
+import 'analyze_test.mocks.dart';
 
-import 'format_test.dart';
-
-class MockLogger extends Mock implements Logger {}
-
-class MockProgramRunner extends Mock implements ProgramRunner {}
-
-class MockFileResolver extends Mock implements FileResolver {}
-
+@GenerateMocks([Logger, ProgramRunner, FileResolver])
 void main() {
   final mockLogger = MockLogger();
-  final mockRunner = MockRunner();
+  final mockRunner = MockProgramRunner();
   final mockFileResolver = MockFileResolver();
 
-  Analyze sut;
+  late Analyze sut;
 
   setUp(() {
     reset(mockLogger);
     reset(mockRunner);
     reset(mockFileResolver);
 
+    when(mockLogger.log(any)).thenReturn(null);
+
     when(mockRunner.stream(
       any,
       any,
-      failOnExit: anyNamed("failOnExit"),
+      failOnExit: anyNamed('failOnExit'),
     )).thenAnswer((_) => Stream.fromIterable(const []));
 
     when(mockFileResolver.resolve(any))
@@ -43,15 +40,15 @@ void main() {
     );
   });
 
-  test("Run dartanalyzer with correct arguments", () async {
+  test('Run dartanalyzer with correct arguments', () async {
     final result = await sut(const ['test.dart']);
 
     expect(result, false);
     verify(mockRunner.stream(
-      "dart",
+      'dart',
       const [
-        "analyze",
-        "--fatal-infos",
+        'analyze',
+        '--fatal-infos',
       ],
       failOnExit: false,
     ));
@@ -64,51 +61,51 @@ void main() {
     verifyZeroInteractions(mockRunner);
   });
 
-  test("Collects lints for specified files", () async {
+  test('Collects lints for specified files', () async {
     when(mockRunner.stream(
       any,
       any,
-      failOnExit: anyNamed("failOnExit"),
+      failOnExit: anyNamed('failOnExit'),
     )).thenAnswer(
       (_) => Stream.fromIterable(const [
-        "  A - a1 at a.dart:10:11 - (1)",
-        "  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)",
-        "  B - b3 at b/b.dart:30:31 - (3)",
-        "  C - c4 at c/c/c.dart:40:41 - (4)",
+        '  A - a1 at a.dart:10:11 - (1)',
+        '  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)',
+        '  B - b3 at b/b.dart:30:31 - (3)',
+        '  C - c4 at c/c/c.dart:40:41 - (4)',
         "  D - d5 at pubspec.yaml:50:51 - (5)",
       ]),
     );
 
     final result = await sut(const [
-      "a.dart",
-      "b/b.dart",
-      "c/c/d.dart",
+      'a.dart',
+      'b/b.dart',
+      'c/c/d.dart',
       "pubspec.yaml",
       "b/a.js",
       "pipeline.yaml",
     ]);
     expect(result, true);
-    verify(mockLogger.log("Running dart analyze..."));
-    verify(mockLogger.log("  A - a1 at a.dart:10:11 - (1)"));
-    verify(mockLogger.log("  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)"));
-    verify(mockLogger.log("  B - b3 at b/b.dart:30:31 - (3)"));
+    verify(mockLogger.log('Running dart analyze...'));
+    verify(mockLogger.log('  A - a1 at a.dart:10:11 - (1)'));
+    verify(mockLogger.log('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'));
+    verify(mockLogger.log('  B - b3 at b/b.dart:30:31 - (3)'));
     verify(mockLogger.log("  D - d5 at pubspec.yaml:50:51 - (5)"));
     verify(mockLogger.log("4 issue(s) found."));
     verifyNoMoreInteractions(mockLogger);
   });
 
-  test("Succeeds if only lints of not specified files are found", () async {
+  test('Succeeds if only lints of not specified files are found', () async {
     when(mockRunner.stream(
       any,
       any,
-      failOnExit: anyNamed("failOnExit"),
+      failOnExit: anyNamed('failOnExit'),
     )).thenAnswer(
       (_) => Stream.fromIterable([
-        "  B - b3 at b/b.dart:30:31 - (3)",
+        '  B - b3 at b/b.dart:30:31 - (3)',
       ]),
     );
 
-    final result = await sut(["a.dart"]);
+    final result = await sut(['a.dart']);
     expect(result, false);
     verify(mockLogger.log(any)).called(2);
   });

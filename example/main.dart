@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import "package:dart_pre_commit/dart_pre_commit.dart";
+import 'package:dart_pre_commit/dart_pre_commit.dart';
 
 Future<void> main(List<String> arguments) async {
   // assume first arg is the git directory to handle

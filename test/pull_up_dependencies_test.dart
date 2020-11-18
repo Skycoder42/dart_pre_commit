@@ -4,46 +4,43 @@ import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/pull_up_dependencies.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:test/test.dart';
 
-class MockLogger extends Mock implements Logger {}
+import 'pull_up_dependencies_test.mocks.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
-
-class MockFileResolver extends Mock implements FileResolver {}
-
-// ignore: avoid_implementing_value_types
-class MockFile extends Mock implements File {}
-
+@GenerateMocks([Logger, ProgramRunner, FileResolver, File])
 void main() {
   final mockLogger = MockLogger();
   final mockRunner = MockProgramRunner();
   final mockResolver = MockFileResolver();
 
-  PullUpDependencies sut;
+  late PullUpDependencies sut;
 
   setUp(() {
     reset(mockLogger);
     reset(mockRunner);
     reset(mockResolver);
 
+    when(mockLogger.log(any)).thenReturn(null);
+
     when(mockRunner.run(any, any)).thenAnswer((i) async => 0);
 
-    when(mockResolver.file("pubspec.yaml")).thenAnswer((i) {
+    when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 dependencies:
 dev_dependencies:
-""");
+''');
       return res;
     });
 
-    when(mockResolver.file("pubspec.lock")).thenAnswer((i) {
+    when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 packages:
-""");
+''');
       return res;
     });
 
@@ -54,26 +51,26 @@ packages:
     );
   });
 
-  test("processes packages if lockfile is ignored", () async {
+  test('processes packages if lockfile is ignored', () async {
     final result = await sut();
     expect(result, false);
 
-    verify(mockLogger.log("Checking for updates packages..."));
+    verify(mockLogger.log('Checking for updates packages...'));
   });
 
-  test("processes packages if lockfile is unstaged", () async {
+  test('processes packages if lockfile is unstaged', () async {
     when(mockRunner.run(any, any)).thenAnswer((i) async => 1);
     when(mockRunner.stream(any, any))
-        .thenAnswer((i) => Stream.fromIterable(const ["pubspec.lock"]));
+        .thenAnswer((i) => Stream.fromIterable(const ['pubspec.lock']));
 
     final result = await sut();
     expect(result, false);
 
-    verify(mockLogger.log("Checking for updates packages..."));
+    verify(mockLogger.log('Checking for updates packages...'));
     verifyNoMoreInteractions(mockLogger);
   });
 
-  test("does nothing if lockfile is tracked but unstaged", () async {
+  test('does nothing if lockfile is tracked but unstaged', () async {
     when(mockRunner.run(any, any)).thenAnswer((i) async => 1);
     when(mockRunner.stream(any, any))
         .thenAnswer((i) => Stream.fromIterable(const []));
@@ -84,111 +81,123 @@ packages:
     verifyZeroInteractions(mockResolver);
   });
 
-  test("Finds updates of pulled up versions and returns false", () async {
-    when(mockResolver.file("pubspec.yaml")).thenAnswer((i) {
+  test('Finds updates of pulled up versions and returns true', () async {
+    when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 dependencies:
   a: ^1.0.0
   b: ^1.0.0
 dev_dependencies:
   d: ^1.0.0
   e: ^1.0.0
-""");
+''');
       return res;
     });
 
-    when(mockResolver.file("pubspec.lock")).thenAnswer((i) {
+    when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 packages:
   a:
-    version: "1.0.0"
+    version: '1.0.0'
+    dependency: 'direct'
   b:
-    version: "1.0.1"
+    version: '1.0.1'
+    dependency: 'direct'
   c:
-    version: "1.1.0"
+    version: '1.1.0'
+    dependency: 'direct'
   d:
-    version: "1.1.0"
+    version: '1.1.0'
+    dependency: 'direct'
   e:
-    version: "1.0.0"
+    version: '1.0.0'
+    dependency: 'direct'
   f:
-    version: "1.0.1"
-""");
+    version: '1.0.1'
+    dependency: 'direct'
+''');
       return res;
     });
 
     final result = await sut();
     expect(result, true);
-    verify(mockLogger.log("Checking for updates packages..."));
-    verify(mockLogger.log("  b: 1.0.0 -> 1.0.1"));
-    verify(mockLogger.log("  d: 1.0.0 -> 1.1.0"));
+    verify(mockLogger.log('Checking for updates packages...'));
+    verify(mockLogger.log('  b: 1.0.0 -> 1.0.1'));
+    verify(mockLogger.log('  d: 1.0.0 -> 1.1.0'));
     verify(
-        mockLogger.log("2 dependencies can be pulled up to newer versions!"));
+        mockLogger.log('2 dependencies can be pulled up to newer versions!'));
     verifyNoMoreInteractions(mockLogger);
   });
 
-  test("Prints nothing and returns true if no updates match", () async {
-    when(mockResolver.file("pubspec.yaml")).thenAnswer((i) {
+  test('Prints nothing and returns true if no updates match', () async {
+    when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 dependencies:
   a: ^1.0.0
   b: 1.0.0
 dev_dependencies:
   d: 1.0.0
   e: ^1.0.0
-""");
+''');
       return res;
     });
 
-    when(mockResolver.file("pubspec.lock")).thenAnswer((i) {
+    when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 packages:
   a:
-    version: "1.0.0"
+    version: '1.0.0'
+    dependency: 'direct'
   b:
-    version: "1.0.1"
+    version: '1.0.1'
+    dependency: 'direct'
   c:
-    version: "1.1.0"
+    version: '1.1.0'
+    dependency: 'direct'
   d:
-    version: "1.1.0"
+    version: '1.1.0'
+    dependency: 'direct'
   e:
-    version: "1.0.0"
+    version: '1.0.0'
+    dependency: 'direct'
   f:
-    version: "1.0.1"
-""");
+    version: '1.0.1'
+    dependency: 'direct'
+''');
       return res;
     });
 
     final result = await sut();
     expect(result, false);
-    verify(mockLogger.log("Checking for updates packages..."));
+    verify(mockLogger.log('Checking for updates packages...'));
     verifyNoMoreInteractions(mockLogger);
   });
 
-  test("Does not crash if pubspec.lock is missing dependency", () async {
-    when(mockResolver.file("pubspec.yaml")).thenAnswer((i) {
+  test('Does not crash if pubspec.lock is missing dependency', () async {
+    when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 dependencies:
   a: ^1.0.0
-""");
+''');
       return res;
     });
 
-    when(mockResolver.file("pubspec.lock")).thenAnswer((i) {
+    when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
       final res = MockFile();
-      when(res.readAsString()).thenAnswer((i) async => """
+      when(res.readAsString()).thenAnswer((i) async => '''
 packages:
-""");
+''');
       return res;
     });
 
     final result = await sut();
     expect(result, false);
-    verify(mockLogger.log("Checking for updates packages..."));
+    verify(mockLogger.log('Checking for updates packages...'));
     verifyNoMoreInteractions(mockLogger);
   });
 }

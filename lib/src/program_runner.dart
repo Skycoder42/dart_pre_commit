@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'logger.dart';
-import 'task_error.dart';
+import 'task_exception.dart';
 
 class ProgramRunner {
   final Logger _logger;
@@ -22,7 +22,7 @@ class ProgramRunner {
     if (failOnExit) {
       final exitCode = await process.exitCode;
       if (exitCode != 0) {
-        throw TaskError("$program failed with exit code $exitCode");
+        throw TaskException('$program failed with exit code $exitCode');
       }
     }
   }

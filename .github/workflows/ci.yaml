@@ -23,6 +23,7 @@ jobs:
       - uses: cedx/setup-dart@v2
       - uses: actions/checkout@v2
       - run: dart pub get
+      - run: dart pub run build_runner build
       - run: dart analyze --fatal-infos
       - run: dart test --coverage=coverage
       - run: dart pub run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
@@ -66,6 +67,7 @@ jobs:
       - uses: cedx/setup-dart@v2
       - uses: actions/checkout@v2
       - run: dart pub get
+      - run: dart pub run build_runner build
       - name: store credentials
         run: |
           mkdir -p ~/.pub-cache
@@ -84,6 +86,7 @@ jobs:
       - uses: cedx/setup-dart@v2
       - uses: actions/checkout@v2
       - run: dart pub get
+      - run: dart pub run build_runner build
       - run: dartdoc
       - name: upload doc
         uses: peaceiris/actions-gh-pages@v3

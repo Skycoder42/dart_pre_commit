@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
-import 'package:meta/meta.dart';
+import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:path/path.dart';
 
 class FixImports {
@@ -12,8 +11,8 @@ class FixImports {
   final Directory libDir;
 
   const FixImports({
-    @required this.packageName,
-    @required this.libDir,
+    required this.packageName,
+    required this.libDir,
   });
 
   Future<bool> call(File file) async {
@@ -55,9 +54,9 @@ extension _ImportFixExtensions on Stream<String> {
   }
 
   Stream<String> relativize({
-    @required String packageName,
-    @required File file,
-    @required Directory libDir,
+    required String packageName,
+    required File file,
+    required Directory libDir,
   }) async* {
     if (!isWithin(libDir.path, file.path)) {
       yield* this;
@@ -76,9 +75,9 @@ extension _ImportFixExtensions on Stream<String> {
         final postfix = match[3];
         final comment = match[4] != null ? ' ${match[4]}' : '';
         final relativeImport = relative(
-          join("lib", importPath),
+          join('lib', importPath),
           from: file.parent.path,
-        ).replaceAll("\\", "/");
+        ).replaceAll('\\', '/');
 
         yield "import $quote$relativeImport$quote$postfix;$comment";
       } else {
@@ -138,22 +137,22 @@ extension _ImportFixExtensions on Stream<String> {
     yield* Stream.fromIterable(prefixCode);
     if (dartImports.isNotEmpty) {
       yield* Stream.fromIterable(dartImports);
-      yield "";
+      yield '';
     }
     if (packageImports.isNotEmpty) {
       yield* Stream.fromIterable(packageImports);
-      yield "";
+      yield '';
     }
     if (relativeImports.isNotEmpty) {
       yield* Stream.fromIterable(relativeImports);
-      yield "";
+      yield '';
     }
     yield* Stream.fromIterable(code);
   }
 
   Stream<String> withNewlines() async* {
     await for (final line in this) {
-      yield "$line\n";
+      yield '$line\n';
     }
   }
 }

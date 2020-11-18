@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:yaml/yaml.dart';
+import 'package:yaml/yaml.dart'; // ignore: import_of_legacy_library_into_null_safe
 
 import 'analyze.dart';
 import 'file_resolver.dart';
@@ -11,7 +11,7 @@ import 'format.dart';
 import 'logger.dart';
 import 'program_runner.dart';
 import 'pull_up_dependencies.dart';
-import 'task_error.dart';
+import 'task_exception.dart';
 
 /// The result of a LintHooks call.
 ///
@@ -69,10 +69,10 @@ extension HookResultX on HookResult {
 class Hooks {
   final FileResolver _resolver;
   final ProgramRunner _runner;
-  final FixImports _fixImports;
-  final Format _format;
-  final Analyze _analyze;
-  final PullUpDependencies _pullUpDependencies;
+  final FixImports? _fixImports;
+  final Format? _format;
+  final Analyze? _analyze;
+  final PullUpDependencies? _pullUpDependencies;
 
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
@@ -88,13 +88,13 @@ class Hooks {
 
   @visibleForTesting
   const Hooks.internal({
-    @required this.logger,
-    @required FileResolver resolver,
-    @required ProgramRunner runner,
-    FixImports fixImports,
-    Format format,
-    Analyze analyze,
-    PullUpDependencies pullUpDependencies,
+    required this.logger,
+    required FileResolver resolver,
+    required ProgramRunner runner,
+    FixImports? fixImports,
+    Format? format,
+    Analyze? analyze,
+    PullUpDependencies? pullUpDependencies,
     this.continueOnError = false,
   })  : _resolver = resolver,
         _runner = runner,
@@ -186,26 +186,26 @@ class Hooks {
       for (final entry in files.entries) {
         final file = File(entry.key); // TODO use resolver.file
         try {
-          logger.log("Scanning ${file.path}...");
+          logger.log('Scanning ${file.path}...');
           var modified = false;
           if (_fixImports != null) {
-            modified = await _fixImports(file) || modified;
+            modified = await _fixImports!(file) || modified;
           }
           if (_format != null) {
-            modified = await _format(file) || modified;
+            modified = await _format!(file) || modified;
           }
 
           if (modified) {
             if (entry.value) {
-              logger.log("(!) Fixing up partially staged file ${file.path}");
+              logger.log('(!) Fixing up partially staged file ${file.path}');
               lintState = lintState._raiseTo(HookResult.hasUnstagedChanges);
             } else {
-              logger.log("Fixing up ${file.path}");
+              logger.log('Fixing up ${file.path}');
               lintState = lintState._raiseTo(HookResult.hasChanges);
-              await _git(["add", file.path]).drain<void>();
+              await _git(['add', file.path]).drain<void>();
             }
           }
-        } on TaskError catch (error) {
+        } on TaskException catch (error) {
           logger.logError(error);
           if (!continueOnError) {
             return HookResult.error;
@@ -216,19 +216,19 @@ class Hooks {
       }
 
       if (_analyze != null) {
-        if (await _analyze(files.keys)) {
+        if (await _analyze!(files.keys)) {
           lintState = lintState._raiseTo(HookResult.linter);
         }
       }
 
       if (_pullUpDependencies != null) {
-        if (await _pullUpDependencies()) {
+        if (await _pullUpDependencies!()) {
           lintState = lintState._raiseTo(HookResult.canPullUp);
         }
       }
 
       return lintState;
-    } on TaskError catch (error) {
+    } on TaskException catch (error) {
       logger.logError(error);
       return HookResult.error;
     }
@@ -246,7 +246,7 @@ class Hooks {
     );
     return {
       await for (var path in stagedChanges)
-        if (path.endsWith(".dart") && await _resolver.exists(path))
+        if (path.endsWith('.dart') && await _resolver.exists(path))
           path: indexChanges.contains(path),
     };
   }
@@ -264,15 +264,15 @@ class Hooks {
   }
 
   static Future<FixImports> _obtainFixImports() async {
-    final pubspecFile = File("pubspec.yaml");
+    final pubspecFile = File('pubspec.yaml');
     final yamlData = loadYamlDocument(
       await pubspecFile.readAsString(),
       sourceUrl: pubspecFile.uri,
     ).contents as YamlMap;
 
     return FixImports(
-      libDir: Directory("lib"),
-      packageName: yamlData.value["name"] as String,
+      libDir: Directory('lib'),
+      packageName: yamlData.value['name'] as String,
     );
   }
 }

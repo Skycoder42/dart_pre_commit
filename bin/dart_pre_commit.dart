@@ -1,3 +1,4 @@
+// ignore_for_file: lines_longer_than_80_chars
 /// Documentation of the dart_pre_commit binary
 ///
 /// You can run this script via `dart pub run dart_pre_commit [options]`. It
@@ -30,7 +31,7 @@ library dart_pre_commit_bin;
 
 import 'dart:io';
 
-import 'package:args/args.dart';
+import 'package:args/args.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 
 /// @nodoc
@@ -40,93 +41,97 @@ void main(List<String> args) {
 
 Future<int> _run(List<String> args) async {
   final parser = ArgParser()
-    ..addSeparator("Parsing Options:")
+    ..addSeparator('Parsing Options:')
     ..addFlag(
-      "fix-imports",
-      abbr: "i",
+      'fix-imports',
+      abbr: 'i',
       defaultsTo: true,
-      help: "Format and sort imports of staged files.",
+      help: 'Format and sort imports of staged files.',
     )
     ..addFlag(
-      "format",
-      abbr: "f",
+      'format',
+      abbr: 'f',
       defaultsTo: true,
-      help: "Format staged files with dart format.",
+      help: 'Format staged files with dart format.',
     )
     ..addFlag(
-      "analyze",
-      abbr: "a",
+      'analyze',
+      abbr: 'a',
       defaultsTo: true,
-      help: "Run dart analyze to find issue for the staged files.",
+      help: 'Run dart analyze to find issue for the staged files.',
     )
     ..addFlag(
-      "check-pull-up",
-      abbr: "p",
+      'check-pull-up',
+      abbr: 'p',
+      help: 'Check if direct dependencies in the pubspec.lock have '
+          'higher versions then specified in pubspec.yaml and warn if '
+          'that´s the case.',
+    )
+    ..addFlag(
+      'continue-on-error',
+      abbr: 'c',
       help:
-          "Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.",
+          'Continue checks even if a task fails for a certain file. The whole '
+          'hook will still fail, but only after all files have been processed.',
     )
-    ..addFlag(
-      "continue-on-error",
-      abbr: "c",
-      help:
-          "Continue checks even if a task fails for a certain file. The whole hook will still fail, but only after all files have been processed.",
-    )
-    ..addSeparator("Other:")
+    ..addSeparator('Other:')
     ..addOption(
-      "directory",
-      abbr: "d",
-      help:
-          "Set the directory to run this command in. By default, it will run in the current working directory.",
-      valueHelp: "dir",
+      'directory',
+      abbr: 'd',
+      help: 'Set the directory to run this command in. By default, it will run '
+          'in the current working directory.',
+      valueHelp: 'dir',
     )
     ..addFlag(
-      "detailed-exit-code",
-      abbr: "e",
-      help:
-          "Instead of simply 0/1 as exit code for 'commit ok' or 'commit needs user intervention', output exit codes according to the full hook result (See HookResult).",
+      'detailed-exit-code',
+      abbr: 'e',
+      help: 'Instead of simply 0/1 as exit code for "commit ok" or "commit '
+          'needs user intervention", output exit codes according to the full '
+          'hook result (See HookResult).',
     )
     ..addFlag(
-      "version",
-      abbr: "v",
+      'version',
+      abbr: 'v',
       negatable: false,
-      help: "Show the version of the dart_pre_commit package.",
+      help: 'Show the version of the dart_pre_commit package.',
     )
     ..addFlag(
-      "help",
-      abbr: "h",
+      'help',
+      abbr: 'h',
       negatable: false,
-      help: "Show this help.",
+      help: 'Show this help.',
     );
 
   try {
     final options = parser.parse(args);
-    if (options["help"] as bool) {
+    if (options['help'] as bool) {
       stdout.write(parser.usage);
       return 0;
     }
 
-    final dir = options["directory"] as String;
+    final dir = options['directory'] as String?;
     if (dir != null) {
       Directory.current = dir;
     }
 
     final hooks = await Hooks.create(
-      fixImports: options["fix-imports"] as bool,
-      format: options["format"] as bool,
-      analyze: options["analyze"] as bool,
-      pullUpDependencies: options["check-pull-up"] as bool,
-      continueOnError: options["continue-on-error"] as bool,
+      fixImports: options['fix-imports'] as bool,
+      format: options['format'] as bool,
+      analyze: options['analyze'] as bool,
+      pullUpDependencies: options['check-pull-up'] as bool,
+      continueOnError: options['continue-on-error'] as bool,
     );
 
     final result = await hooks();
-    if (options["detailed-exit-code"] as bool) {
+    if (options['detailed-exit-code'] as bool) {
       return result.index;
     } else {
       return result.isSuccess ? 0 : 1;
     }
   } on FormatException catch (e) {
-    stderr.writeln("${e.message}\n");
-    stderr.write(parser.usage);
+    stderr
+      ..writeln('${e.message}\n')
+      ..write(parser.usage);
     return 127;
   }
 }

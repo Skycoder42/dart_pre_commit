@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'program_runner.dart';
-import 'task_error.dart';
+import 'task_exception.dart';
 
 class Format {
   final ProgramRunner runner;
@@ -10,11 +10,11 @@ class Format {
 
   Future<bool> call(File file) async {
     final exitCode = await runner.run(
-      "dart",
+      'dart',
       [
-        "format",
-        "--fix",
-        "--set-exit-if-changed",
+        'format',
+        '--fix',
+        '--set-exit-if-changed',
         file.path,
       ],
     );
@@ -24,7 +24,7 @@ class Format {
       case 1:
         return true;
       default:
-        throw TaskError("dartfmt failed to format the file", file);
+        throw TaskException('dartfmt failed to format the file', file);
     }
   }
 }
