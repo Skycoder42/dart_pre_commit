@@ -10,6 +10,7 @@ import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/pull_up_dependencies.dart';
 import 'package:dart_pre_commit/src/task_error.dart';
 import 'package:mockito/mockito.dart';
+import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
@@ -71,20 +72,25 @@ void main() {
     when(mockFormat(any)).thenAnswer((_) async => false);
     when(mockAnalyze(any)).thenAnswer((_) async => false);
     when(mockPullUpDependencies()).thenAnswer((_) async => false);
+
+    when(mockRunner.stream('git', ['rev-parse', '--show-toplevel']))
+        .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
   });
 
-  test("calls git twice to collect changed files", () async {
+  test("calls git thrice to collect changed files", () async {
     final sut = createSut();
 
     final result = await sut();
     expect(result, HookResult.clean);
 
+    verify(mockRunner.stream("git", ['rev-parse', '--show-toplevel']));
     verify(mockRunner.stream("git", ["diff", "--name-only"]));
     verify(mockRunner.stream("git", ["diff", "--name-only", "--cached"]));
   });
 
   test("only processes staged dart files", () async {
-    when(mockRunner.stream(any, any)).thenAnswer(
+    when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+        .thenAnswer(
       (_) => Stream.fromIterable(const [
         "a.dart",
         "b.js",
@@ -97,13 +103,14 @@ void main() {
     expect(result, HookResult.clean);
     verify(mockLogger.log("Scanning a.dart..."));
     verify(mockLogger.log("Scanning c.g.dart..."));
-    verifyNoMoreInteractions(mockLogger);
+    verifyNever(mockLogger.log(any));
   });
 
   test("only processes existing dart files", () async {
     when(mockResolver.exists(any)).thenAnswer((i) async => false);
     when(mockResolver.exists("b.dart")).thenAnswer((i) async => true);
-    when(mockRunner.stream(any, any)).thenAnswer(
+    when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+        .thenAnswer(
       (_) => Stream.fromIterable(const [
         "a.dart",
         "b.dart",
@@ -115,12 +122,43 @@ void main() {
     final result = await sut();
     expect(result, HookResult.clean);
     verify(mockLogger.log("Scanning b.dart..."));
-    verifyNoMoreInteractions(mockLogger);
+    verifyNever(mockLogger.log(any));
+  });
+
+  test(
+      'works if current dir is not the root subdir and only processes files in the subdir',
+      () async {
+    final dirName = basename(Directory.current.path);
+    when(mockRunner.stream('git', [
+      'rev-parse',
+      '--show-toplevel',
+    ])).thenAnswer(
+      (_) => Stream.fromIterable([
+        Directory.current.parent.path,
+      ]),
+    );
+    when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+        .thenAnswer(
+      (_) => Stream.fromIterable([
+        "$dirName/a.dart",
+        "$dirName/subdir/b.dart",
+        "c.dart",
+        "other_$dirName/d.dart",
+      ]),
+    );
+    final sut = createSut();
+
+    final result = await sut();
+    expect(result, HookResult.clean);
+    verify(mockLogger.log("Scanning a.dart..."));
+    verify(mockLogger.log("Scanning subdir${separator}b.dart..."));
+    verifyNever(mockLogger.log(any));
   });
 
   group("fixImports", () {
     test("gets called for all collected files", () async {
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
         (_) => Stream.fromIterable(const [
           "a.dart",
           "b.dart",
@@ -137,6 +175,36 @@ void main() {
       expect(captures, ["a.dart", "b.dart"]);
     });
 
+    test('gets called for all files in subdir', () async {
+      final dirName = basename(Directory.current.path);
+      when(mockRunner.stream('git', [
+        'rev-parse',
+        '--show-toplevel',
+      ])).thenAnswer(
+        (_) => Stream.fromIterable([
+          Directory.current.parent.path,
+        ]),
+      );
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
+        (_) => Stream.fromIterable([
+          "$dirName/a.dart",
+          "$dirName/subdir/b.dart",
+          "c.dart",
+          "other_$dirName/d.dart",
+        ]),
+      );
+      final sut = createSut(fixImports: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      final captures = verify(mockFixImports(captureAny))
+          .captured
+          .map((dynamic c) => (c as File).path)
+          .toList();
+      expect(captures, ["a.dart", "subdir${separator}b.dart"]);
+    });
+
     test("returns hasChanges for staged modified files", () async {
       when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
@@ -150,7 +218,9 @@ void main() {
 
     test("returns hasUnstagedChanges for partially staged modified files",
         () async {
-      when(mockRunner.stream(any, any))
+      when(mockRunner.stream("git", ["diff", "--name-only"]))
+          .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
       when(mockFixImports(any)).thenAnswer((_) async => true);
       final sut = createSut(fixImports: true);
@@ -164,7 +234,8 @@ void main() {
       Tuple2(false, 1),
       Tuple2(true, 2),
     ], (fixture) async {
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
         (_) => Stream.fromIterable(const [
           "a.dart",
           "b.dart",
@@ -185,7 +256,8 @@ void main() {
 
   group("format", () {
     test("gets called for all collected files", () async {
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
         (_) => Stream.fromIterable(const [
           "a.dart",
           "b.dart",
@@ -202,6 +274,36 @@ void main() {
       expect(captures, ["a.dart", "b.dart"]);
     });
 
+    test('gets called for all files in subdir', () async {
+      final dirName = basename(Directory.current.path);
+      when(mockRunner.stream('git', [
+        'rev-parse',
+        '--show-toplevel',
+      ])).thenAnswer(
+        (_) => Stream.fromIterable([
+          Directory.current.parent.path,
+        ]),
+      );
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
+        (_) => Stream.fromIterable([
+          "$dirName/a.dart",
+          "$dirName/subdir/b.dart",
+          "c.dart",
+          "other_$dirName/d.dart",
+        ]),
+      );
+      final sut = createSut(format: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      final captures = verify(mockFormat(captureAny))
+          .captured
+          .map((dynamic c) => (c as File).path)
+          .toList();
+      expect(captures, ["a.dart", "subdir${separator}b.dart"]);
+    });
+
     test("returns hasChanges for staged modified files", () async {
       when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
@@ -215,7 +317,9 @@ void main() {
 
     test("returns hasUnstagedChanges for partially staged modified files",
         () async {
-      when(mockRunner.stream(any, any))
+      when(mockRunner.stream("git", ["diff", "--name-only"]))
+          .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
       when(mockFormat(any)).thenAnswer((_) async => true);
       final sut = createSut(format: true);
@@ -226,7 +330,9 @@ void main() {
     });
 
     test("gets called even after fixImports finds something", () async {
-      when(mockRunner.stream(any, any))
+      when(mockRunner.stream("git", ["diff", "--name-only"]))
+          .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
       when(mockFixImports(any)).thenAnswer((_) async => true);
       final sut = createSut(
@@ -247,7 +353,8 @@ void main() {
       Tuple2(false, 1),
       Tuple2(true, 2),
     ], (fixture) async {
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
         (_) => Stream.fromIterable(const [
           "a.dart",
           "b.dart",
@@ -268,7 +375,8 @@ void main() {
 
   group("analyze", () {
     test("gets called with all files", () async {
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
         (_) => Stream.fromIterable(const [
           "a.dart",
           "b.dart",
@@ -286,6 +394,37 @@ void main() {
       expect(capture, const ["a.dart", "b.dart"]);
     });
 
+    test('gets called for all files in subdir', () async {
+      final dirName = basename(Directory.current.path);
+      when(mockRunner.stream('git', [
+        'rev-parse',
+        '--show-toplevel',
+      ])).thenAnswer(
+        (_) => Stream.fromIterable([
+          Directory.current.parent.path,
+        ]),
+      );
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
+          .thenAnswer(
+        (_) => Stream.fromIterable([
+          "$dirName/a.dart",
+          "$dirName/subdir/b.dart",
+          "c.dart",
+          "other_$dirName/d.dart",
+        ]),
+      );
+      final sut = createSut(analyze: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      final capture = verify(mockAnalyze(captureAny))
+          .captured
+          .cast<Iterable<String>>()
+          .single
+          .toList();
+      expect(capture, ["a.dart", "subdir${separator}b.dart"]);
+    });
+
     test("returns linter if analyze find something", () async {
       when(mockAnalyze(any)).thenAnswer((_) async => true);
       final sut = createSut(analyze: true);
@@ -296,7 +435,7 @@ void main() {
 
     test("returns linter if analyze and fixImport/format find something",
         () async {
-      when(mockRunner.stream(any, any))
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
       when(mockFixImports(any)).thenAnswer((_) async => true);
       when(mockFormat(any)).thenAnswer((_) async => true);
@@ -343,7 +482,7 @@ void main() {
     test(
         "returns canPullUp if pullUpDependencies and fixImport/format find something",
         () async {
-      when(mockRunner.stream(any, any))
+      when(mockRunner.stream("git", ["diff", "--name-only", "--cached"]))
           .thenAnswer((_) => Stream.fromIterable(const ["a.dart"]));
       when(mockFixImports(any)).thenAnswer((_) async => true);
       when(mockFormat(any)).thenAnswer((_) async => true);
@@ -393,6 +532,7 @@ void main() {
         fixImports: false,
         format: false,
         analyze: false,
+        pullUpDependencies: true,
         continueOnError: true,
         logger: null,
       );

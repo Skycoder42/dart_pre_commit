@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:meta/meta.dart';
+import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
 import 'analyze.dart';
@@ -234,8 +235,15 @@ class Hooks {
   }
 
   Future<Map<String, bool>> _collectFiles() async {
-    final indexChanges = await _git(["diff", "--name-only"]).toList();
-    final stagedChanges = _git(["diff", "--name-only", "--cached"]);
+    final gitRoot = await _git(['rev-parse', '--show-toplevel']).first;
+    final indexChanges = await _gitMapped(
+      gitRoot,
+      ["diff", "--name-only"],
+    ).toList();
+    final stagedChanges = _gitMapped(
+      gitRoot,
+      ["diff", "--name-only", "--cached"],
+    );
     return {
       await for (var path in stagedChanges)
         if (path.endsWith(".dart") && await _resolver.exists(path))
@@ -243,8 +251,17 @@ class Hooks {
     };
   }
 
-  Stream<String> _git([List<String> arguments = const []]) =>
+  Stream<String> _git(List<String> arguments) =>
       _runner.stream("git", arguments);
+
+  Stream<String> _gitMapped(String gitRoot, List<String> arguments) async* {
+    final resolvedRoot = await Directory(gitRoot).resolveSymbolicLinks();
+    final resolvedCurrent = await Directory.current.resolveSymbolicLinks();
+    yield* _git(arguments)
+        .map((path) => join(resolvedRoot, path))
+        .where((path) => isWithin(resolvedCurrent, path))
+        .map((path) => relative(path, from: resolvedCurrent));
+  }
 
   static Future<FixImports> _obtainFixImports() async {
     final pubspecFile = File("pubspec.yaml");

@@ -36,9 +36,15 @@ void main() {
     if (onStdout != null) {
       onStdout(proc.stdout);
     } else {
-      proc.stdout.listen(stdout.add);
+      proc.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((e) => print('OUT: $e'));
     }
-    proc.stderr.listen(stderr.add);
+    proc.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen((e) => print('ERR: $e'));
     final exitCode = await proc.exitCode;
     if (failOnError && exitCode != 0) {
       throw "Failed to run '$program ${arguments.join(" ")}' with exit code: $exitCode";

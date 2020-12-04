@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [1.1.2] - 2020-12-04
+### Fixed
+- Fixed problem with repositories where the dart project folder beeing scanned 
+is not the the git root folder
+
 ## [1.1.1] - 2020-10-22
 ### Fixed
 - Fixed bug that caused a crash in `--check-pull-up` if dependencies declared in
