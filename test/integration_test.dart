@@ -64,6 +64,7 @@ void main() {
       _run(
         Platform.isWindows ? 'dart.bat' : 'dart',
         [
+          '--enable-experiment=non-nullable',
           'pub',
           ...arguments,
         ],
@@ -77,7 +78,7 @@ void main() {
     Function(Stream<List<int>>)? onStdout,
   }) =>
       _pub(
-        ['run', 'dart_pre_commit', ...arguments],
+        ['run', '--no-sound-null-safety', 'dart_pre_commit', ...arguments],
         failOnError: failOnError,
         onStdout: onStdout,
       );
@@ -93,7 +94,7 @@ name: test_project
 version: 0.0.1
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
   meta: ^1.2.0
@@ -117,7 +118,7 @@ packages:
     source: hosted
     version: '1.2.3'
 sdks:
-  dart: '>=2.12.0 <3.0.0'
+  dart: '>=2.12.0-0 <3.0.0'
 ''');
 
     await _writeFile('lib/src/fix_imports.dart', '''

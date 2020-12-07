@@ -21,30 +21,35 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: cedx/setup-dart@v2
+        with:
+          release-channel: beta
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart pub run build_runner build
-      - run: dart analyze --fatal-infos
-      - run: dart test --coverage=coverage
-      - run: dart pub run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+      - run: dart --enable-experiment=non-nullable pub get
+      - run: dart --enable-experiment=non-nullable pub run build_runner build
+      - run: dart --enable-experiment=non-nullable analyze --fatal-infos
+      - run: dart --enable-experiment=non-nullable test --coverage=coverage
+      - run: dart --enable-experiment=non-nullable pub run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
         if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
         if: matrix.os == 'ubuntu-latest'
         with:
           exclude: "lib/src/logger.dart"
           min_coverage: 95
-      - run: dart pub publish --dry-run
+      - run: dart --enable-experiment=non-nullable pub publish --dry-run
 
   release:
     runs-on: ubuntu-latest
     needs:
       - test
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/null-safety'
     outputs:
       update: ${{ steps.version.outputs.update }}
       tag_name: ${{ steps.version.outputs.tag_name }}
     steps:
       - uses: cedx/setup-dart@v2
+        with:
+          release-channel: beta
       - uses: actions/checkout@v2
       - uses: Skycoder42/action-dart-release@v1
         id: version
@@ -65,14 +70,16 @@ jobs:
     if: needs.release.outputs.update == 'true'
     steps:
       - uses: cedx/setup-dart@v2
+        with:
+          release-channel: beta
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart pub run build_runner build
+      - run: dart --enable-experiment=non-nullable pub get
+      - run: dart --enable-experiment=non-nullable pub run build_runner build
       - name: store credentials
         run: |
           mkdir -p ~/.pub-cache
           echo '${{ secrets.PUB_DEV_CREDENTIALS }}' > ~/.pub-cache/credentials.json
-      - run: dart pub publish --force
+      - run: dart --enable-experiment=non-nullable pub publish --force
       - name: clean up credentials
         if: always()
         run: shred -fzvu ~/.pub-cache/credentials.json
@@ -84,10 +91,11 @@ jobs:
     if: needs.release.outputs.update == 'true'
     steps:
       - uses: cedx/setup-dart@v2
-      - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart pub run build_runner build
-      - run: dartdoc
+        with:
+          release-channel: beta
+      - run: dart --enable-experiment=non-nullable pub get
+      - run: dart --enable-experiment=non-nullable pub run build_runner build
+      - run: dartdoc --enable-experiment=non-nullable
       - name: upload doc
         uses: peaceiris/actions-gh-pages@v3
         with:

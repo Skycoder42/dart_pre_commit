@@ -1,6 +1,8 @@
 include: package:lint/analysis_options_package.yaml
 
 analyzer:
+  enable-experiment:
+    - non-nullable
   exclude:
     - "test/.test_coverage.dart"
     - "test/*.mocks.dart"
