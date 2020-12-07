@@ -238,11 +238,11 @@ class Hooks {
     final gitRoot = await _git(['rev-parse', '--show-toplevel']).first;
     final indexChanges = await _gitMapped(
       gitRoot,
-      ["diff", "--name-only"],
+      ['diff', '--name-only'],
     ).toList();
     final stagedChanges = _gitMapped(
       gitRoot,
-      ["diff", "--name-only", "--cached"],
+      ['diff', '--name-only', '--cached'],
     );
     return {
       await for (var path in stagedChanges)
@@ -252,7 +252,7 @@ class Hooks {
   }
 
   Stream<String> _git(List<String> arguments) =>
-      _runner.stream("git", arguments);
+      _runner.stream('git', arguments);
 
   Stream<String> _gitMapped(String gitRoot, List<String> arguments) async* {
     final resolvedRoot = await Directory(gitRoot).resolveSymbolicLinks();
