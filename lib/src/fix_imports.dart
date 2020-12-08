@@ -79,7 +79,7 @@ extension _ImportFixExtensions on Stream<String> {
           from: file.parent.path,
         ).replaceAll('\\', '/');
 
-        yield "import $quote$relativeImport$quote$postfix;$comment";
+        yield 'import $quote$relativeImport$quote$postfix;$comment';
       } else {
         yield line;
       }
