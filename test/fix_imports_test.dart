@@ -56,71 +56,71 @@ void main() {
 
   group('relativize', () {
     _runTest(
-      "makes package imports in lib relative",
-      inData: "import 'package:mock/src/details.dart';\n",
-      outData: "import 'src/details.dart';\n\n",
+      'makes package imports in lib relative',
+      inData: 'import "package:mock/src/details.dart";\n',
+      outData: 'import "src/details.dart";\n\n',
     );
 
     _runTest(
-      "works for complex imports",
+      'works for complex imports',
       inData:
-          "import 'package:mock/src/details.dart' show Details;   // ignore: some lint\n",
+          'import "package:mock/src/details.dart" show Details;   // ignore: some lint\n',
       outData:
-          "import 'src/details.dart' show Details; // ignore: some lint\n\n",
+          'import "src/details.dart" show Details; // ignore: some lint\n\n',
     );
 
     _runTest(
-      "does not modify imports outside lib",
-      inData: "import 'package:mock/src/details.dart';\n",
+      'does not modify imports outside lib',
+      inData: 'import "package:mock/src/details.dart";\n',
       setUp: () {
-        when(mockFile.path).thenReturn(join("bin", "tst_mock.dart"));
-        when(mockFile.parent).thenReturn(Directory("bin"));
+        when(mockFile.path).thenReturn(join('bin', 'tst_mock.dart'));
+        when(mockFile.parent).thenReturn(Directory('bin'));
       },
     );
 
     _runTest(
-      "does not modify other package imports",
-      inData: "import 'package:mock2/src/details.dart';\n",
+      'does not modify other package imports',
+      inData: 'import "package:mock2/src/details.dart";\n',
     );
   });
 
   group('sort', () {
     _runTest(
-      "sorts imports as expected",
-      inData: """
-import "package:c/c.dart";
-import "dart:io"; // ignore: does_not_work_on_web
-import "dart:async";
-import "package:a/a.dart";
-import "../../tree.dart" show Root;
-import "package:b/b.dart" hide B; // B is not needed
-import "package:mock/src/details.dart";
-import "package:d/d.dart";
-import "dart:path";
-import "../car.dart";
-import "../den.dart"; // stuff
-""",
-      outData: """
-import "dart:async";
-import "dart:io"; // ignore: does_not_work_on_web
-import "dart:path";
+      'sorts imports as expected',
+      inData: '''
+import 'package:c/c.dart';
+import 'dart:io'; // ignore: does_not_work_on_web
+import 'dart:async';
+import 'package:a/a.dart';
+import '../../tree.dart' show Root;
+import 'package:b/b.dart' hide B; // B is not needed
+import 'package:mock/src/details.dart';
+import 'package:d/d.dart';
+import 'dart:path';
+import '../car.dart';
+import '../den.dart'; // stuff
+''',
+      outData: '''
+import 'dart:async';
+import 'dart:io'; // ignore: does_not_work_on_web
+import 'dart:path';
 
-import "package:a/a.dart";
-import "package:b/b.dart" hide B; // B is not needed
-import "package:c/c.dart";
-import "package:d/d.dart";
+import 'package:a/a.dart';
+import 'package:b/b.dart' hide B; // B is not needed
+import 'package:c/c.dart';
+import 'package:d/d.dart';
 
-import "../../tree.dart" show Root;
-import "../car.dart";
-import "../den.dart"; // stuff
-import "src/details.dart";
+import '../../tree.dart' show Root;
+import '../car.dart';
+import '../den.dart'; // stuff
+import 'src/details.dart';
 
-""",
+''',
     );
 
-  _runTest(
-    'keeps prefix and does not modify code',
-    inData: '''
+    _runTest(
+      'keeps prefix and does not modify code',
+      inData: '''
 // prefix
 const i = 42;
 
@@ -131,7 +131,7 @@ void main() {
   this is definitly valid dart code
 }
 ''',
-    outData: '''
+      outData: '''
 // prefix
 const i = 42;
 
@@ -143,11 +143,11 @@ void main() {
   this is definitly valid dart code
 }
 ''',
-  );
+    );
 
-  _runTest(
-    'fills correct newlines',
-    inData: '''
+    _runTest(
+      'fills correct newlines',
+      inData: '''
 // prefix
 
 
@@ -164,7 +164,7 @@ import 'package:a/a.dart';
 
 
 ''',
-    outData: '''
+      outData: '''
 // prefix
 
 
@@ -176,6 +176,6 @@ import '../code.dart';
 
 // some code
 ''',
-  );
+    );
   });
 }

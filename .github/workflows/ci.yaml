@@ -25,10 +25,10 @@ jobs:
           release-channel: beta
       - uses: actions/checkout@v2
       - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable pub run build_runner build
+      - run: dart --enable-experiment=non-nullable run build_runner build
       - run: dart --enable-experiment=non-nullable analyze --fatal-infos
-      - run: dart --enable-experiment=non-nullable test --coverage=coverage
-      - run: dart --enable-experiment=non-nullable pub run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+      - run: dart --enable-experiment=non-nullable test --coverage=coverage --no-sound-null-safety
+      - run: dart --enable-experiment=non-nullable run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
         if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
         if: matrix.os == 'ubuntu-latest'
@@ -74,7 +74,7 @@ jobs:
           release-channel: beta
       - uses: actions/checkout@v2
       - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable pub run build_runner build
+      - run: dart --enable-experiment=non-nullable run build_runner build
       - name: store credentials
         run: |
           mkdir -p ~/.pub-cache
@@ -94,7 +94,7 @@ jobs:
         with:
           release-channel: beta
       - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable pub run build_runner build
+      - run: dart --enable-experiment=non-nullable run build_runner build
       - run: dartdoc --enable-experiment=non-nullable
       - name: upload doc
         uses: peaceiris/actions-gh-pages@v3
