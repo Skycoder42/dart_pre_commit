@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [1.1.3] - 2020-12-08
+### Fixed
+- fix-imports now works for imports with trailing comments (#2)
+
 ## [1.1.2] - 2020-12-04
 ### Fixed
 - Fixed problem with repositories where the dart project folder beeing scanned 

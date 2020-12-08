@@ -65,7 +65,7 @@ extension _ImportFixExtensions on Stream<String> {
     }
 
     final regexp = RegExp(
-        """^\\s*import\\s*(['"])package:$packageName\\/([^'"]*)['"]([^;]*);\\s*\$""");
+        """^\\s*import\\s*(['"])package:$packageName\\/([^'"]*)['"]([^;]*);\\s*(\\/\\/.*)?\$""");
 
     await for (final line in this) {
       final trimmedLine = line.trim();
@@ -73,13 +73,14 @@ extension _ImportFixExtensions on Stream<String> {
       if (match != null) {
         final quote = match[1];
         final importPath = match[2];
-        final ending = match[3];
+        final postfix = match[3];
+        final comment = match[4] != null ? ' ${match[4]}' : '';
         final relativeImport = relative(
           join("lib", importPath),
           from: file.parent.path,
         ).replaceAll("\\", "/");
 
-        yield "import $quote$relativeImport$quote$ending;";
+        yield "import $quote$relativeImport$quote$postfix;$comment";
       } else {
         yield line;
       }
@@ -87,10 +88,15 @@ extension _ImportFixExtensions on Stream<String> {
   }
 
   Stream<String> organizeImports() async* {
-    final dartRegexp = RegExp(r"""^\s*import\s+(?:"|')dart:[^;]+;\s*$""");
-    final packageRegexp = RegExp(r"""^\s*import\s+(?:"|')package:[^;]+;\s*$""");
-    final relativeRegexp =
-        RegExp(r"""\s*import\s+(?:"|')(?!package:|dart:)[^;]+;\s*""");
+    final dartRegexp = RegExp(
+      r"""^\s*import\s+(?:"|')dart:[^;]+;\s*(?:\/\/.*)?$""",
+    );
+    final packageRegexp = RegExp(
+      r"""^\s*import\s+(?:"|')package:[^;]+;\s*(?:\/\/.*)?$""",
+    );
+    final relativeRegexp = RegExp(
+      r"""^\s*import\s+(?:"|')(?!package:|dart:)[^;]+;\s*(?:\/\/.*)?$""",
+    );
 
     final prefixCode = <String>[];
     final dartImports = <String>[];
