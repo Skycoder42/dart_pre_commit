@@ -27,7 +27,7 @@ jobs:
       - run: dart --enable-experiment=non-nullable pub get
       - run: dart --enable-experiment=non-nullable run build_runner build
       - run: dart --enable-experiment=non-nullable analyze --fatal-infos
-      - run: dart --enable-experiment=non-nullable test --coverage=coverage --no-sound-null-safety
+      - run: dart --enable-experiment=non-nullable --no-sound-null-safety test --coverage=coverage
       - run: dart --enable-experiment=non-nullable run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
         if: matrix.os == 'ubuntu-latest'
       - uses: ChicagoFlutter/lcov-cop@v1.0.2
