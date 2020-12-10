@@ -47,11 +47,11 @@ class Analyze {
     };
 
     if (lints.isEmpty) {
-      logger.log("Skipping analyze, no relevant files");
+      logger.log('Skipping analyze, no relevant files');
       return false;
     }
 
-    logger.log("Running dart analyze...");
+    logger.log('Running dart analyze...');
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries
           .cast<MapEntry<String, List<AnalyzeResult>>?>()

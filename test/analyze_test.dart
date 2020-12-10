@@ -72,7 +72,7 @@ void main() {
         '  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)',
         '  B - b3 at b/b.dart:30:31 - (3)',
         '  C - c4 at c/c/c.dart:40:41 - (4)',
-        "  D - d5 at pubspec.yaml:50:51 - (5)",
+        '  D - d5 at pubspec.yaml:50:51 - (5)',
       ]),
     );
 
@@ -80,17 +80,17 @@ void main() {
       'a.dart',
       'b/b.dart',
       'c/c/d.dart',
-      "pubspec.yaml",
-      "b/a.js",
-      "pipeline.yaml",
+      'pubspec.yaml',
+      'b/a.js',
+      'pipeline.yaml',
     ]);
     expect(result, true);
     verify(mockLogger.log('Running dart analyze...'));
     verify(mockLogger.log('  A - a1 at a.dart:10:11 - (1)'));
     verify(mockLogger.log('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'));
     verify(mockLogger.log('  B - b3 at b/b.dart:30:31 - (3)'));
-    verify(mockLogger.log("  D - d5 at pubspec.yaml:50:51 - (5)"));
-    verify(mockLogger.log("4 issue(s) found."));
+    verify(mockLogger.log('  D - d5 at pubspec.yaml:50:51 - (5)'));
+    verify(mockLogger.log('4 issue(s) found.'));
     verifyNoMoreInteractions(mockLogger);
   });
 
