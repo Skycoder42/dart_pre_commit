@@ -31,10 +31,19 @@ class Analyze {
   });
 
   Future<bool> call(Iterable<String> files) async {
+    final filteredFiles = files.where(
+      (file) => extension(file) == '.dart' || basename(file) == 'pubspec.yaml',
+    );
     final lints = {
-      await for (final file in fileResolver.resolveAll(files))
+      await for (final file in fileResolver.resolveAll(filteredFiles))
         file: <AnalyzeResult>[],
     };
+
+    if (lints.isEmpty) {
+      logger.log("Skipping analyze, no relevant files");
+      return false;
+    }
+
     logger.log("Running dart analyze...");
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries

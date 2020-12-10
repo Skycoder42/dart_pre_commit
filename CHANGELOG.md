@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [1.1.4] - 2020-12-10
+### Fixed
+- Include pubspec.yaml into analysis step
+- Skip `dart analyze`, if no files are to be analyzed
+
 ## [1.1.3] - 2020-12-08
 ### Fixed
 - fix-imports now works for imports with trailing comments (#2)
