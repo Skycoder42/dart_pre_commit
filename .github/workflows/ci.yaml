@@ -35,7 +35,7 @@ jobs:
         with:
           exclude: "lib/src/logger.dart"
           min_coverage: 95
-      - run: dart --enable-experiment=non-nullable pub publish --dry-run
+      - run: dart --enable-experiment=non-nullable pub publish --dry-run || true
 
   release:
     runs-on: ubuntu-latest

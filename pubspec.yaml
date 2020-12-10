@@ -1,28 +1,28 @@
 name: dart_pre_commit
 description: A small collection of pre commit hooks to format and lint dart code
-version: 1.1.4
+version: 2.0.0-nullsafety.0
 homepage: https://github.com/Skycoder42/dart_pre_commit
 
 environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  args: ^1.6.0
-  convert: ^2.1.1
-  crypto: ^2.1.5
-  meta: ^1.2.3
-  path: ^1.7.0
-  pub_semver: ^1.4.4
-  yaml: ^2.2.1
+  args: ^1.6.0 # X
+  convert: ^2.1.1 # !(crypto)
+  crypto: ^2.1.5 # X
+  meta: ^1.3.0-nullsafety.6
+  path: ^1.8.0-nullsafety.3
+  pub_semver: ^1.1.4 # !(cider, build_runner, mockito, test)
+  yaml: ^2.2.1 # !(cider, build_runner, mockito, test)
 
 dev_dependencies:
-  build_runner: ^1.10.4
-  cider: ^0.0.5
-  coverage: ^0.14.2
+  build_runner: ^1.10.4 # X
+  cider: ^0.0.5 # X
+  coverage: ^0.14.2 # X
   lint: ^1.3.0
-  mockito: ^4.1.3
-  test: ^1.15.3
-  tuple: ^1.0.3
+  mockito: ^4.1.3 # X
+  test: ^1.16.0-nullsafety.12
+  tuple: ^1.0.3 # X
 
 executables:
   dart_pre_commit: dart_pre_commit

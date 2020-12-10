@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [2.0.0-nullsafety.0] - 2020-12-10
+### Changed
+- Migrated package to nullsafety
+
 ## [1.1.4] - 2020-12-10
 ### Fixed
 - Include pubspec.yaml into analysis step
