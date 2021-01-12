@@ -64,7 +64,6 @@ void main() {
       _run(
         Platform.isWindows ? 'dart.bat' : 'dart',
         [
-          '--enable-experiment=non-nullable',
           'pub',
           ...arguments,
         ],

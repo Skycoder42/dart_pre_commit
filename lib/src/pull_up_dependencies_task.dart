@@ -1,23 +1,35 @@
 import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:yaml/yaml.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:yaml/yaml.dart';
 
 import 'file_resolver.dart';
 import 'logger.dart';
 import 'program_runner.dart';
+import 'repo_entry.dart';
+import 'task_base.dart';
 
-class PullUpDependencies {
+class PullUpDependenciesTask implements RepoTask {
   final Logger logger;
-  final ProgramRunner runner;
+  final ProgramRunner programRunner;
   final FileResolver fileResolver;
 
-  const PullUpDependencies({
+  const PullUpDependenciesTask({
     required this.logger,
-    required this.runner,
+    required this.programRunner,
     required this.fileResolver,
   });
 
-  Future<bool> call() async {
-    if (!await _shouldCheck()) {
+  @override
+  String get taskName => 'pull-up-dependencies';
+
+  @override
+  bool get callForEmptyEntries => true;
+
+  @override
+  Pattern get filePattern => 'pubspec.lock';
+
+  @override
+  Future<bool> call(Iterable<RepoEntry> entries) async {
+    if (!await _shouldCheck(entries)) {
       return false;
     }
 
@@ -45,8 +57,8 @@ class PullUpDependencies {
     }
   }
 
-  Future<bool> _shouldCheck() async {
-    final code = await runner.run('git', const [
+  Future<bool> _shouldCheck(Iterable<RepoEntry> entries) async {
+    final code = await programRunner.run('git', const [
       'check-ignore',
       'pubspec.lock',
     ]);
@@ -56,11 +68,7 @@ class PullUpDependencies {
       return true;
     } else {
       // file is not ignored
-      return runner.stream('git', const [
-        'diff',
-        '--name-only',
-        '--cached',
-      ]).contains('pubspec.lock');
+      return entries.isNotEmpty;
     }
   }
 

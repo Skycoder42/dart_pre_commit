@@ -6,24 +6,34 @@ import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_
 import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:path/path.dart';
 
-class FixImports {
+import 'repo_entry.dart';
+import 'task_base.dart';
+
+class FixImportsTask implements FileTask {
   final String packageName;
   final Directory libDir;
 
-  const FixImports({
+  const FixImportsTask({
     required this.packageName,
     required this.libDir,
   });
 
-  Future<bool> call(File file) async {
+  @override
+  String get taskName => 'fix-imports';
+
+  @override
+  Pattern get filePattern => RegExp(r'^.*\.dart$');
+
+  @override
+  Future<bool> call(RepoEntry entry) async {
     final inDigest = AccumulatorSink<Digest>();
     final outDigest = AccumulatorSink<Digest>();
-    final result = await Stream.fromFuture(file.readAsString())
+    final result = await Stream.fromFuture(entry.file.readAsString())
         .transform(const LineSplitter())
         .shaSum(inDigest)
         .relativize(
           packageName: packageName,
-          file: file,
+          file: entry.file,
           libDir: libDir,
         )
         .organizeImports()
@@ -32,7 +42,7 @@ class FixImports {
         .join();
 
     if (inDigest.events.single != outDigest.events.single) {
-      await file.writeAsString(result);
+      await entry.file.writeAsString(result);
       return true;
     } else {
       return false;

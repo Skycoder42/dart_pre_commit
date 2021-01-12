@@ -1,8 +1,10 @@
-import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:path/path.dart';
 
+import 'file_resolver.dart';
 import 'logger.dart';
 import 'program_runner.dart';
+import 'repo_entry.dart';
+import 'task_base.dart';
 
 class AnalyzeResult {
   final String category;
@@ -26,30 +28,32 @@ class AnalyzeResult {
       '  $category - $description at $path:$line:$column - ($type)';
 }
 
-class Analyze {
+class AnalyzeTask implements RepoTask {
   final Logger logger;
-  final ProgramRunner runner;
+  final ProgramRunner programRunner;
   final FileResolver fileResolver;
 
-  const Analyze({
+  const AnalyzeTask({
     required this.logger,
-    required this.runner,
+    required this.programRunner,
     required this.fileResolver,
   });
 
-  Future<bool> call(Iterable<String> files) async {
-    final filteredFiles = files.where(
-      (file) => extension(file) == '.dart' || basename(file) == 'pubspec.yaml',
-    );
-    final lints = {
-      await for (final file in fileResolver.resolveAll(filteredFiles))
-        file: <AnalyzeResult>[],
-    };
+  @override
+  String get taskName => 'analyze';
 
-    if (lints.isEmpty) {
-      logger.log('Skipping analyze, no relevant files');
-      return false;
-    }
+  @override
+  Pattern get filePattern => RegExp(r'^(?:pubspec.ya?ml|.*\.dart)$');
+
+  @override
+  bool get callForEmptyEntries => false;
+
+  @override
+  Future<bool> call(Iterable<RepoEntry> entries) async {
+    final lints = {
+      for (final entry in entries) entry.file.path: <AnalyzeResult>[],
+    };
+    assert(lints.isNotEmpty);
 
     logger.log('Running dart analyze...');
     await for (final entry in _runAnalyze()) {
@@ -80,7 +84,7 @@ class Analyze {
   }
 
   Stream<AnalyzeResult> _runAnalyze() async* {
-    yield* runner
+    yield* programRunner
         .stream(
           'dart',
           const [
@@ -93,10 +97,11 @@ class Analyze {
   }
 }
 
-extension ResultTransformer on Stream<String> {
+extension _ResultTransformer on Stream<String> {
   Stream<AnalyzeResult> parseResult(FileResolver fileResolver) async* {
     final regExp = RegExp(
-        r'^\s*(\w+)\s+-\s+([^-]+)\s+at\s+([^-:]+?):(\d+):(\d+)\s+-\s+\((\w+)\)\s*$');
+      r'^\s*(\w+)\s+-\s+([^-]+)\s+at\s+([^-:]+?):(\d+):(\d+)\s+-\s+\((\w+)\)\s*$',
+    );
     await for (final line in this) {
       final match = regExp.firstMatch(line);
       if (match != null) {

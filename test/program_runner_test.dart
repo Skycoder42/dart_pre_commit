@@ -3,13 +3,15 @@ import 'dart:io';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/task_exception.dart';
-import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'program_runner_test.mocks.dart';
 
-@GenerateMocks([Logger])
+@GenerateMocks([
+  Logger,
+])
 void main() {
   final mockLogger = MockLogger();
 

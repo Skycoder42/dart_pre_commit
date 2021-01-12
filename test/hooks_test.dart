@@ -1,20 +1,22 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/analyze.dart';
+import 'package:dart_pre_commit/src/analyze_task.dart';
 import 'package:dart_pre_commit/src/file_resolver.dart';
-import 'package:dart_pre_commit/src/fix_imports.dart';
-import 'package:dart_pre_commit/src/format.dart';
+import 'package:dart_pre_commit/src/fix_imports_task.dart';
+import 'package:dart_pre_commit/src/format_task.dart';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:dart_pre_commit/src/pull_up_dependencies.dart';
+import 'package:dart_pre_commit/src/pull_up_dependencies_task.dart';
+import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_exception.dart';
-import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
+import 'global_mocks.dart';
 import 'hooks_test.mocks.dart';
 import 'test_with_data.dart';
 
@@ -22,19 +24,19 @@ import 'test_with_data.dart';
   Logger,
   FileResolver,
   ProgramRunner,
-  FixImports,
-  Format,
-  Analyze,
-  PullUpDependencies,
+  FixImportsTask,
+  FormatTask,
+  AnalyzeTask,
+  PullUpDependenciesTask,
 ])
 void main() {
   final mockLogger = MockLogger();
   final mockResolver = MockFileResolver();
   final mockRunner = MockProgramRunner();
-  final mockFixImports = MockFixImports();
-  final mockFormat = MockFormat();
-  final mockAnalyze = MockAnalyze();
-  final mockPullUpDependencies = MockPullUpDependencies();
+  final mockFixImports = MockFixImportsTask();
+  final mockFormat = MockFormatTask();
+  final mockAnalyze = MockAnalyzeTask();
+  final mockPullUpDependencies = MockPullUpDependenciesTask();
 
   Hooks createSut({
     bool fixImports = false,
@@ -46,7 +48,7 @@ void main() {
       Hooks.internal(
         logger: mockLogger,
         resolver: mockResolver,
-        runner: mockRunner,
+        programRunner: mockRunner,
         fixImports: fixImports ? mockFixImports : null,
         format: format ? mockFormat : null,
         analyze: analyze ? mockAnalyze : null,
@@ -65,13 +67,14 @@ void main() {
     when(mockLogger.log(any)).thenReturn(null);
     when(mockLogger.logError(any)).thenReturn(null);
 
-    when(mockResolver.exists(any)).thenAnswer((_) async => true);
+    when(mockResolver.file(any))
+        .thenAnswer((i) => FakeFile(i.positionalArguments.first as String));
     when(mockRunner.stream(any, any))
         .thenAnswer((_) => Stream.fromIterable(const []));
     when(mockFixImports(any)).thenAnswer((_) async => false);
     when(mockFormat(any)).thenAnswer((_) async => false);
     when(mockAnalyze(any)).thenAnswer((_) async => false);
-    when(mockPullUpDependencies()).thenAnswer((_) async => false);
+    when(mockPullUpDependencies(any)).thenAnswer((_) async => false);
 
     when(mockRunner.stream('git', ['rev-parse', '--show-toplevel']))
         .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
@@ -88,13 +91,14 @@ void main() {
     verify(mockRunner.stream('git', ['diff', '--name-only', '--cached']));
   });
 
-  test('only processes staged dart files', () async {
+  test('processes staged files', () async {
     when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
         .thenAnswer(
       (_) => Stream.fromIterable(const [
         'a.dart',
-        'b.js',
+        'path/b.dart',
         'c.g.dart',
+        'any.txt',
       ]),
     );
     final sut = createSut();
@@ -102,13 +106,18 @@ void main() {
     final result = await sut();
     expect(result, HookResult.clean);
     verify(mockLogger.log('Scanning a.dart...'));
+    verify(mockLogger.log('Scanning path${separator}b.dart...'));
     verify(mockLogger.log('Scanning c.g.dart...'));
+    verify(mockLogger.log('Scanning any.txt...'));
     verifyNever(mockLogger.log(any));
   });
 
-  test('only processes existing dart files', () async {
-    when(mockResolver.exists(any)).thenAnswer((i) async => false);
-    when(mockResolver.exists('b.dart')).thenAnswer((i) async => true);
+  test('only processes existing files', () async {
+    when(mockResolver.file(any)).thenAnswer((i) => FakeFile(
+          i.positionalArguments.first as String,
+          exists: false,
+        ));
+    when(mockResolver.file('b.dart')).thenReturn(FakeFile('b.dart'));
     when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
         .thenAnswer(
       (_) => Stream.fromIterable(const [
@@ -156,12 +165,18 @@ void main() {
   });
 
   group('fixImports', () {
-    test('gets called for all collected files', () async {
+    setUp(() {
+      when(mockFixImports.filePattern).thenReturn(RegExp('.*'));
+    });
+
+    test('gets called for matching collected files', () async {
+      when(mockFixImports.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
         (_) => Stream.fromIterable(const [
           'a.dart',
           'b.dart',
+          'c.js',
         ]),
       );
       final sut = createSut(fixImports: true);
@@ -170,7 +185,8 @@ void main() {
       expect(result, HookResult.clean);
       final captures = verify(mockFixImports(captureAny))
           .captured
-          .map((dynamic c) => (c as File).path)
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
           .toList();
       expect(captures, ['a.dart', 'b.dart']);
     });
@@ -200,7 +216,8 @@ void main() {
       expect(result, HookResult.clean);
       final captures = verify(mockFixImports(captureAny))
           .captured
-          .map((dynamic c) => (c as File).path)
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
           .toList();
       expect(captures, ['a.dart', 'subdir${separator}b.dart']);
     });
@@ -255,12 +272,18 @@ void main() {
   });
 
   group('format', () {
-    test('gets called for all collected files', () async {
+    setUp(() {
+      when(mockFormat.filePattern).thenReturn(RegExp('.*'));
+    });
+
+    test('gets called for all matching collected files', () async {
+      when(mockFormat.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
         (_) => Stream.fromIterable(const [
           'a.dart',
           'b.dart',
+          'c.js',
         ]),
       );
       final sut = createSut(format: true);
@@ -269,7 +292,8 @@ void main() {
       expect(result, HookResult.clean);
       final captures = verify(mockFormat(captureAny))
           .captured
-          .map((dynamic c) => (c as File).path)
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
           .toList();
       expect(captures, ['a.dart', 'b.dart']);
     });
@@ -299,7 +323,8 @@ void main() {
       expect(result, HookResult.clean);
       final captures = verify(mockFormat(captureAny))
           .captured
-          .map((dynamic c) => (c as File).path)
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
           .toList();
       expect(captures, ['a.dart', 'subdir${separator}b.dart']);
     });
@@ -334,6 +359,7 @@ void main() {
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+      when(mockFixImports.filePattern).thenReturn(mockFormat.filePattern);
       when(mockFixImports(any)).thenAnswer((_) async => true);
       final sut = createSut(
         fixImports: true,
@@ -344,7 +370,8 @@ void main() {
       expect(result, HookResult.hasUnstagedChanges);
       final capture = verify(mockFormat(captureAny))
           .captured
-          .map((dynamic c) => (c as File).path)
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
           .single;
       expect(capture, 'a.dart');
     });
@@ -374,12 +401,19 @@ void main() {
   });
 
   group('analyze', () {
-    test('gets called with all files', () async {
+    setUp(() {
+      when(mockAnalyze.filePattern).thenReturn(RegExp('.*'));
+      when(mockAnalyze.callForEmptyEntries).thenReturn(true);
+    });
+
+    test('gets called with all matching files', () async {
+      when(mockAnalyze.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
         (_) => Stream.fromIterable(const [
           'a.dart',
           'b.dart',
+          'c.js',
         ]),
       );
       final sut = createSut(analyze: true);
@@ -388,9 +422,9 @@ void main() {
       expect(result, HookResult.clean);
       final capture = verify(mockAnalyze(captureAny))
           .captured
-          .cast<Iterable<String>>()
+          .cast<Iterable<RepoEntry>>()
           .single
-          .toList();
+          .map((e) => e.file.path);
       expect(capture, const ['a.dart', 'b.dart']);
     });
 
@@ -419,10 +453,27 @@ void main() {
       expect(result, HookResult.clean);
       final capture = verify(mockAnalyze(captureAny))
           .captured
-          .cast<Iterable<String>>()
+          .cast<Iterable<RepoEntry>>()
           .single
-          .toList();
+          .map((e) => e.file.path);
       expect(capture, ['a.dart', 'subdir${separator}b.dart']);
+    });
+
+    test('does get called without any files if enabled', () async {
+      final sut = createSut(analyze: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verify(mockPullUpDependencies([]));
+    });
+
+    test('does not get called without any files if disabled', () async {
+      when(mockAnalyze.callForEmptyEntries).thenReturn(false);
+      final sut = createSut(analyze: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verifyNever(mockPullUpDependencies(any));
     });
 
     test('returns linter if analyze find something', () async {
@@ -437,7 +488,9 @@ void main() {
         () async {
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+      when(mockFixImports.filePattern).thenReturn(mockAnalyze.filePattern);
       when(mockFixImports(any)).thenAnswer((_) async => true);
+      when(mockFormat.filePattern).thenReturn(mockAnalyze.filePattern);
       when(mockFormat(any)).thenAnswer((_) async => true);
       when(mockAnalyze(any)).thenAnswer((_) async => true);
       final sut = createSut(
@@ -463,16 +516,84 @@ void main() {
   });
 
   group('pullUpDependencies', () {
-    test('gets called if enabled', () async {
+    setUp(() {
+      when(mockPullUpDependencies.filePattern).thenReturn(RegExp('.*'));
+      when(mockPullUpDependencies.callForEmptyEntries).thenReturn(true);
+    });
+
+    test('gets called with matching files if enabled', () async {
+      when(mockPullUpDependencies.filePattern)
+          .thenReturn(RegExp(r'^.*\.dart$'));
+      when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable(const [
+          'a.dart',
+          'b.dart',
+          'c.js',
+        ]),
+      );
       final sut = createSut(pullUpDependencies: true);
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(mockPullUpDependencies());
+      final capture = verify(mockPullUpDependencies(captureAny))
+          .captured
+          .cast<Iterable<RepoEntry>>()
+          .single
+          .map((e) => e.file.path);
+      expect(capture, ['a.dart', 'b.dart']);
+    });
+
+    test('gets called for all files in subdir', () async {
+      final dirName = basename(Directory.current.path);
+      when(mockRunner.stream('git', [
+        'rev-parse',
+        '--show-toplevel',
+      ])).thenAnswer(
+        (_) => Stream.fromIterable([
+          Directory.current.parent.path,
+        ]),
+      );
+      when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable([
+          '$dirName/a.dart',
+          '$dirName/subdir/b.dart',
+          'c.dart',
+          'other_$dirName/d.dart',
+        ]),
+      );
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      final capture = verify(mockPullUpDependencies(captureAny))
+          .captured
+          .cast<Iterable<RepoEntry>>()
+          .single
+          .map((e) => e.file.path);
+      expect(capture, ['a.dart', 'subdir${separator}b.dart']);
+    });
+
+    test('gets called without any files if enabled', () async {
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verify(mockPullUpDependencies([]));
+    });
+
+    test('does not get called without any files if disabled', () async {
+      when(mockPullUpDependencies.callForEmptyEntries).thenReturn(false);
+      final sut = createSut(pullUpDependencies: true);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verifyNever(mockPullUpDependencies(any));
     });
 
     test('returns canPullUp if pullUpDependencies find something', () async {
-      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      when(mockPullUpDependencies(any)).thenAnswer((_) async => true);
       final sut = createSut(pullUpDependencies: true);
 
       final result = await sut();
@@ -484,9 +605,13 @@ void main() {
         () async {
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+      when(mockFixImports.filePattern)
+          .thenReturn(mockPullUpDependencies.filePattern);
       when(mockFixImports(any)).thenAnswer((_) async => true);
+      when(mockFormat.filePattern)
+          .thenReturn(mockPullUpDependencies.filePattern);
       when(mockFormat(any)).thenAnswer((_) async => true);
-      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      when(mockPullUpDependencies(any)).thenAnswer((_) async => true);
       final sut = createSut(
         fixImports: true,
         format: true,
@@ -499,7 +624,7 @@ void main() {
 
     test('returns linter if analyze and pullUpDependencies find something',
         () async {
-      when(mockPullUpDependencies()).thenAnswer((_) async => true);
+      when(mockPullUpDependencies([])).thenAnswer((_) async => true);
       when(mockAnalyze(any)).thenAnswer((_) async => true);
       final sut = createSut(
         analyze: true,
@@ -511,7 +636,7 @@ void main() {
     });
 
     test('returns error on TaskError', () async {
-      when(mockPullUpDependencies())
+      when(mockPullUpDependencies(any))
           .thenAnswer((_) async => throw const TaskException('error'));
       final sut = createSut(pullUpDependencies: true);
 

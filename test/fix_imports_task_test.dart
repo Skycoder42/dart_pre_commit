@@ -1,19 +1,24 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/fix_imports.dart';
+import 'package:dart_pre_commit/src/fix_imports_task.dart';
+import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:meta/meta.dart';
-import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
+import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
-import 'fix_imports_test.mocks.dart';
+import 'fix_imports_task_test.mocks.dart';
+import 'test_with_data.dart';
 
-@GenerateMocks([File])
+@GenerateMocks([
+  File,
+])
 void main() {
   final mockFile = MockFile();
 
-  late FixImports sut;
+  late FixImportsTask sut;
 
   @isTest
   void _runTest(
@@ -28,7 +33,7 @@ void main() {
         setUp();
       }
 
-      final res = await sut(mockFile);
+      final res = await sut(RepoEntry(file: mockFile, partiallyStaged: false));
       if (outData != null) {
         expect(res, true);
         verify(mockFile.writeAsString(outData));
@@ -48,11 +53,33 @@ void main() {
       (realInvocation) async => mockFile,
     );
 
-    sut = FixImports(
+    sut = FixImportsTask(
       libDir: Directory('lib'),
       packageName: 'mock',
     );
   });
+
+  test('task metadata is correct', () {
+    expect(sut.taskName, 'fix-imports');
+  });
+
+  testWithData<Tuple2<String, bool>>(
+    'matches only dart/pubspec.yaml files',
+    const [
+      Tuple2('test1.dart', true),
+      Tuple2('test/path2.dart', true),
+      Tuple2('test3.g.dart', true),
+      Tuple2('test4.dart.g', false),
+      Tuple2('test5_dart', false),
+      Tuple2('test6.dat', false),
+    ],
+    (fixture) {
+      expect(
+        sut.filePattern.matchAsPrefix(fixture.item1),
+        fixture.item2 ? isNotNull : isNull,
+      );
+    },
+  );
 
   group('relativize', () {
     _runTest(

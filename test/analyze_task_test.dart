@@ -1,26 +1,33 @@
-import 'package:dart_pre_commit/src/analyze.dart';
+import 'package:dart_pre_commit/src/analyze_task.dart';
 import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:mockito/mockito.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:mockito/annotations.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 import 'package:test/test.dart';
-import 'analyze_test.mocks.dart';
+import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
-@GenerateMocks([Logger, ProgramRunner, FileResolver])
+import 'analyze_task_test.mocks.dart';
+import 'global_mocks.dart';
+import 'test_with_data.dart';
+
+@GenerateMocks([
+  ProgramRunner,
+  FileResolver,
+], customMocks: [
+  MockSpec<Logger>(returnNullOnMissingStub: true),
+])
 void main() {
   final mockLogger = MockLogger();
   final mockRunner = MockProgramRunner();
   final mockFileResolver = MockFileResolver();
 
-  late Analyze sut;
+  late AnalyzeTask sut;
 
   setUp(() {
     reset(mockLogger);
     reset(mockRunner);
     reset(mockFileResolver);
-
-    when(mockLogger.log(any)).thenReturn(null);
 
     when(mockRunner.stream(
       any,
@@ -33,15 +40,44 @@ void main() {
     when(mockFileResolver.resolveAll(any)).thenAnswer((i) =>
         Stream.fromIterable(i.positionalArguments.first as Iterable<String>));
 
-    sut = Analyze(
+    sut = AnalyzeTask(
       logger: mockLogger,
-      runner: mockRunner,
+      programRunner: mockRunner,
       fileResolver: mockFileResolver,
     );
   });
 
+  test('task metadata is correct', () {
+    expect(sut.taskName, 'analyze');
+    expect(sut.callForEmptyEntries, false);
+  });
+
+  testWithData<Tuple2<String, bool>>(
+    'matches only dart/pubspec.yaml files',
+    const [
+      Tuple2('test1.dart', true),
+      Tuple2('test/path2.dart', true),
+      Tuple2('test3.g.dart', true),
+      Tuple2('test4.dart.g', false),
+      Tuple2('test5_dart', false),
+      Tuple2('test6.dat', false),
+      Tuple2('pubspec.yaml', true),
+      Tuple2('pubspec.yml', true),
+      Tuple2('pubspec.lock', false),
+      Tuple2('path/pubspec.yaml', false),
+    ],
+    (fixture) {
+      expect(
+        sut.filePattern.matchAsPrefix(fixture.item1),
+        fixture.item2 ? isNotNull : isNull,
+      );
+    },
+  );
+
   test('Run dartanalyzer with correct arguments', () async {
-    final result = await sut(const ['test.dart']);
+    final result = await sut([
+      FakeEntry('test.dart'),
+    ]);
 
     expect(result, false);
     verify(mockRunner.stream(
@@ -52,13 +88,6 @@ void main() {
       ],
       failOnExit: false,
     ));
-  });
-
-  test('returns early if no files are to be analyzed', () async {
-    final result = await sut(const ['test.js', 'pipeline.yaml']);
-
-    expect(result, false);
-    verifyZeroInteractions(mockRunner);
   });
 
   test('Collects lints for specified files', () async {
@@ -76,13 +105,13 @@ void main() {
       ]),
     );
 
-    final result = await sut(const [
-      'a.dart',
-      'b/b.dart',
-      'c/c/d.dart',
-      'pubspec.yaml',
-      'b/a.js',
-      'pipeline.yaml',
+    final result = await sut([
+      FakeEntry('a.dart'),
+      FakeEntry('b/b.dart'),
+      FakeEntry('c/c/d.dart'),
+      FakeEntry('pubspec.yaml'),
+      FakeEntry('b/a.js'),
+      FakeEntry('pipeline.yaml'),
     ]);
     expect(result, true);
     verify(mockLogger.log('Running dart analyze...'));
@@ -105,7 +134,7 @@ void main() {
       ]),
     );
 
-    final result = await sut(['a.dart']);
+    final result = await sut([FakeEntry('a.dart')]);
     expect(result, false);
     verify(mockLogger.log(any)).called(2);
   });

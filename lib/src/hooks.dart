@@ -2,15 +2,16 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:yaml/yaml.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:yaml/yaml.dart';
 
-import 'analyze.dart';
+import 'analyze_task.dart';
 import 'file_resolver.dart';
-import 'fix_imports.dart';
-import 'format.dart';
+import 'fix_imports_task.dart';
+import 'format_task.dart';
 import 'logger.dart';
 import 'program_runner.dart';
-import 'pull_up_dependencies.dart';
+import 'pull_up_dependencies_task.dart';
+import 'repo_entry.dart';
 import 'task_exception.dart';
 
 /// The result of a LintHooks call.
@@ -64,15 +65,16 @@ extension HookResultX on HookResult {
 ///
 /// This is the main entrypoint of the library. The class will scan your
 /// repository for staged files and run all activated hooks on them, reporting
-/// a result. Check the documentation of [FixImports], [Format] and [Analyze]
-/// for more details on the actual supported hook operations.
+/// a result. Check the documentation of [FixImportsTask], [FormatTask],
+/// [AnalyzeTask] and [PullUpDependenciesTask] for more details on the actual
+/// supported hook operations.
 class Hooks {
   final FileResolver _resolver;
-  final ProgramRunner _runner;
-  final FixImports? _fixImports;
-  final Format? _format;
-  final Analyze? _analyze;
-  final PullUpDependencies? _pullUpDependencies;
+  final ProgramRunner _programRunner;
+  final FixImportsTask? _fixImports;
+  final FormatTask? _format;
+  final AnalyzeTask? _analyze;
+  final PullUpDependenciesTask? _pullUpDependencies;
 
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
@@ -90,14 +92,14 @@ class Hooks {
   const Hooks.internal({
     required this.logger,
     required FileResolver resolver,
-    required ProgramRunner runner,
-    FixImports? fixImports,
-    Format? format,
-    Analyze? analyze,
-    PullUpDependencies? pullUpDependencies,
+    required ProgramRunner programRunner,
+    FixImportsTask? fixImports,
+    FormatTask? format,
+    AnalyzeTask? analyze,
+    PullUpDependenciesTask? pullUpDependencies,
     this.continueOnError = false,
   })  : _resolver = resolver,
-        _runner = runner,
+        _programRunner = programRunner,
         _fixImports = fixImports,
         _format = format,
         _analyze = analyze,
@@ -137,24 +139,24 @@ class Hooks {
     Logger logger = const Logger.standard(),
   }) async {
     final resolver = FileResolver();
-    final runner = ProgramRunner(logger);
+    final programRunner = ProgramRunner(logger);
     return Hooks.internal(
       logger: logger,
       resolver: resolver,
-      runner: runner,
+      programRunner: programRunner,
       fixImports: fixImports ? await _obtainFixImports() : null,
-      format: format ? Format(runner) : null,
+      format: format ? FormatTask(programRunner) : null,
       analyze: analyze
-          ? Analyze(
+          ? AnalyzeTask(
               logger: logger,
-              runner: runner,
+              programRunner: programRunner,
               fileResolver: resolver,
             )
           : null,
       pullUpDependencies: pullUpDependencies
-          ? PullUpDependencies(
+          ? PullUpDependenciesTask(
               logger: logger,
-              runner: runner,
+              programRunner: programRunner,
               fileResolver: resolver,
             )
           : null,
@@ -181,28 +183,32 @@ class Hooks {
   Future<HookResult> call() async {
     try {
       var lintState = HookResult.clean;
-      final files = await _collectFiles();
+      final files = await _collectStagedFiles().toList();
 
-      for (final entry in files.entries) {
-        final file = File(entry.key); // TODO use resolver.file
+      for (final entry in files) {
         try {
-          logger.log('Scanning ${file.path}...');
+          logger.log('Scanning ${entry.file.path}...');
           var modified = false;
-          if (_fixImports != null) {
-            modified = await _fixImports!(file) || modified;
+          if (_fixImports?.filePattern.matchAsPrefix(entry.file.path) != null) {
+            modified = await _fixImports!(entry) || modified;
           }
-          if (_format != null) {
-            modified = await _format!(file) || modified;
+          if (_format?.filePattern.matchAsPrefix(entry.file.path) != null) {
+            modified = await _format!(entry) || modified;
           }
 
           if (modified) {
-            if (entry.value) {
-              logger.log('(!) Fixing up partially staged file ${file.path}');
+            if (entry.partiallyStaged) {
+              logger.log(
+                '(!) Fixing up partially staged file ${entry.file.path}',
+              );
               lintState = lintState._raiseTo(HookResult.hasUnstagedChanges);
             } else {
-              logger.log('Fixing up ${file.path}');
+              logger.log('Fixing up ${entry.file.path}');
               lintState = lintState._raiseTo(HookResult.hasChanges);
-              await _git(['add', file.path]).drain<void>();
+              await _programRunner.stream('git', [
+                'add',
+                entry.file.path,
+              ]).drain<void>();
             }
           }
         } on TaskException catch (error) {
@@ -216,14 +222,31 @@ class Hooks {
       }
 
       if (_analyze != null) {
-        if (await _analyze!(files.keys)) {
-          lintState = lintState._raiseTo(HookResult.linter);
+        final filteredFiles = files
+            .where(
+              (e) => _analyze!.filePattern.matchAsPrefix(e.file.path) != null,
+            )
+            .toList();
+        if (filteredFiles.isNotEmpty || _analyze!.callForEmptyEntries) {
+          if (await _analyze!(filteredFiles)) {
+            lintState = lintState._raiseTo(HookResult.linter);
+          }
         }
       }
 
       if (_pullUpDependencies != null) {
-        if (await _pullUpDependencies!()) {
-          lintState = lintState._raiseTo(HookResult.canPullUp);
+        final filteredFiles = files
+            .where(
+              (e) =>
+                  _pullUpDependencies!.filePattern.matchAsPrefix(e.file.path) !=
+                  null,
+            )
+            .toList();
+        if (filteredFiles.isNotEmpty ||
+            _pullUpDependencies!.callForEmptyEntries) {
+          if (await _pullUpDependencies!(filteredFiles)) {
+            lintState = lintState._raiseTo(HookResult.canPullUp);
+          }
         }
       }
 
@@ -234,43 +257,55 @@ class Hooks {
     }
   }
 
-  Future<Map<String, bool>> _collectFiles() async {
-    final gitRoot = await _git(['rev-parse', '--show-toplevel']).first;
-    final indexChanges = await _gitMapped(
-      gitRoot,
-      ['diff', '--name-only'],
-    ).toList();
-    final stagedChanges = _gitMapped(
-      gitRoot,
-      ['diff', '--name-only', '--cached'],
-    );
-    return {
-      await for (var path in stagedChanges)
-        if (path.endsWith('.dart') && await _resolver.exists(path))
-          path: indexChanges.contains(path),
-    };
+  Stream<RepoEntry> _collectStagedFiles() async* {
+    final indexChanges = await _streamGitFiles([
+      'diff',
+      '--name-only',
+    ]).toList();
+    final stagedChanges = _streamGitFiles([
+      'diff',
+      '--name-only',
+      '--cached',
+    ]);
+
+    await for (final path in stagedChanges) {
+      final file = _resolver.file(path);
+      if (!await file.exists()) {
+        continue;
+      }
+      yield RepoEntry(
+        file: file,
+        partiallyStaged: indexChanges.contains(path),
+      );
+    }
   }
 
-  Stream<String> _git(List<String> arguments) =>
-      _runner.stream('git', arguments);
-
-  Stream<String> _gitMapped(String gitRoot, List<String> arguments) async* {
-    final resolvedRoot = await Directory(gitRoot).resolveSymbolicLinks();
+  Stream<String> _streamGitFiles(
+    List<String> arguments, {
+    bool failOnExit = true,
+  }) async* {
+    final gitRoot = await Directory(
+      await _programRunner.stream('git', const [
+        'rev-parse',
+        '--show-toplevel',
+      ]).first,
+    ).resolveSymbolicLinks();
     final resolvedCurrent = await Directory.current.resolveSymbolicLinks();
-    yield* _git(arguments)
-        .map((path) => join(resolvedRoot, path))
+    yield* _programRunner
+        .stream('git', arguments, failOnExit: failOnExit)
+        .map((path) => join(gitRoot, path))
         .where((path) => isWithin(resolvedCurrent, path))
         .map((path) => relative(path, from: resolvedCurrent));
   }
 
-  static Future<FixImports> _obtainFixImports() async {
+  static Future<FixImportsTask> _obtainFixImports() async {
     final pubspecFile = File('pubspec.yaml');
     final yamlData = loadYamlDocument(
       await pubspecFile.readAsString(),
       sourceUrl: pubspecFile.uri,
     ).contents as YamlMap;
 
-    return FixImports(
+    return FixImportsTask(
       libDir: Directory('lib'),
       packageName: yamlData.value['name'] as String,
     );

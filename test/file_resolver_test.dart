@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/file_resolver.dart';
-import 'package:path/path.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:test/test.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:path/path.dart';
+import 'package:test/test.dart';
 
 void main() {
   late Directory testDir;
@@ -14,13 +14,6 @@ void main() {
 
   tearDown(() async {
     await testDir.delete(recursive: true);
-  });
-
-  test('exists checks if file exists', () async {
-    await File(join(testDir.path, 'test1.dart')).create();
-
-    expect(await sut.exists(join(testDir.path, 'test1.dart')), true);
-    expect(await sut.exists(join(testDir.path, 'test2.dart')), false);
   });
 
   test('resolve resolves symlinks to a relative path', () async {

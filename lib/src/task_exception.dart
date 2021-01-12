@@ -1,12 +1,12 @@
-import 'dart:io';
+import 'package:dart_pre_commit/src/repo_entry.dart';
 
 class TaskException implements Exception {
   final String message;
-  final File? file;
+  final RepoEntry? entry;
 
-  const TaskException(this.message, [this.file]);
+  const TaskException(this.message, [this.entry]);
 
   @override
   String toString() =>
-      file != null ? '${file?.path ?? 'unknown'}: $message' : message;
+      entry != null ? '${entry?.file.path ?? 'unknown'}: $message' : message;
 }
