@@ -28,9 +28,9 @@ class PullUpDependenciesTask implements RepoTask {
   Pattern get filePattern => 'pubspec.lock';
 
   @override
-  Future<bool> call(Iterable<RepoEntry> entries) async {
+  Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     if (!await _shouldCheck(entries)) {
-      return false;
+      return TaskResult.accepted;
     }
 
     logger.log('Checking for updates packages...');
@@ -51,9 +51,9 @@ class PullUpDependenciesTask implements RepoTask {
 
     if (updateCnt > 0) {
       logger.log('$updateCnt dependencies can be pulled up to newer versions!');
-      return true;
+      return TaskResult.rejected;
     } else {
-      return false;
+      return TaskResult.accepted;
     }
   }
 
@@ -105,9 +105,8 @@ class PullUpDependenciesTask implements RepoTask {
         if (versionString?.startsWith('^') ?? false) {
           final currentVersion = Version.parse(versionString!.substring(1));
           final resolvedVersion = resolvedVersions[entry.key];
-          if (resolvedVersion != null &&
-              resolvedVersion > currentVersion &&
-              !resolvedVersion.isPreRelease) {
+          if (_checkValidRelease(resolvedVersion) &&
+              resolvedVersion! > currentVersion) {
             ++updateCtr;
             logger.log('  ${entry.key}: $currentVersion -> $resolvedVersion');
           }
@@ -115,5 +114,16 @@ class PullUpDependenciesTask implements RepoTask {
       }
     }
     return updateCtr;
+  }
+
+  bool _checkValidRelease(Version? version) {
+    if (version == null) {
+      return false;
+    }
+    if (!version.isPreRelease) {
+      return true;
+    }
+    return version.preRelease.isNotEmpty &&
+        version.preRelease[0] == 'nullsafety';
   }
 }

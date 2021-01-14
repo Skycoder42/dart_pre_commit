@@ -15,7 +15,7 @@ class FormatTask implements FileTask {
   Pattern get filePattern => RegExp(r'^.*\.dart$');
 
   @override
-  Future<bool> call(RepoEntry entry) async {
+  Future<TaskResult> call(RepoEntry entry) async {
     final exitCode = await runner.run(
       'dart',
       [
@@ -27,9 +27,9 @@ class FormatTask implements FileTask {
     );
     switch (exitCode) {
       case 0:
-        return false;
+        return TaskResult.accepted;
       case 1:
-        return true;
+        return TaskResult.modified;
       default:
         throw TaskException('dartfmt failed to format the file', entry);
     }

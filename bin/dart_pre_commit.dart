@@ -33,6 +33,8 @@ import 'dart:io';
 
 import 'package:args/args.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/hooks_provider.dart';
+import 'package:riverpod/riverpod.dart'; // ignore: import_of_legacy_library_into_null_safe
 
 /// @nodoc
 void main(List<String> args) {
@@ -40,6 +42,7 @@ void main(List<String> args) {
 }
 
 Future<int> _run(List<String> args) async {
+  final di = ProviderContainer();
   final parser = ArgParser()
     ..addSeparator('Parsing Options:')
     ..addFlag(
@@ -114,13 +117,13 @@ Future<int> _run(List<String> args) async {
       Directory.current = dir;
     }
 
-    final hooks = await Hooks.create(
+    final hooks = await di.read(HooksProvider.hookProvider(HooksConfig(
       fixImports: options['fix-imports'] as bool,
       format: options['format'] as bool,
       analyze: options['analyze'] as bool,
       pullUpDependencies: options['check-pull-up'] as bool,
-      continueOnError: options['continue-on-error'] as bool,
-    );
+      continueOnRejected: options['continue-on-error'] as bool,
+    )).future);
 
     final result = await hooks();
     if (options['detailed-exit-code'] as bool) {
@@ -133,5 +136,7 @@ Future<int> _run(List<String> args) async {
       ..writeln('${e.message}\n')
       ..write(parser.usage);
     return 127;
+  } finally {
+    di.dispose();
   }
 }

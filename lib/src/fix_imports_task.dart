@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:path/path.dart';
+import 'package:yaml/yaml.dart';
 
 import 'repo_entry.dart';
 import 'task_base.dart';
@@ -18,6 +19,19 @@ class FixImportsTask implements FileTask {
     required this.libDir,
   });
 
+  static Future<FixImportsTask> current() async {
+    final pubspecFile = File('pubspec.yaml');
+    final yamlData = loadYamlDocument(
+      await pubspecFile.readAsString(),
+      sourceUrl: pubspecFile.uri,
+    ).contents as YamlMap;
+
+    return FixImportsTask(
+      libDir: Directory('lib'),
+      packageName: yamlData.value['name'] as String,
+    );
+  }
+
   @override
   String get taskName => 'fix-imports';
 
@@ -25,7 +39,7 @@ class FixImportsTask implements FileTask {
   Pattern get filePattern => RegExp(r'^.*\.dart$');
 
   @override
-  Future<bool> call(RepoEntry entry) async {
+  Future<TaskResult> call(RepoEntry entry) async {
     final inDigest = AccumulatorSink<Digest>();
     final outDigest = AccumulatorSink<Digest>();
     final result = await Stream.fromFuture(entry.file.readAsString())
@@ -43,9 +57,9 @@ class FixImportsTask implements FileTask {
 
     if (inDigest.events.single != outDigest.events.single) {
       await entry.file.writeAsString(result);
-      return true;
+      return TaskResult.modified;
     } else {
-      return false;
+      return TaskResult.accepted;
     }
   }
 }

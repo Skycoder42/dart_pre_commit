@@ -25,3 +25,4 @@ linter:
     prefer_foreach: true
     prefer_single_quotes: true
     unawaited_futures: true
+    avoid_classes_with_only_static_members: false

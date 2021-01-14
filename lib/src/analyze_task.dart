@@ -49,7 +49,7 @@ class AnalyzeTask implements RepoTask {
   bool get callForEmptyEntries => false;
 
   @override
-  Future<bool> call(Iterable<RepoEntry> entries) async {
+  Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     final lints = {
       for (final entry in entries) entry.file.path: <AnalyzeResult>[],
     };
@@ -80,7 +80,7 @@ class AnalyzeTask implements RepoTask {
     }
 
     logger.log('$lintCnt issue(s) found.');
-    return lintCnt > 0;
+    return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 
   Stream<AnalyzeResult> _runAnalyze() async* {

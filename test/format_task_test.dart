@@ -1,5 +1,6 @@
 import 'package:dart_pre_commit/src/format_task.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/task_exception.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -52,7 +53,7 @@ void main() {
 
   test('calls dart format with correct arguments', () async {
     final res = await sut(fakeEntry);
-    expect(res, false);
+    expect(res, TaskResult.accepted);
     verify(mockRunner.run(
       'dart',
       const [
@@ -67,7 +68,7 @@ void main() {
   test('returns true if dart format returns 1', () async {
     when(mockRunner.run(any, any)).thenAnswer((_) async => 1);
     final res = await sut(fakeEntry);
-    expect(res, true);
+    expect(res, TaskResult.modified);
   });
 
   test('throws exception if dart format returns >1', () async {

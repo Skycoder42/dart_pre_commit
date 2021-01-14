@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:yaml/yaml.dart';
 
 import 'analyze_task.dart';
 import 'file_resolver.dart';
@@ -12,6 +10,7 @@ import 'logger.dart';
 import 'program_runner.dart';
 import 'pull_up_dependencies_task.dart';
 import 'repo_entry.dart';
+import 'task_base.dart';
 import 'task_exception.dart';
 
 /// The result of a LintHooks call.
@@ -29,12 +28,9 @@ enum HookResult {
   /// be modified.
   hasUnstagedChanges,
 
-  /// At least one dependency found in pubspec.lock can be pulled up to the
-  /// pubspec.yaml
-  canPullUp,
-
-  /// At least one staged file has analyze/lint errors and must be fixed.
-  linter,
+  /// At least one hook detected a problem that has to be fixed manually before
+  /// the commit can be accepted
+  rejected,
 
   /// An unexpected error occured.
   error,
@@ -52,13 +48,16 @@ extension HookResultX on HookResult {
   /// [HookResult.clean]              | true
   /// [HookResult.hasChanges]         | true
   /// [HookResult.hasUnstagedChanges] | false
-  /// [HookResult.canPullUp]          | false
-  /// [HookResult.linter]             | false
+  /// [HookResult.rejected]           | false
   /// [HookResult.error]              | false
   bool get isSuccess => index <= HookResult.hasChanges.index;
 
   HookResult _raiseTo(HookResult target) =>
       target.index > index ? target : this;
+}
+
+class _RejectedException implements Exception {
+  const _RejectedException();
 }
 
 /// A callable class the runs the hooks on a repository
@@ -69,41 +68,20 @@ extension HookResultX on HookResult {
 /// [AnalyzeTask] and [PullUpDependenciesTask] for more details on the actual
 /// supported hook operations.
 class Hooks {
-  final FileResolver _resolver;
+  final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
-  final FixImportsTask? _fixImports;
-  final FormatTask? _format;
-  final AnalyzeTask? _analyze;
-  final PullUpDependenciesTask? _pullUpDependencies;
+  final List<TaskBase> _tasks;
 
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
 
-  /// Specifies, whether processing should continue on errors.
+  /// Specifies, whether processing should continue on rejections.
   ///
-  /// Normally, once one of the hook operations fails for one file, the whole
-  /// process is aborted with an error. If however [continueOnError] is set to
-  /// true, instead processing of that file will be skipped and all other files
-  /// are still processed. In both cases, [call()] will resolve with
-  /// [HookResult.error].
-  final bool continueOnError;
-
-  @visibleForTesting
-  const Hooks.internal({
-    required this.logger,
-    required FileResolver resolver,
-    required ProgramRunner programRunner,
-    FixImportsTask? fixImports,
-    FormatTask? format,
-    AnalyzeTask? analyze,
-    PullUpDependenciesTask? pullUpDependencies,
-    this.continueOnError = false,
-  })  : _resolver = resolver,
-        _programRunner = programRunner,
-        _fixImports = fixImports,
-        _format = format,
-        _analyze = analyze,
-        _pullUpDependencies = pullUpDependencies;
+  /// Normally, once one of the hook operations detects an unfixable problem,
+  /// the whole process is aborted with [HookResult.rejected]. If however
+  /// [continueOnRejected] is set to true, instead processing will continue as
+  /// usualk. In both cases, [call()] will resolve with [HookResult.rejected].
+  final bool continueOnRejected;
 
   /// Constructs a new [Hooks] instance.
   ///
@@ -130,39 +108,15 @@ class Hooks {
   ///
   /// The [continueOnError] can be used to control error behaviour. See
   /// [this.continueOnError] for details.
-  static Future<Hooks> create({
-    bool fixImports = true,
-    bool format = true,
-    bool analyze = true,
-    bool pullUpDependencies = false,
-    bool continueOnError = false,
-    Logger logger = const Logger.standard(),
-  }) async {
-    final resolver = FileResolver();
-    final programRunner = ProgramRunner(logger);
-    return Hooks.internal(
-      logger: logger,
-      resolver: resolver,
-      programRunner: programRunner,
-      fixImports: fixImports ? await _obtainFixImports() : null,
-      format: format ? FormatTask(programRunner) : null,
-      analyze: analyze
-          ? AnalyzeTask(
-              logger: logger,
-              programRunner: programRunner,
-              fileResolver: resolver,
-            )
-          : null,
-      pullUpDependencies: pullUpDependencies
-          ? PullUpDependenciesTask(
-              logger: logger,
-              programRunner: programRunner,
-              fileResolver: resolver,
-            )
-          : null,
-      continueOnError: continueOnError,
-    );
-  }
+  const Hooks({
+    required this.logger,
+    required FileResolver resolver,
+    required ProgramRunner programRunner,
+    required List<TaskBase> tasks,
+    this.continueOnRejected = false,
+  })  : _fileResolver = resolver,
+        _programRunner = programRunner,
+        _tasks = tasks;
 
   /// Executes all enabled hooks on the current repository.
   ///
@@ -183,74 +137,37 @@ class Hooks {
   Future<HookResult> call() async {
     try {
       var lintState = HookResult.clean;
-      final files = await _collectStagedFiles().toList();
+      final entries = await _collectStagedFiles().toList();
 
-      for (final entry in files) {
-        try {
-          logger.log('Scanning ${entry.file.path}...');
-          var modified = false;
-          if (_fixImports?.filePattern.matchAsPrefix(entry.file.path) != null) {
-            modified = await _fixImports!(entry) || modified;
-          }
-          if (_format?.filePattern.matchAsPrefix(entry.file.path) != null) {
-            modified = await _format!(entry) || modified;
-          }
-
-          if (modified) {
-            if (entry.partiallyStaged) {
-              logger.log(
-                '(!) Fixing up partially staged file ${entry.file.path}',
-              );
-              lintState = lintState._raiseTo(HookResult.hasUnstagedChanges);
-            } else {
-              logger.log('Fixing up ${entry.file.path}');
-              lintState = lintState._raiseTo(HookResult.hasChanges);
-              await _programRunner.stream('git', [
-                'add',
-                entry.file.path,
-              ]).drain<void>();
-            }
-          }
-        } on TaskException catch (error) {
-          logger.logError(error);
-          if (!continueOnError) {
-            return HookResult.error;
-          } else {
-            lintState = lintState._raiseTo(HookResult.error);
+      final fileTasks = _tasks.whereType<FileTask>().toList();
+      for (final entry in entries) {
+        logger.log('Scanning ${entry.file.path}...');
+        var taskResult = TaskResult.accepted;
+        for (final task in fileTasks) {
+          if (task.canProcess(entry)) {
+            taskResult = taskResult.raiseTo(await task(entry));
           }
         }
+        lintState = lintState._raiseTo(await _processFileTaskResult(
+          entry,
+          taskResult,
+        ));
       }
 
-      if (_analyze != null) {
-        final filteredFiles = files
-            .where(
-              (e) => _analyze!.filePattern.matchAsPrefix(e.file.path) != null,
-            )
-            .toList();
-        if (filteredFiles.isNotEmpty || _analyze!.callForEmptyEntries) {
-          if (await _analyze!(filteredFiles)) {
-            lintState = lintState._raiseTo(HookResult.linter);
-          }
-        }
-      }
-
-      if (_pullUpDependencies != null) {
-        final filteredFiles = files
-            .where(
-              (e) =>
-                  _pullUpDependencies!.filePattern.matchAsPrefix(e.file.path) !=
-                  null,
-            )
-            .toList();
-        if (filteredFiles.isNotEmpty ||
-            _pullUpDependencies!.callForEmptyEntries) {
-          if (await _pullUpDependencies!(filteredFiles)) {
-            lintState = lintState._raiseTo(HookResult.canPullUp);
-          }
+      for (final task in _tasks.whereType<RepoTask>()) {
+        final filteredEntries = entries.where(task.canProcess).toList();
+        if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
+          final taskResult = await task(filteredEntries);
+          lintState = lintState._raiseTo(await _processRepoTaskResult(
+            filteredEntries,
+            taskResult,
+          ));
         }
       }
 
       return lintState;
+    } on _RejectedException {
+      return HookResult.rejected;
     } on TaskException catch (error) {
       logger.logError(error);
       return HookResult.error;
@@ -258,18 +175,19 @@ class Hooks {
   }
 
   Stream<RepoEntry> _collectStagedFiles() async* {
-    final indexChanges = await _streamGitFiles([
+    final gitRoot = await _gitRoot();
+    final indexChanges = await _streamGitFiles(gitRoot, [
       'diff',
       '--name-only',
     ]).toList();
-    final stagedChanges = _streamGitFiles([
+    final stagedChanges = _streamGitFiles(gitRoot, [
       'diff',
       '--name-only',
       '--cached',
     ]);
 
     await for (final path in stagedChanges) {
-      final file = _resolver.file(path);
+      final file = _fileResolver.file(path);
       if (!await file.exists()) {
         continue;
       }
@@ -280,34 +198,85 @@ class Hooks {
     }
   }
 
+  Future<String> _gitRoot() async => Directory(
+        await _programRunner.stream('git', const [
+          'rev-parse',
+          '--show-toplevel',
+        ]).first,
+      ).resolveSymbolicLinks();
+
   Stream<String> _streamGitFiles(
-    List<String> arguments, {
-    bool failOnExit = true,
-  }) async* {
-    final gitRoot = await Directory(
-      await _programRunner.stream('git', const [
-        'rev-parse',
-        '--show-toplevel',
-      ]).first,
-    ).resolveSymbolicLinks();
+    String gitRoot,
+    List<String> arguments,
+  ) async* {
     final resolvedCurrent = await Directory.current.resolveSymbolicLinks();
     yield* _programRunner
-        .stream('git', arguments, failOnExit: failOnExit)
+        .stream('git', arguments)
         .map((path) => join(gitRoot, path))
         .where((path) => isWithin(resolvedCurrent, path))
         .map((path) => relative(path, from: resolvedCurrent));
   }
 
-  static Future<FixImportsTask> _obtainFixImports() async {
-    final pubspecFile = File('pubspec.yaml');
-    final yamlData = loadYamlDocument(
-      await pubspecFile.readAsString(),
-      sourceUrl: pubspecFile.uri,
-    ).contents as YamlMap;
+  Future<HookResult> _processFileTaskResult(
+    RepoEntry entry,
+    TaskResult taskResult,
+  ) async {
+    switch (taskResult) {
+      case TaskResult.accepted:
+        // TODO print file ok
+        return HookResult.clean;
+      case TaskResult.modified:
+        if (entry.partiallyStaged) {
+          logger.log(
+            '(!) Fixing up partially staged file ${entry.file.path}',
+          );
+          return HookResult.hasUnstagedChanges;
+        } else {
+          logger.log('Fixing up ${entry.file.path}');
+          await _programRunner.stream('git', [
+            'add',
+            entry.file.path,
+          ]).drain<void>();
+          return HookResult.hasChanges;
+        }
+      case TaskResult.rejected:
+        if (continueOnRejected) {
+          return HookResult.rejected;
+        } else {
+          throw const _RejectedException();
+        }
+    }
+  }
 
-    return FixImportsTask(
-      libDir: Directory('lib'),
-      packageName: yamlData.value['name'] as String,
-    );
+  Future<HookResult> _processRepoTaskResult(
+    List<RepoEntry> entries,
+    TaskResult taskResult,
+  ) async {
+    if (entries.isEmpty) {
+      switch (taskResult) {
+        case TaskResult.accepted:
+          return HookResult.clean;
+        case TaskResult.modified:
+          return HookResult.hasChanges;
+        case TaskResult.rejected:
+          if (continueOnRejected) {
+            return HookResult.rejected;
+          } else {
+            throw const _RejectedException();
+          }
+      }
+    } else {
+      return Stream.fromIterable(entries)
+          .asyncMap(
+            (entry) => _processFileTaskResult(
+              entry,
+              taskResult,
+            ),
+          )
+          .fold<HookResult>(
+            HookResult.clean,
+            (previous, element) => previous._raiseTo(element),
+          );
+    }
   }
 }

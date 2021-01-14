@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/fix_imports_task.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:meta/meta.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -35,10 +36,10 @@ void main() {
 
       final res = await sut(RepoEntry(file: mockFile, partiallyStaged: false));
       if (outData != null) {
-        expect(res, true);
+        expect(res, TaskResult.modified);
         verify(mockFile.writeAsString(outData));
       } else {
-        expect(res, false);
+        expect(res, TaskResult.accepted);
         verifyNever(mockFile.writeAsString(any));
       }
     });

@@ -1,2 +1,12 @@
+export 'src/analyze_task.dart';
+export 'src/file_resolver.dart';
+export 'src/fix_imports_task.dart';
+export 'src/format_task.dart';
 export 'src/hooks.dart';
+export 'src/hooks_provider.dart';
 export 'src/logger.dart';
+export 'src/program_runner.dart';
+export 'src/pull_up_dependencies_task.dart';
+export 'src/repo_entry.dart';
+export 'src/task_base.dart';
+export 'src/task_exception.dart';

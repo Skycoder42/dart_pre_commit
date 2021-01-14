@@ -2,6 +2,7 @@ import 'package:dart_pre_commit/src/analyze_task.dart';
 import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:test/test.dart';
@@ -79,7 +80,7 @@ void main() {
       FakeEntry('test.dart'),
     ]);
 
-    expect(result, false);
+    expect(result, TaskResult.accepted);
     verify(mockRunner.stream(
       'dart',
       const [
@@ -113,7 +114,7 @@ void main() {
       FakeEntry('b/a.js'),
       FakeEntry('pipeline.yaml'),
     ]);
-    expect(result, true);
+    expect(result, TaskResult.rejected);
     verify(mockLogger.log('Running dart analyze...'));
     verify(mockLogger.log('  A - a1 at a.dart:10:11 - (1)'));
     verify(mockLogger.log('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'));
@@ -135,7 +136,7 @@ void main() {
     );
 
     final result = await sut([FakeEntry('a.dart')]);
-    expect(result, false);
+    expect(result, TaskResult.accepted);
     verify(mockLogger.log(any)).called(2);
   });
 }

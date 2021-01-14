@@ -4,6 +4,7 @@ import 'package:dart_pre_commit/src/file_resolver.dart';
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/pull_up_dependencies_task.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -86,7 +87,7 @@ packages:
       when(mockRunner.run(any, any)).thenAnswer((i) async => 0);
       final result = await sut([]);
 
-      expect(result, false);
+      expect(result, TaskResult.accepted);
       verify(mockRunner.run('git', const [
         'check-ignore',
         'pubspec.lock',
@@ -100,7 +101,7 @@ packages:
 
       final result = await sut([FakeEntry('pubspec.lock')]);
 
-      expect(result, false);
+      expect(result, TaskResult.accepted);
       verify(mockRunner.run('git', const [
         'check-ignore',
         'pubspec.lock',
@@ -114,7 +115,7 @@ packages:
 
       final result = await sut([]);
 
-      expect(result, false);
+      expect(result, TaskResult.accepted);
       verify(mockRunner.run('git', const [
         'check-ignore',
         'pubspec.lock',
@@ -169,7 +170,7 @@ packages:
       });
 
       final result = await sut([]);
-      expect(result, true);
+      expect(result, TaskResult.rejected);
       verify(mockLogger.log('Checking for updates packages...'));
       verify(mockLogger.log('  b: 1.0.0 -> 1.0.1'));
       verify(mockLogger.log('  d: 1.0.0 -> 1.1.0'));
@@ -219,7 +220,7 @@ packages:
       });
 
       final result = await sut([]);
-      expect(result, false);
+      expect(result, TaskResult.accepted);
       verify(mockLogger.log('Checking for updates packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
@@ -243,8 +244,66 @@ packages:
       });
 
       final result = await sut([]);
-      expect(result, false);
+      expect(result, TaskResult.accepted);
       verify(mockLogger.log('Checking for updates packages...'));
+      verifyNoMoreInteractions(mockLogger);
+    });
+
+    test('does not include prerelease versions', () async {
+      when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
+        final res = MockFile();
+        when(res.readAsString()).thenAnswer((i) async => '''
+dependencies:
+  a: ^1.0.0
+''');
+        return res;
+      });
+
+      when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        final res = MockFile();
+        when(res.readAsString()).thenAnswer((i) async => '''
+packages:
+  a:
+    version: '1.2.0-prelease.1'
+    dependency: 'direct'
+''');
+        return res;
+      });
+
+      final result = await sut([]);
+      expect(result, TaskResult.accepted);
+      verify(mockLogger.log('Checking for updates packages...'));
+      verifyNoMoreInteractions(mockLogger);
+    });
+
+    test('does include prerelease nullsafe versions', () async {
+      when(mockResolver.file('pubspec.yaml')).thenAnswer((i) {
+        final res = MockFile();
+        when(res.readAsString()).thenAnswer((i) async => '''
+dependencies:
+  a: ^1.0.0
+''');
+        return res;
+      });
+
+      when(mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        final res = MockFile();
+        when(res.readAsString()).thenAnswer((i) async => '''
+packages:
+  a:
+    version: '1.2.0-nullsafety.0'
+    dependency: 'direct'
+''');
+        return res;
+      });
+
+      final result = await sut([]);
+      expect(result, TaskResult.rejected);
+      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.log('  a: 1.0.0 -> 1.2.0-nullsafety.0'));
+      verify(
+        mockLogger.log('1 dependencies can be pulled up to newer versions!'),
+      );
       verifyNoMoreInteractions(mockLogger);
     });
   });
