@@ -233,12 +233,24 @@ void main() {
           'b.dart',
         ]),
       );
+      when(mockFileTask.taskName).thenReturn('file-task');
       when(mockFileTask(any))
-          .thenAnswer((_) async => throw const TaskException('error'));
+          .thenAnswer((_) async => throw TaskException('error'));
       final sut = createSut([mockFileTask]);
 
-      final result = await sut();
-      expect(result, HookResult.error);
+      await expectLater(
+        () => sut(),
+        throwsA(predicate(
+          (e) {
+            expect(e, isA<TaskException>());
+            final te = e as TaskException;
+            expect(te.task, 'file-task');
+            expect(te.entry, isNotNull);
+            expect(te.entry!.file.path, 'a.dart');
+            return true;
+          },
+        )),
+      );
       verify(mockFileTask(any)).called(1);
     });
 
@@ -364,12 +376,23 @@ void main() {
     });
 
     test('returns error on TaskError', () async {
+      when(mockRepoTask.taskName).thenReturn('repo-task');
       when(mockRepoTask(any))
-          .thenAnswer((_) async => throw const TaskException('error'));
+          .thenAnswer((_) async => throw TaskException('error'));
       final sut = createSut([mockRepoTask]);
 
-      final result = await sut();
-      expect(result, HookResult.error);
+      expect(
+        () => sut(),
+        throwsA(predicate(
+          (e) {
+            expect(e, isA<TaskException>());
+            final te = e as TaskException;
+            expect(te.task, 'repo-task');
+            expect(te.entry, isNull);
+            return true;
+          },
+        )),
+      );
     });
   });
 
@@ -402,7 +425,6 @@ void main() {
     Tuple2(HookResult.hasChanges, true),
     Tuple2(HookResult.hasUnstagedChanges, false),
     Tuple2(HookResult.rejected, false),
-    Tuple2(HookResult.error, false),
   ], (fixture) {
     expect(fixture.item1.isSuccess, fixture.item2);
   });

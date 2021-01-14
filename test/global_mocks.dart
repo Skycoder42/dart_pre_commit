@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:mockito/mockito.dart';
 

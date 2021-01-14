@@ -31,7 +31,7 @@ class FormatTask implements FileTask {
       case 1:
         return TaskResult.modified;
       default:
-        throw TaskException('dartfmt failed to format the file', entry);
+        throw TaskException('dartfmt failed to format the file');
     }
   }
 }

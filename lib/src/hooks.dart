@@ -31,9 +31,6 @@ enum HookResult {
   /// At least one hook detected a problem that has to be fixed manually before
   /// the commit can be accepted
   rejected,
-
-  /// An unexpected error occured.
-  error,
 }
 
 /// Extension methods for [HookResult]
@@ -49,7 +46,6 @@ extension HookResultX on HookResult {
   /// [HookResult.hasChanges]         | true
   /// [HookResult.hasUnstagedChanges] | false
   /// [HookResult.rejected]           | false
-  /// [HookResult.error]              | false
   bool get isSuccess => index <= HookResult.hasChanges.index;
 
   HookResult _raiseTo(HookResult target) =>
@@ -144,8 +140,13 @@ class Hooks {
         logger.log('Scanning ${entry.file.path}...');
         var taskResult = TaskResult.accepted;
         for (final task in fileTasks) {
-          if (task.canProcess(entry)) {
-            taskResult = taskResult.raiseTo(await task(entry));
+          final exceptionScope = TaskExceptionScope(task, entry);
+          try {
+            if (task.canProcess(entry)) {
+              taskResult = taskResult.raiseTo(await task(entry));
+            }
+          } finally {
+            exceptionScope.dispose();
           }
         }
         lintState = lintState._raiseTo(await _processFileTaskResult(
@@ -155,22 +156,24 @@ class Hooks {
       }
 
       for (final task in _tasks.whereType<RepoTask>()) {
-        final filteredEntries = entries.where(task.canProcess).toList();
-        if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
-          final taskResult = await task(filteredEntries);
-          lintState = lintState._raiseTo(await _processRepoTaskResult(
-            filteredEntries,
-            taskResult,
-          ));
+        final exceptionScope = TaskExceptionScope(task);
+        try {
+          final filteredEntries = entries.where(task.canProcess).toList();
+          if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
+            final taskResult = await task(filteredEntries);
+            lintState = lintState._raiseTo(await _processRepoTaskResult(
+              filteredEntries,
+              taskResult,
+            ));
+          }
+        } finally {
+          exceptionScope.dispose();
         }
       }
 
       return lintState;
     } on _RejectedException {
       return HookResult.rejected;
-    } on TaskException catch (error) {
-      logger.logError(error);
-      return HookResult.error;
     }
   }
 
