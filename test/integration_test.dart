@@ -62,7 +62,7 @@ void main() {
     Function(Stream<List<int>>)? onStdout,
   }) =>
       _run(
-        Platform.isWindows ? 'dart.bat' : 'dart',
+        'dart',
         [
           'pub',
           ...arguments,
