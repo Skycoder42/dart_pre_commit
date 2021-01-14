@@ -206,4 +206,10 @@ import '../code.dart';
 ''',
     );
   });
+
+  test('current returns task with current project data', () async {
+    final sut = await FixImportsTask.current();
+    expect(sut.libDir.path, 'lib');
+    expect(sut.packageName, 'dart_pre_commit');
+  });
 }
