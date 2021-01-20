@@ -6,6 +6,9 @@ class SimpleLogger implements Logger {
   final IOSink outSink;
   final IOSink errSink;
 
+  @override
+  LogLevel logLevel;
+
   String _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
@@ -13,6 +16,7 @@ class SimpleLogger implements Logger {
   SimpleLogger({
     IOSink? outSink,
     IOSink? errSink,
+    this.logLevel = LogLevel.info,
   })  : outSink = outSink ?? stdout,
         errSink = errSink ?? stderr;
 
@@ -40,29 +44,50 @@ class SimpleLogger implements Logger {
   void completeStatus() {}
 
   @override
-  void debug(String message) => outSink.writeln('  [DBG] $message');
+  void debug(String message) {
+    if (canLog(LogLevel.debug)) {
+      outSink.writeln('  [DBG] $message');
+    }
+  }
 
   @override
-  void info(String message) => outSink.writeln('  [INF] $message');
+  void info(String message) {
+    if (canLog(LogLevel.info)) {
+      outSink.writeln('  [INF] $message');
+    }
+  }
 
   @override
-  void warn(String message) => outSink.writeln('  [WRN] $message');
+  void warn(String message) {
+    if (canLog(LogLevel.warn)) {
+      outSink.writeln('  [WRN] $message');
+    }
+  }
 
   @override
-  void error(String message) => outSink.writeln('  [ERR] $message');
+  void error(String message) {
+    if (canLog(LogLevel.error)) {
+      outSink.writeln('  [ERR] $message');
+    }
+  }
 
   @override
-  void except(Exception exception, [StackTrace? stackTrace]) =>
-      stackTrace != null
-          ? outSink.writeln('  [EXC] $exception\n$stackTrace')
-          : outSink.writeln('  [EXC] $exception');
+  void except(Exception exception, [StackTrace? stackTrace]) {
+    if (canLog(LogLevel.except)) {
+      final stackLog = stackTrace != null ? '\n$stackTrace' : '';
+      outSink.writeln('  [EXC] $exception$stackLog');
+    }
+  }
 
   @override
-  Future<void> pipeStderr(Stream<List<int>> errStream) =>
-      errStream.listen(errSink.add).asFuture();
+  Future<void> pipeStderr(Stream<List<int>> errStream) => errStream.listen((e) {
+        if (canLog(LogLevel.error)) {
+          errSink.add(e);
+        }
+      }).asFuture();
 }
 
-extension TaskStatusIconX on TaskStatus {
+extension _TaskStatusIconX on TaskStatus {
   String get icon {
     switch (this) {
       case TaskStatus.scanning:

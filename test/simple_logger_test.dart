@@ -26,6 +26,7 @@ void main() {
     sut = SimpleLogger(
       outSink: mockOutSink,
       errSink: mockErrSink,
+      logLevel: LogLevel.debug,
     );
   });
 
@@ -120,25 +121,57 @@ void main() {
     verifyZeroInteractions(mockOutSink);
   });
 
-  testWithData<Tuple2<void Function(SimpleLogger), String>>(
-    'task logging prints log',
-    [
-      Tuple2((l) => l.debug('debug'), '  [DBG] debug'),
-      Tuple2((l) => l.info('info'), '  [INF] info'),
-      Tuple2((l) => l.warn('warn'), '  [WRN] warn'),
-      Tuple2((l) => l.error('error'), '  [ERR] error'),
-      Tuple2((l) => l.except(Exception('error')), '  [EXC] Exception: error'),
-      Tuple2(
-        (l) => l.except(Exception('error'), StackTrace.empty),
-        '  [EXC] Exception: error\n',
-      ),
-    ],
-    (fixture) {
-      fixture.item1(sut);
-      verify(mockOutSink.writeln(fixture.item2));
-      verifyNoMoreInteractions(mockOutSink);
-    },
-  );
+  group('task logging', () {
+    testWithData<Tuple2<void Function(SimpleLogger), String>>(
+      'prints log',
+      [
+        Tuple2((l) => l.debug('debug'), '  [DBG] debug'),
+        Tuple2((l) => l.info('info'), '  [INF] info'),
+        Tuple2((l) => l.warn('warn'), '  [WRN] warn'),
+        Tuple2((l) => l.error('error'), '  [ERR] error'),
+        Tuple2((l) => l.except(Exception('error')), '  [EXC] Exception: error'),
+        Tuple2(
+          (l) => l.except(Exception('error'), StackTrace.empty),
+          '  [EXC] Exception: error\n',
+        ),
+      ],
+      (fixture) {
+        fixture.item1(sut);
+        verify(mockOutSink.writeln(fixture.item2));
+        verifyNoMoreInteractions(mockOutSink);
+      },
+    );
+
+    testWithData<
+        Tuple3<LogLevel, void Function(SimpleLogger)?,
+            void Function(SimpleLogger)?>>(
+      'honors logevel',
+      [
+        Tuple3(LogLevel.debug, null, (l) => l.debug('')),
+        Tuple3(LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
+        Tuple3(LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
+        Tuple3(LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
+        Tuple3(
+          LogLevel.except,
+          (l) => l.error(''),
+          (l) => l.except(Exception()),
+        ),
+        Tuple3(LogLevel.nothing, (l) => l.except(Exception()), null),
+      ],
+      (fixture) {
+        sut.logLevel = fixture.item1;
+
+        fixture.item2?.call(sut);
+        verifyZeroInteractions(mockOutSink);
+
+        if (fixture.item3 != null) {
+          fixture.item3!(sut);
+          verify(mockOutSink.writeln(any)).called(1);
+          verifyNoMoreInteractions(mockOutSink);
+        }
+      },
+    );
+  });
 
   test('pipeStderr pipes errors to sink', () async {
     final errStream = Stream.fromIterable([

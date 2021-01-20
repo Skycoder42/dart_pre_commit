@@ -29,7 +29,7 @@ void main() {
   setUp(() {
     output.clear();
 
-    sut = ConsoleLogger();
+    sut = ConsoleLogger(LogLevel.debug);
   });
 
   group('updateStatus', () {
@@ -138,6 +138,34 @@ void main() {
             cleanLine('status'),
       );
     });
+    testWithData<
+        Tuple3<LogLevel, void Function(ConsoleLogger)?,
+            void Function(ConsoleLogger)?>>(
+      'honors log level',
+      [
+        Tuple3(LogLevel.debug, null, (l) => l.debug('')),
+        Tuple3(LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
+        Tuple3(LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
+        Tuple3(LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
+        Tuple3(
+          LogLevel.except,
+          (l) => l.error(''),
+          (l) => l.except(Exception()),
+        ),
+        Tuple3(LogLevel.nothing, (l) => l.except(Exception()), null),
+      ],
+      (fixture) {
+        sut.logLevel = fixture.item1;
+
+        fixture.item2?.call(sut);
+        expect(output.toString(), isEmpty);
+
+        if (fixture.item3 != null) {
+          fixture.item3!(sut);
+          expect(output.toString(), isNotEmpty);
+        }
+      },
+    );
   });
 
   test('pipeStderr prints error lines', () async {

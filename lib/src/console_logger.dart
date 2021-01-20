@@ -10,6 +10,11 @@ class ConsoleLogger implements Logger {
   String? _statusDetail;
 
   @override
+  LogLevel logLevel;
+
+  ConsoleLogger([this.logLevel = LogLevel.info]);
+
+  @override
   void updateStatus({
     String? message,
     TaskStatus? status,
@@ -38,19 +43,20 @@ class ConsoleLogger implements Logger {
   void completeStatus() => Console.nextLine();
 
   @override
-  void debug(String message) => _log(message, Color.LIGHT_GRAY);
+  void debug(String message) => _log(LogLevel.debug, message, Color.LIGHT_GRAY);
 
   @override
-  void info(String message) => _log(message, Color.BLUE);
+  void info(String message) => _log(LogLevel.info, message, Color.BLUE);
 
   @override
-  void warn(String message) => _log(message, Color.GOLD);
+  void warn(String message) => _log(LogLevel.warn, message, Color.GOLD);
 
   @override
-  void error(String message) => _log(message, Color.RED);
+  void error(String message) => _log(LogLevel.error, message, Color.RED);
 
   @override
   void except(Exception exception, [StackTrace? stackTrace]) => _log(
+        LogLevel.except,
         stackTrace != null ? '$exception\n$stackTrace' : exception.toString(),
         Color.MAGENTA,
       );
@@ -59,10 +65,14 @@ class ConsoleLogger implements Logger {
   Future<void> pipeStderr(Stream<List<int>> stderr) => stderr
       .transform(utf8.decoder)
       .transform(const LineSplitter())
-      .listen((event) => _log(event, Color.DARK_RED))
+      .listen((event) => _log(LogLevel.error, event, Color.DARK_RED))
       .asFuture();
 
-  void _log(String message, [Color? color]) {
+  void _log(LogLevel level, String message, [Color? color]) {
+    if (!canLog(level)) {
+      return;
+    }
+
     try {
       Console.eraseLine();
       if (color != null) {
@@ -80,7 +90,7 @@ class ConsoleLogger implements Logger {
   }
 }
 
-extension TaskStatusIconX on TaskStatus {
+extension _TaskStatusIconX on TaskStatus {
   String get icon {
     switch (this) {
       case TaskStatus.scanning:

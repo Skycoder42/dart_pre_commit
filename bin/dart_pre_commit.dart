@@ -92,6 +92,23 @@ Future<int> _run(List<String> args) async {
           'needs user intervention", output exit codes according to the full '
           'hook result (See HookResult).',
     )
+    ..addOption(
+      'log-level',
+      abbr: 'l',
+      allowed: LogLevel.values.map((e) => e.name),
+      defaultsTo: LogLevel.info.name,
+      help: 'Specify the logging level for task logs. This only affects log '
+          'details of tasks, not the status update message. The levels are:',
+      valueHelp: 'level',
+      allowedHelp: {
+        LogLevel.debug.name: 'Print all messages',
+        LogLevel.info.name: 'Print informational messages',
+        LogLevel.warn.name: 'Print warnings and errors only',
+        LogLevel.error.name: 'Print errors only',
+        LogLevel.except.name: 'Print exceptions only',
+        LogLevel.nothing.name: 'Print nothing at all',
+      },
+    )
     ..addFlag(
       'version',
       abbr: 'v',
@@ -124,6 +141,7 @@ Future<int> _run(List<String> args) async {
       pullUpDependencies: options['check-pull-up'] as bool,
       continueOnRejected: options['continue-on-error'] as bool,
     )).future);
+    hooks.logger.logLevel = LogLevelX.parse(options['log-level'] as String);
 
     final result = await hooks();
     if (options['detailed-exit-code'] as bool) {
@@ -135,6 +153,9 @@ Future<int> _run(List<String> args) async {
     stderr
       ..writeln('${e.message}\n')
       ..write(parser.usage);
+    return 2;
+  } on Exception catch (e, s) {
+    di.read(HooksProviderInternal.taskLoggerProvider).except(e, s);
     return 127;
   } finally {
     di.dispose();
