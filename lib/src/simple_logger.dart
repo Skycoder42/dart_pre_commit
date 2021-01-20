@@ -3,9 +3,18 @@ import 'dart:io';
 import 'package:dart_pre_commit/src/logger.dart';
 
 class SimpleLogger implements Logger {
+  final IOSink outSink;
+  final IOSink errSink;
+
   String _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
+
+  SimpleLogger({
+    IOSink? outSink,
+    IOSink? errSink,
+  })  : outSink = outSink ?? stdout,
+        errSink = errSink ?? stderr;
 
   @override
   void updateStatus({
@@ -18,39 +27,39 @@ class SimpleLogger implements Logger {
     _statusState = status ?? (clear ? null : _statusState);
     _statusDetail = detail ?? (clear ? null : _statusDetail);
     if (_statusState != null) {
-      stdout.write('${_statusState!.icon} ');
+      outSink.write('${_statusState!.icon} ');
     }
-    stdout.write(_statusMessage);
+    outSink.write(_statusMessage);
     if (_statusDetail != null) {
-      stdout.write(' $_statusDetail');
+      outSink.write(' $_statusDetail');
     }
-    stdout.writeln();
+    outSink.writeln();
   }
 
   @override
   void completeStatus() {}
 
   @override
-  void debug(String message) => stdout.writeln('  [DBG] $message');
+  void debug(String message) => outSink.writeln('  [DBG] $message');
 
   @override
-  void info(String message) => stdout.writeln('  [INF] $message');
+  void info(String message) => outSink.writeln('  [INF] $message');
 
   @override
-  void warn(String message) => stdout.writeln('  [WRN] $message');
+  void warn(String message) => outSink.writeln('  [WRN] $message');
 
   @override
-  void error(String message) => stdout.writeln('  [ERR] $message');
+  void error(String message) => outSink.writeln('  [ERR] $message');
 
   @override
   void except(Exception exception, [StackTrace? stackTrace]) =>
       stackTrace != null
-          ? stdout.writeln('  [EXC] $exception\n$stackTrace')
-          : stdout.writeln('  [EXC] $exception');
+          ? outSink.writeln('  [EXC] $exception\n$stackTrace')
+          : outSink.writeln('  [EXC] $exception');
 
   @override
   Future<void> pipeStderr(Stream<List<int>> errStream) =>
-      errStream.listen(stderr.add).asFuture();
+      errStream.listen(errSink.add).asFuture();
 }
 
 extension TaskStatusIconX on TaskStatus {
@@ -65,7 +74,7 @@ extension TaskStatusIconX on TaskStatus {
       case TaskStatus.hasUnstagedChanges:
         return '[U]';
       case TaskStatus.rejected:
-        return '[E]';
+        return '[R]';
     }
   }
 }

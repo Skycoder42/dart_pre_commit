@@ -98,6 +98,8 @@ class Hooks {
   /// usualk. In both cases, [call()] will resolve with [HookResult.rejected].
   final bool continueOnRejected;
 
+  Iterable<String> get tasks => _tasks.map((t) => t.taskName);
+
   /// Constructs a new [Hooks] instance.
   ///
   /// You can use [fixImports], [format] and [analyze] to specify which hooks to
