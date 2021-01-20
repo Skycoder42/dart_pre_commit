@@ -6,10 +6,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Basic Interface to create custom file and repository based tasks (#6)
+- Made all tasks and helper classes public (#5)
+- Added riverpod-based HooksProvider for easier use (replaces Hooks.create)
 ### Changed
+- Refactored Hooks API to allow custom hooks
+- Generalized HookResult to be independent of specific tasks
+  - error has been removed, instead a Exceptions are thrown in case of fatal 
+  errors
+  - linter, pullUp have been replaced by the more generic rejected state
+- refactor logger (#3)
+  - there is a pretty and a simple logger now
+  - the correct one is auto-detected based on the availability of a tty
+  - provides a useful status message so other logs/exceptions can be easily 
+  associated with the task
+  - debug-logging has been added to all tasks
+  - log-levels can be configured to show certain log messages
 ### Deprecated
 ### Removed
+- Hooks.create was removed, use the provider instead
+- TaskException was removed in favor of normal exceptions
 ### Fixed
+- pull-up-dependencies now works in subdirs (#8)
+- pull-up-dependencies now correctly handles nullsafety releases
 ### Security
 
 ## [2.0.0-nullsafety.0] - 2020-12-10
