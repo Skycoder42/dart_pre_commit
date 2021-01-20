@@ -3,15 +3,14 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:dart_pre_commit/src/task_exception.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'program_runner_test.mocks.dart';
 
-@GenerateMocks([
-  TaskLogger,
+@GenerateMocks([], customMocks: [
+  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
 ])
 void main() {
   final mockLogger = MockTaskLogger();
@@ -50,10 +49,21 @@ void main() {
     });
 
     test('throws error if exit code indicates so', () async {
-      final stream = _stream(const [
+      const args = [
         'echo a && echo b && false',
-      ]);
-      expect(() => stream.last, throwsA(isA<TaskException>()));
+      ];
+      final stream = _stream(args);
+      expect(() => stream.last, throwsA(predicate((e) {
+        expect(e, isA<ProgramExitException>());
+        final exception = e as ProgramExitException;
+        expect(exception.exitCode, 1);
+        expect(exception.program, Platform.isWindows ? 'cmd' : 'bash');
+        expect(
+          exception.arguments,
+          Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
+        );
+        return true;
+      })));
     });
   });
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
@@ -13,13 +14,17 @@ import 'task_base.dart';
 class FixImportsTask implements FileTask {
   final String packageName;
   final Directory libDir;
+  final TaskLogger logger;
 
   const FixImportsTask({
     required this.packageName,
     required this.libDir,
+    required this.logger,
   });
 
-  static Future<FixImportsTask> current() async {
+  static Future<FixImportsTask> current({
+    required TaskLogger logger,
+  }) async {
     final pubspecFile = File('pubspec.yaml');
     final yamlData = loadYamlDocument(
       await pubspecFile.readAsString(),
@@ -29,6 +34,7 @@ class FixImportsTask implements FileTask {
     return FixImportsTask(
       libDir: Directory('lib'),
       packageName: yamlData.value['name'] as String,
+      logger: logger,
     );
   }
 
@@ -49,16 +55,20 @@ class FixImportsTask implements FileTask {
           packageName: packageName,
           file: entry.file,
           libDir: libDir,
+          logger: logger,
         )
-        .organizeImports()
+        .organizeImports(logger)
         .shaSum(outDigest)
         .withNewlines()
         .join();
 
     if (inDigest.events.single != outDigest.events.single) {
+      logger.debug('File has been modified, writing changes...');
       await entry.file.writeAsString(result);
+      logger.debug('Write successful');
       return TaskResult.modified;
     } else {
+      logger.debug('No imports modified, keeping file as is');
       return TaskResult.accepted;
     }
   }
@@ -81,6 +91,7 @@ extension _ImportFixExtensions on Stream<String> {
     required String packageName,
     required File file,
     required Directory libDir,
+    required TaskLogger logger,
   }) async* {
     if (!isWithin(libDir.path, file.path)) {
       yield* this;
@@ -94,6 +105,7 @@ extension _ImportFixExtensions on Stream<String> {
       final trimmedLine = line.trim();
       final match = regexp.firstMatch(trimmedLine);
       if (match != null) {
+        logger.debug('Relativizing $trimmedLine');
         final quote = match[1];
         final importPath = match[2];
         final postfix = match[3];
@@ -110,7 +122,7 @@ extension _ImportFixExtensions on Stream<String> {
     }
   }
 
-  Stream<String> organizeImports() async* {
+  Stream<String> organizeImports(TaskLogger logger) async* {
     final dartRegexp = RegExp(
       r"""^\s*import\s+(?:"|')dart:[^;]+;\s*(?:\/\/.*)?$""",
     );
@@ -153,6 +165,7 @@ extension _ImportFixExtensions on Stream<String> {
     }
 
     // sort individual imports
+    logger.debug('Sorting imports...');
     dartImports.sort((a, b) => a.compareTo(b));
     packageImports.sort((a, b) => a.compareTo(b));
     relativeImports.sort((a, b) => a.compareTo(b));

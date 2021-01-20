@@ -87,7 +87,9 @@ class HooksProviderInternal {
   );
 
   static final fixImportsProvider = FutureProvider(
-    (ref) => FixImportsTask.current(),
+    (ref) => FixImportsTask.current(
+      logger: ref.watch(taskLoggerProvider),
+    ),
   );
 
   static final formatProvider = Provider(

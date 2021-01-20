@@ -1,7 +1,6 @@
 import 'package:dart_pre_commit/src/format_task.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
-import 'package:dart_pre_commit/src/task_exception.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -75,6 +74,6 @@ void main() {
 
   test('throws exception if dart format returns >1', () async {
     when(mockRunner.run(any, any)).thenAnswer((_) async => 42);
-    expect(() => sut(fakeEntry), throwsA(isA<TaskException>()));
+    expect(() => sut(fakeEntry), throwsA(isA<ProgramExitException>()));
   });
 }

@@ -30,10 +30,10 @@ class PullUpDependenciesTask implements RepoTask {
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     if (!await _shouldCheck(entries)) {
+      logger.debug('No staged changes for pubspec.lock, skipping');
       return TaskResult.accepted;
     }
 
-    logger.debug('Checking for updated packages...');
     final lockFile = fileResolver.file('pubspec.lock');
     final pubspecLock = loadYaml(await lockFile.readAsString()) as YamlMap?;
     final resolvedVersions = _resolveLockVersions(pubspecLock);
@@ -55,6 +55,7 @@ class PullUpDependenciesTask implements RepoTask {
       );
       return TaskResult.rejected;
     } else {
+      logger.debug('All dependencies are up to date');
       return TaskResult.accepted;
     }
   }
@@ -67,9 +68,11 @@ class PullUpDependenciesTask implements RepoTask {
 
     if (code == 0) {
       // file is ignored
+      logger.debug('pubspec.lock is ignored');
       return true;
     } else {
       // file is not ignored
+      logger.debug('pubspec.lock is not ignored, checking if staged');
       return entries.isNotEmpty;
     }
   }
@@ -111,7 +114,15 @@ class PullUpDependenciesTask implements RepoTask {
               resolvedVersion! > currentVersion) {
             ++updateCtr;
             logger.info('  ${entry.key}: $currentVersion -> $resolvedVersion');
+          } else {
+            logger.debug(
+              '  ${entry.key}: $currentVersion OK',
+            );
           }
+        } else {
+          logger.debug(
+            '  ${entry.key}: $versionString skipped',
+          );
         }
       }
     }

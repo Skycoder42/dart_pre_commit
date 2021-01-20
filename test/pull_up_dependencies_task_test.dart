@@ -93,8 +93,9 @@ packages:
         'check-ignore',
         'pubspec.lock',
       ]));
-      verify(mockLogger.debug('Checking for updated packages...'));
-      verifyNoMoreInteractions(mockLogger);
+      verify(mockLogger.debug('pubspec.lock is ignored'));
+      verify(mockLogger.debug('All dependencies are up to date'));
+      verifyNever(mockLogger.info(any));
     });
 
     test('processes packages if lockfile is unstaged', () async {
@@ -107,8 +108,11 @@ packages:
         'check-ignore',
         'pubspec.lock',
       ]));
-      verify(mockLogger.debug('Checking for updated packages...'));
-      verifyNoMoreInteractions(mockLogger);
+      verify(
+        mockLogger.debug('pubspec.lock is not ignored, checking if staged'),
+      );
+      verify(mockLogger.debug('All dependencies are up to date'));
+      verifyNever(mockLogger.info(any));
     });
 
     test('does nothing if lockfile is tracked but unstaged', () async {
@@ -121,7 +125,11 @@ packages:
         'check-ignore',
         'pubspec.lock',
       ]));
-      verifyZeroInteractions(mockLogger);
+      verify(
+        mockLogger.debug('pubspec.lock is not ignored, checking if staged'),
+      );
+      verify(mockLogger.debug('No staged changes for pubspec.lock, skipping'));
+      verifyNever(mockLogger.info(any));
     });
   });
 
@@ -172,13 +180,12 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.rejected);
-      verify(mockLogger.debug('Checking for updated packages...'));
       verify(mockLogger.info('  b: 1.0.0 -> 1.0.1'));
       verify(mockLogger.info('  d: 1.0.0 -> 1.1.0'));
       verify(
         mockLogger.info('2 dependencies can be pulled up to newer versions!'),
       );
-      verifyNoMoreInteractions(mockLogger);
+      verifyNever(mockLogger.info(any));
     });
 
     test('Prints nothing and returns true if no updates match', () async {
@@ -223,8 +230,8 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.debug('Checking for updated packages...'));
-      verifyNoMoreInteractions(mockLogger);
+      verify(mockLogger.debug('All dependencies are up to date'));
+      verifyNever(mockLogger.info(any));
     });
 
     test('Does not crash if pubspec.lock is missing dependency', () async {
@@ -247,8 +254,8 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.debug('Checking for updated packages...'));
-      verifyNoMoreInteractions(mockLogger);
+      verify(mockLogger.debug('All dependencies are up to date'));
+      verifyNever(mockLogger.info(any));
     });
 
     test('does not include prerelease versions', () async {
@@ -274,8 +281,8 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.debug('Checking for updated packages...'));
-      verifyNoMoreInteractions(mockLogger);
+      verify(mockLogger.debug('All dependencies are up to date'));
+      verifyNever(mockLogger.info(any));
     });
 
     test('does include prerelease nullsafe versions', () async {
@@ -301,12 +308,11 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.rejected);
-      verify(mockLogger.debug('Checking for updated packages...'));
       verify(mockLogger.info('  a: 1.0.0 -> 1.2.0-nullsafety.0'));
       verify(
         mockLogger.info('1 dependencies can be pulled up to newer versions!'),
       );
-      verifyNoMoreInteractions(mockLogger);
+      verifyNever(mockLogger.info(any));
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/fix_imports_task.dart';
+import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:meta/meta.dart';
@@ -15,9 +16,12 @@ import 'test_with_data.dart';
 
 @GenerateMocks([
   File,
+], customMocks: [
+  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
 ])
 void main() {
   final mockFile = MockFile();
+  final mockLogger = MockTaskLogger();
 
   late FixImportsTask sut;
 
@@ -47,6 +51,7 @@ void main() {
 
   setUp(() {
     reset(mockFile);
+    reset(mockLogger);
 
     when(mockFile.path).thenReturn(join('lib', 'tst_mock.dart'));
     when(mockFile.parent).thenReturn(Directory('lib'));
@@ -57,6 +62,7 @@ void main() {
     sut = FixImportsTask(
       libDir: Directory('lib'),
       packageName: 'mock',
+      logger: mockLogger,
     );
   });
 
@@ -208,7 +214,9 @@ import '../code.dart';
   });
 
   test('current returns task with current project data', () async {
-    final sut = await FixImportsTask.current();
+    final sut = await FixImportsTask.current(
+      logger: mockLogger,
+    );
     expect(sut.libDir.path, 'lib');
     expect(sut.packageName, 'dart_pre_commit');
   });

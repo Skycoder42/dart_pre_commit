@@ -115,7 +115,6 @@ void main() {
       FakeEntry('pipeline.yaml'),
     ]);
     expect(result, TaskResult.rejected);
-    verify(mockLogger.debug('Running dart analyze...'));
     verify(mockLogger.info('  A - a1 at a.dart:10:11 - (1)'));
     verify(
       mockLogger.info('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'),

@@ -4,7 +4,32 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/logger.dart';
 
-import 'task_exception.dart';
+class ProgramExitException implements Exception {
+  final int exitCode;
+  final String? program;
+  final List<String>? arguments;
+
+  ProgramExitException(
+    this.exitCode, [
+    this.program,
+    this.arguments,
+  ]);
+
+  @override
+  String toString() {
+    final progBuilder = StringBuffer();
+    if (program != null) {
+      progBuilder..write('"')..write(program!);
+      if (arguments?.isNotEmpty ?? false) {
+        progBuilder..write(' ')..write(arguments!.join(', '));
+      }
+      progBuilder.write('"');
+    } else {
+      progBuilder.write('A subprocess');
+    }
+    return '$progBuilder failed with exit code $exitCode';
+  }
+}
 
 class ProgramRunner {
   final TaskLogger logger;
@@ -20,6 +45,7 @@ class ProgramRunner {
   }) async* {
     Future<void>? errLog;
     try {
+      logger.debug('Streaming $program ${arguments.join(', ')}');
       final process = await Process.start(program, arguments);
       errLog = logger.pipeStderr(process.stderr);
       yield* process.stdout
@@ -28,8 +54,9 @@ class ProgramRunner {
       if (failOnExit) {
         final exitCode = await process.exitCode;
         if (exitCode != 0) {
-          throw TaskException('$program failed with exit code $exitCode');
+          throw ProgramExitException(exitCode, program, arguments);
         }
+        logger.debug('$program finished with exit code: $exitCode');
       }
     } finally {
       await errLog;
@@ -42,6 +69,7 @@ class ProgramRunner {
   ) async {
     Future<void>? errLog;
     try {
+      logger.debug('Running $program ${arguments.join(', ')}');
       final process = await Process.start(program, arguments);
       errLog = logger.pipeStderr(process.stderr);
       await process.stdout.drain<void>();

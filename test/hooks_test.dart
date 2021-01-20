@@ -6,7 +6,6 @@ import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/program_runner.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
-import 'package:dart_pre_commit/src/task_exception.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart';
@@ -262,34 +261,6 @@ void main() {
       verify(mockFileTask(any)).called(fixture.item2);
     });
 
-    test('returns error on TaskError', () async {
-      when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
-          .thenAnswer(
-        (_) => Stream.fromIterable(const [
-          'a.dart',
-          'b.dart',
-        ]),
-      );
-      when(mockFileTask(any))
-          .thenAnswer((_) async => throw TaskException('error'));
-      final sut = createSut([mockFileTask]);
-
-      await expectLater(
-        () => sut(),
-        throwsA(predicate(
-          (e) {
-            expect(e, isA<TaskException>());
-            final te = e as TaskException;
-            expect(te.task, 'file-task');
-            expect(te.entry, isNotNull);
-            expect(te.entry!.file.path, 'a.dart');
-            return true;
-          },
-        )),
-      );
-      verify(mockFileTask(any)).called(1);
-    });
-
     test('calls all tasks', () async {
       when(mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
@@ -409,25 +380,6 @@ void main() {
       final result = await sut();
       expect(result, HookResult.rejected);
       verify(mockRepoTask(any)).called(fixture.item3);
-    });
-
-    test('returns error on TaskError', () async {
-      when(mockRepoTask(any))
-          .thenAnswer((_) async => throw TaskException('error'));
-      final sut = createSut([mockRepoTask]);
-
-      expect(
-        () => sut(),
-        throwsA(predicate(
-          (e) {
-            expect(e, isA<TaskException>());
-            final te = e as TaskException;
-            expect(te.task, 'repo-task');
-            expect(te.entry, isNull);
-            return true;
-          },
-        )),
-      );
     });
   });
 

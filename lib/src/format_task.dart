@@ -1,7 +1,6 @@
 import 'program_runner.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
-import 'task_exception.dart';
 
 class FormatTask implements FileTask {
   final ProgramRunner programRunner;
@@ -18,22 +17,21 @@ class FormatTask implements FileTask {
 
   @override
   Future<TaskResult> call(RepoEntry entry) async {
-    final exitCode = await programRunner.run(
-      'dart',
-      [
-        'format',
-        '--fix',
-        '--set-exit-if-changed',
-        entry.file.path,
-      ],
-    );
+    const program = 'dart';
+    final arguments = [
+      'format',
+      '--fix',
+      '--set-exit-if-changed',
+      entry.file.path,
+    ];
+    final exitCode = await programRunner.run(program, arguments);
     switch (exitCode) {
       case 0:
         return TaskResult.accepted;
       case 1:
         return TaskResult.modified;
       default:
-        throw TaskException('dartfmt failed to format the file');
+        throw ProgramExitException(exitCode, program, arguments);
     }
   }
 }

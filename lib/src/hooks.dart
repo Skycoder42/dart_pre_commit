@@ -12,7 +12,6 @@ import 'program_runner.dart';
 import 'pull_up_dependencies_task.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
-import 'task_exception.dart';
 
 /// The result of a LintHooks call.
 ///
@@ -179,14 +178,9 @@ class Hooks {
       );
       var scanResult = TaskResult.accepted;
       for (final task in _tasks.whereType<FileTask>()) {
-        final exceptionScope = TaskExceptionScope(task, entry);
-        try {
-          if (task.canProcess(entry)) {
-            final taskResult = await _runFileTask(task, entry);
-            scanResult = scanResult.raiseTo(taskResult);
-          }
-        } finally {
-          exceptionScope.dispose();
+        if (task.canProcess(entry)) {
+          final taskResult = await _runFileTask(task, entry);
+          scanResult = scanResult.raiseTo(taskResult);
         }
       }
       final hookResult = await _processTaskResult(scanResult, entry);
@@ -232,16 +226,11 @@ class Hooks {
     RepoTask task,
     List<RepoEntry> entries,
   ) async {
-    final exceptionScope = TaskExceptionScope(task);
-    try {
-      final filteredEntries = entries.where(task.canProcess).toList();
-      if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
-        return _runRepoTask(task, filteredEntries);
-      } else {
-        return HookResult.clean;
-      }
-    } finally {
-      exceptionScope.dispose();
+    final filteredEntries = entries.where(task.canProcess).toList();
+    if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
+      return _runRepoTask(task, filteredEntries);
+    } else {
+      return HookResult.clean;
     }
   }
 

@@ -55,7 +55,6 @@ class AnalyzeTask implements RepoTask {
     };
     assert(lints.isNotEmpty);
 
-    logger.debug('Running dart analyze...');
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries
           .cast<MapEntry<String, List<AnalyzeResult>>?>()
@@ -93,12 +92,18 @@ class AnalyzeTask implements RepoTask {
           ],
           failOnExit: false,
         )
-        .parseResult(fileResolver);
+        .parseResult(
+          fileResolver: fileResolver,
+          logger: logger,
+        );
   }
 }
 
 extension _ResultTransformer on Stream<String> {
-  Stream<AnalyzeResult> parseResult(FileResolver fileResolver) async* {
+  Stream<AnalyzeResult> parseResult({
+    required FileResolver fileResolver,
+    required TaskLogger logger,
+  }) async* {
     final regExp = RegExp(
       r'^\s*(\w+)\s+-\s+([^-]+)\s+at\s+([^-:]+?):(\d+):(\d+)\s+-\s+\((\w+)\)\s*$',
     );
@@ -114,6 +119,8 @@ extension _ResultTransformer on Stream<String> {
           description: match[2]!,
         );
         yield res;
+      } else {
+        logger.debug('Skipping analyze line: $line');
       }
     }
   }
