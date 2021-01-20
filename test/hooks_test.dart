@@ -51,16 +51,23 @@ void main() {
     reset(mockFileTask);
     reset(mockRepoTask);
 
-    when(mockLogger.log(any)).thenReturn(null);
-    when(mockLogger.logError(any)).thenReturn(null);
+    when(mockLogger.updateStatus(
+      message: anyNamed('message'),
+      status: anyNamed('status'),
+      detail: anyNamed('detail'),
+      clear: anyNamed('clear'),
+    )).thenReturn(null);
+    when(mockLogger.completeStatus()).thenReturn(null);
 
     when(mockResolver.file(any))
         .thenAnswer((i) => FakeFile(i.positionalArguments.first as String));
     when(mockRunner.stream(any, any))
         .thenAnswer((_) => Stream.fromIterable(const []));
 
+    when(mockFileTask.taskName).thenReturn('file-task');
     when(mockFileTask.filePattern).thenReturn(RegExp('.*'));
     when(mockFileTask(any)).thenAnswer((_) async => TaskResult.accepted);
+    when(mockRepoTask.taskName).thenReturn('repo-task');
     when(mockRepoTask.filePattern).thenReturn(RegExp('.*'));
     when(mockRepoTask.callForEmptyEntries).thenReturn(true);
     when(mockRepoTask(any)).thenAnswer((_) async => TaskResult.accepted);
@@ -95,11 +102,26 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(mockLogger.log('Scanning a.dart...'));
-      verify(mockLogger.log('Scanning path${separator}b.dart...'));
-      verify(mockLogger.log('Scanning c.g.dart...'));
-      verify(mockLogger.log('Scanning any.txt...'));
-      verifyNever(mockLogger.log(any));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning a.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning path${separator}b.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning c.g.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning any.txt...',
+        status: TaskStatus.scanning,
+      ));
+      verifyNever(mockLogger.updateStatus(
+        message: anyNamed('message'),
+        status: anyNamed('status'),
+      ));
     });
 
     test('only processes existing files', () async {
@@ -120,8 +142,14 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(mockLogger.log('Scanning b.dart...'));
-      verifyNever(mockLogger.log(any));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning b.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verifyNever(mockLogger.updateStatus(
+        message: anyNamed('message'),
+        status: anyNamed('status'),
+      ));
     });
 
     test('only processes files in the subdir if pwd is not the root dir',
@@ -148,9 +176,18 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(mockLogger.log('Scanning a.dart...'));
-      verify(mockLogger.log('Scanning subdir${separator}b.dart...'));
-      verifyNever(mockLogger.log(any));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning a.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verify(mockLogger.updateStatus(
+        message: 'Scanning subdir${separator}b.dart...',
+        status: TaskStatus.scanning,
+      ));
+      verifyNever(mockLogger.updateStatus(
+        message: anyNamed('message'),
+        status: anyNamed('status'),
+      ));
     });
   });
 
@@ -233,7 +270,6 @@ void main() {
           'b.dart',
         ]),
       );
-      when(mockFileTask.taskName).thenReturn('file-task');
       when(mockFileTask(any))
           .thenAnswer((_) async => throw TaskException('error'));
       final sut = createSut([mockFileTask]);
@@ -376,7 +412,6 @@ void main() {
     });
 
     test('returns error on TaskError', () async {
-      when(mockRepoTask.taskName).thenReturn('repo-task');
       when(mockRepoTask(any))
           .thenAnswer((_) async => throw TaskException('error'));
       final sut = createSut([mockRepoTask]);

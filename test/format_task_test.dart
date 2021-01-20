@@ -26,7 +26,9 @@ void main() {
 
     when(mockRunner.run(any, any)).thenAnswer((_) async => 0);
 
-    sut = FormatTask(mockRunner);
+    sut = FormatTask(
+      programRunner: mockRunner,
+    );
   });
 
   test('task metadata is correct', () {

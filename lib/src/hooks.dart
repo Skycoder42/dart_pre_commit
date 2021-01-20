@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:path/path.dart';
 
 import 'analyze_task.dart';
@@ -50,6 +51,24 @@ extension HookResultX on HookResult {
 
   HookResult _raiseTo(HookResult target) =>
       target.index > index ? target : this;
+
+  TaskStatus _toStatus() {
+    switch (this) {
+      case HookResult.clean:
+        return TaskStatus.clean;
+      case HookResult.hasChanges:
+        return TaskStatus.hasChanges;
+      case HookResult.hasUnstagedChanges:
+        return TaskStatus.hasUnstagedChanges;
+      case HookResult.rejected:
+        return TaskStatus.rejected;
+    }
+  }
+}
+
+extension _HookResultStreamX on Stream<HookResult> {
+  Future<HookResult> raise([HookResult base = HookResult.clean]) =>
+      fold(base, (previous, element) => previous._raiseTo(element));
 }
 
 class _RejectedException implements Exception {
@@ -132,48 +151,183 @@ class Hooks {
   /// results, as at least one error means that the operation has failed.
   Future<HookResult> call() async {
     try {
-      var lintState = HookResult.clean;
       final entries = await _collectStagedFiles().toList();
 
-      final fileTasks = _tasks.whereType<FileTask>().toList();
-      for (final entry in entries) {
-        logger.log('Scanning ${entry.file.path}...');
-        var taskResult = TaskResult.accepted;
-        for (final task in fileTasks) {
-          final exceptionScope = TaskExceptionScope(task, entry);
-          try {
-            if (task.canProcess(entry)) {
-              taskResult = taskResult.raiseTo(await task(entry));
-            }
-          } finally {
-            exceptionScope.dispose();
-          }
-        }
-        lintState = lintState._raiseTo(await _processFileTaskResult(
-          entry,
-          taskResult,
-        ));
-      }
+      var lintState = HookResult.clean;
+      lintState = await Stream.fromIterable(entries)
+          .asyncMap(_scanEntry)
+          .raise(lintState);
+      lintState = await Stream.fromIterable(_tasks.whereType<RepoTask>())
+          .asyncMap((task) => _evaluateRepoTask(task, entries))
+          .raise(lintState);
 
-      for (final task in _tasks.whereType<RepoTask>()) {
-        final exceptionScope = TaskExceptionScope(task);
+      return lintState;
+    } on _RejectedException {
+      return HookResult.rejected;
+    } finally {
+      logger.completeStatus();
+    }
+  }
+
+  Future<HookResult> _scanEntry(RepoEntry entry) async {
+    try {
+      logger.updateStatus(
+        message: 'Scanning ${entry.file.path}...',
+        status: TaskStatus.scanning,
+      );
+      var scanResult = TaskResult.accepted;
+      for (final task in _tasks.whereType<FileTask>()) {
+        final exceptionScope = TaskExceptionScope(task, entry);
         try {
-          final filteredEntries = entries.where(task.canProcess).toList();
-          if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
-            final taskResult = await task(filteredEntries);
-            lintState = lintState._raiseTo(await _processRepoTaskResult(
-              filteredEntries,
-              taskResult,
-            ));
+          if (task.canProcess(entry)) {
+            final taskResult = await _runFileTask(task, entry);
+            scanResult = scanResult.raiseTo(taskResult);
           }
         } finally {
           exceptionScope.dispose();
         }
       }
-
-      return lintState;
+      final hookResult = await _processTaskResult(scanResult, entry);
+      _logFileTaskResult(hookResult, entry);
+      return hookResult;
     } on _RejectedException {
-      return HookResult.rejected;
+      _logFileTaskResult(HookResult.rejected, entry);
+      rethrow;
+    }
+  }
+
+  Future<TaskResult> _runFileTask(FileTask task, RepoEntry entry) async {
+    logger.updateStatus(detail: '[${task.taskName}]');
+    final taskResult = await task(entry);
+    _checkTaskRejected(taskResult);
+    return taskResult;
+  }
+
+  void _logFileTaskResult(HookResult hookResult, RepoEntry entry) {
+    String message;
+    switch (hookResult) {
+      case HookResult.clean:
+        message = 'Accepted file ${entry.file.path}';
+        break;
+      case HookResult.hasChanges:
+        message = 'Fixed up ${entry.file.path}';
+        break;
+      case HookResult.hasUnstagedChanges:
+        message = 'Fixed up partially staged file ${entry.file.path}';
+        break;
+      case HookResult.rejected:
+        message = 'Rejected file ${entry.file.path}';
+        break;
+    }
+    logger.updateStatus(
+      status: TaskStatus.clean,
+      message: message,
+      clear: true,
+    );
+  }
+
+  Future<HookResult> _evaluateRepoTask(
+    RepoTask task,
+    List<RepoEntry> entries,
+  ) async {
+    final exceptionScope = TaskExceptionScope(task);
+    try {
+      final filteredEntries = entries.where(task.canProcess).toList();
+      if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
+        return _runRepoTask(task, filteredEntries);
+      } else {
+        return HookResult.clean;
+      }
+    } finally {
+      exceptionScope.dispose();
+    }
+  }
+
+  Future<HookResult> _runRepoTask(
+    RepoTask task,
+    List<RepoEntry> entries,
+  ) async {
+    try {
+      logger.updateStatus(
+        message: 'Running ${task.taskName}...',
+        status: TaskStatus.scanning,
+      );
+      final taskResult = await task(entries);
+      _checkTaskRejected(taskResult);
+      final hookResult = await _processMultiTaskResult(taskResult, entries);
+      _logRepoTaskResult(hookResult, task);
+      return hookResult;
+    } on _RejectedException {
+      _logRepoTaskResult(HookResult.rejected, task);
+      rethrow;
+    }
+  }
+
+  void _logRepoTaskResult(HookResult hookResult, RepoTask task) {
+    String message;
+    switch (hookResult) {
+      case HookResult.clean:
+        message = 'Completed ${task.taskName}';
+        break;
+      case HookResult.hasChanges:
+        message = 'Completed ${task.taskName}, fixed up some files';
+        break;
+      case HookResult.hasUnstagedChanges:
+        message =
+            'Completed ${task.taskName}, fixed up some partially staged files';
+        break;
+      case HookResult.rejected:
+        message = 'Completed ${task.taskName}, found problems';
+        break;
+    }
+    logger.updateStatus(
+      status: hookResult._toStatus(),
+      message: message,
+      clear: true,
+    );
+  }
+
+  void _checkTaskRejected(TaskResult result) {
+    if (!continueOnRejected && result == TaskResult.rejected) {
+      throw const _RejectedException();
+    }
+  }
+
+  Future<HookResult> _processTaskResult(
+    TaskResult taskResult,
+    RepoEntry? entry,
+  ) async {
+    switch (taskResult) {
+      case TaskResult.accepted:
+        return HookResult.clean;
+      case TaskResult.modified:
+        if (entry?.partiallyStaged ?? false) {
+          return HookResult.hasUnstagedChanges;
+        } else {
+          if (entry != null) {
+            await _programRunner.stream('git', [
+              'add',
+              entry.file.path,
+            ]).drain<void>();
+          }
+          return HookResult.hasChanges;
+        }
+      case TaskResult.rejected:
+        assert(continueOnRejected);
+        return HookResult.rejected;
+    }
+  }
+
+  Future<HookResult> _processMultiTaskResult(
+    TaskResult taskResult,
+    List<RepoEntry> entries,
+  ) async {
+    if (entries.isEmpty) {
+      return _processTaskResult(taskResult, null);
+    } else {
+      return Stream.fromIterable(entries)
+          .asyncMap((entry) => _processTaskResult(taskResult, entry))
+          .raise();
     }
   }
 
@@ -218,68 +372,5 @@ class Hooks {
         .map((path) => join(gitRoot, path))
         .where((path) => isWithin(resolvedCurrent, path))
         .map((path) => relative(path, from: resolvedCurrent));
-  }
-
-  Future<HookResult> _processFileTaskResult(
-    RepoEntry entry,
-    TaskResult taskResult,
-  ) async {
-    switch (taskResult) {
-      case TaskResult.accepted:
-        // TODO print file ok
-        return HookResult.clean;
-      case TaskResult.modified:
-        if (entry.partiallyStaged) {
-          logger.log(
-            '(!) Fixing up partially staged file ${entry.file.path}',
-          );
-          return HookResult.hasUnstagedChanges;
-        } else {
-          logger.log('Fixing up ${entry.file.path}');
-          await _programRunner.stream('git', [
-            'add',
-            entry.file.path,
-          ]).drain<void>();
-          return HookResult.hasChanges;
-        }
-      case TaskResult.rejected:
-        if (continueOnRejected) {
-          return HookResult.rejected;
-        } else {
-          throw const _RejectedException();
-        }
-    }
-  }
-
-  Future<HookResult> _processRepoTaskResult(
-    List<RepoEntry> entries,
-    TaskResult taskResult,
-  ) async {
-    if (entries.isEmpty) {
-      switch (taskResult) {
-        case TaskResult.accepted:
-          return HookResult.clean;
-        case TaskResult.modified:
-          return HookResult.hasChanges;
-        case TaskResult.rejected:
-          if (continueOnRejected) {
-            return HookResult.rejected;
-          } else {
-            throw const _RejectedException();
-          }
-      }
-    } else {
-      return Stream.fromIterable(entries)
-          .asyncMap(
-            (entry) => _processFileTaskResult(
-              entry,
-              taskResult,
-            ),
-          )
-          .fold<HookResult>(
-            HookResult.clean,
-            (previous, element) => previous._raiseTo(element),
-          );
-    }
   }
 }

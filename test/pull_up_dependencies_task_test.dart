@@ -15,13 +15,13 @@ import 'pull_up_dependencies_task_test.mocks.dart';
 import 'test_with_data.dart';
 
 @GenerateMocks([
-  Logger,
+  TaskLogger,
   ProgramRunner,
   FileResolver,
   File,
 ])
 void main() {
-  final mockLogger = MockLogger();
+  final mockLogger = MockTaskLogger();
   final mockRunner = MockProgramRunner();
   final mockResolver = MockFileResolver();
 
@@ -32,7 +32,8 @@ void main() {
     reset(mockRunner);
     reset(mockResolver);
 
-    when(mockLogger.log(any)).thenReturn(null);
+    when(mockLogger.debug(any)).thenReturn(null);
+    when(mockLogger.info(any)).thenReturn(null);
 
     sut = PullUpDependenciesTask(
       logger: mockLogger,
@@ -92,7 +93,7 @@ packages:
         'check-ignore',
         'pubspec.lock',
       ]));
-      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.debug('Checking for updated packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -106,7 +107,7 @@ packages:
         'check-ignore',
         'pubspec.lock',
       ]));
-      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.debug('Checking for updated packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -171,11 +172,12 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.rejected);
-      verify(mockLogger.log('Checking for updates packages...'));
-      verify(mockLogger.log('  b: 1.0.0 -> 1.0.1'));
-      verify(mockLogger.log('  d: 1.0.0 -> 1.1.0'));
+      verify(mockLogger.debug('Checking for updated packages...'));
+      verify(mockLogger.info('  b: 1.0.0 -> 1.0.1'));
+      verify(mockLogger.info('  d: 1.0.0 -> 1.1.0'));
       verify(
-          mockLogger.log('2 dependencies can be pulled up to newer versions!'));
+        mockLogger.info('2 dependencies can be pulled up to newer versions!'),
+      );
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -221,7 +223,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.debug('Checking for updated packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -245,7 +247,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.debug('Checking for updated packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -272,7 +274,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(mockLogger.log('Checking for updates packages...'));
+      verify(mockLogger.debug('Checking for updated packages...'));
       verifyNoMoreInteractions(mockLogger);
     });
 
@@ -299,10 +301,10 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.rejected);
-      verify(mockLogger.log('Checking for updates packages...'));
-      verify(mockLogger.log('  a: 1.0.0 -> 1.2.0-nullsafety.0'));
+      verify(mockLogger.debug('Checking for updated packages...'));
+      verify(mockLogger.info('  a: 1.0.0 -> 1.2.0-nullsafety.0'));
       verify(
-        mockLogger.log('1 dependencies can be pulled up to newer versions!'),
+        mockLogger.info('1 dependencies can be pulled up to newer versions!'),
       );
       verifyNoMoreInteractions(mockLogger);
     });

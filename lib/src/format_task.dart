@@ -4,9 +4,11 @@ import 'task_base.dart';
 import 'task_exception.dart';
 
 class FormatTask implements FileTask {
-  final ProgramRunner runner;
+  final ProgramRunner programRunner;
 
-  const FormatTask(this.runner);
+  const FormatTask({
+    required this.programRunner,
+  });
 
   @override
   String get taskName => 'format';
@@ -16,7 +18,7 @@ class FormatTask implements FileTask {
 
   @override
   Future<TaskResult> call(RepoEntry entry) async {
-    final exitCode = await runner.run(
+    final exitCode = await programRunner.run(
       'dart',
       [
         'format',

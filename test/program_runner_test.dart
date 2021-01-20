@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/logger.dart';
@@ -10,19 +11,21 @@ import 'package:test/test.dart';
 import 'program_runner_test.mocks.dart';
 
 @GenerateMocks([
-  Logger,
+  TaskLogger,
 ])
 void main() {
-  final mockLogger = MockLogger();
+  final mockLogger = MockTaskLogger();
 
   late ProgramRunner sut;
 
   setUp(() {
     reset(mockLogger);
 
-    when(mockLogger.pipeStderr(any)).thenReturn(null);
+    when(mockLogger.pipeStderr(any)).thenAnswer((i) async {});
 
-    sut = ProgramRunner(mockLogger);
+    sut = ProgramRunner(
+      logger: mockLogger,
+    );
   });
 
   Future<int> _run(List<String> args) => Platform.isWindows

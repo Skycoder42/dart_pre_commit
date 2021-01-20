@@ -32,7 +32,6 @@ jobs:
       - uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
           min_coverage: 95
-          exclude: "**/logger.dart"
       - run: dart --enable-experiment=non-nullable pub publish --dry-run || true
 
   release:
@@ -91,6 +90,7 @@ jobs:
       - uses: cedx/setup-dart@v2
         with:
           release-channel: beta
+      - uses: actions/checkout@v2
       - run: dart --enable-experiment=non-nullable pub get
       - run: dart --enable-experiment=non-nullable run build_runner build
       - run: dartdoc --enable-experiment=non-nullable

@@ -1,29 +1,38 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'logger.dart';
+import 'package:dart_pre_commit/src/logger.dart';
+
 import 'task_exception.dart';
 
 class ProgramRunner {
-  final Logger _logger;
+  final TaskLogger logger;
 
-  const ProgramRunner(this._logger);
+  const ProgramRunner({
+    required this.logger,
+  });
 
   Stream<String> stream(
     String program,
     List<String> arguments, {
     bool failOnExit = true,
   }) async* {
-    final process = await Process.start(program, arguments);
-    _logger.pipeStderr(process.stderr);
-    yield* process.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter());
-    if (failOnExit) {
-      final exitCode = await process.exitCode;
-      if (exitCode != 0) {
-        throw TaskException('$program failed with exit code $exitCode');
+    Future<void>? errLog;
+    try {
+      final process = await Process.start(program, arguments);
+      errLog = logger.pipeStderr(process.stderr);
+      yield* process.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
+      if (failOnExit) {
+        final exitCode = await process.exitCode;
+        if (exitCode != 0) {
+          throw TaskException('$program failed with exit code $exitCode');
+        }
       }
+    } finally {
+      await errLog;
     }
   }
 
@@ -31,9 +40,14 @@ class ProgramRunner {
     String program,
     List<String> arguments,
   ) async {
-    final process = await Process.start(program, arguments);
-    _logger.pipeStderr(process.stderr);
-    await process.stdout.drain<void>();
-    return process.exitCode;
+    Future<void>? errLog;
+    try {
+      final process = await Process.start(program, arguments);
+      errLog = logger.pipeStderr(process.stderr);
+      await process.stdout.drain<void>();
+      return await process.exitCode;
+    } finally {
+      await errLog;
+    }
   }
 }

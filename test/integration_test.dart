@@ -135,7 +135,7 @@ void main() {
 
   test('fix imports', () async {
     await _git(const ['add', 'lib/src/fix_imports.dart']);
-    await _sut(const ['--no-analyze']);
+    await _sut(const ['--no-format', '--no-analyze']);
 
     final data = await _readFile('lib/src/fix_imports.dart');
     expect(data, '''
@@ -152,7 +152,7 @@ void main() {}
 
   test('format', () async {
     await _git(const ['add', 'bin/format.dart']);
-    await _sut(const ['--no-analyze']);
+    await _sut(const ['--no-fix-imports', '--no-analyze']);
 
     final data = await _readFile('bin/format.dart');
     expect(data, '''
@@ -178,12 +178,14 @@ void main() {
           .listen((line) => lines.add(line)),
     );
     expect(code, HookResult.rejected.index);
-    expect(lines.length, 4);
     expect(
-        lines[2],
-        "  info - The value of the local variable 'x' isn't used at "
+      lines,
+      contains(
+        "  [INF]   info - The value of the local variable 'x' isn't used at "
         'lib${separator}src${separator}analyze.dart:2:7 - '
-        '(unused_local_variable)');
+        '(unused_local_variable)',
+      ),
+    );
   });
 
   test('check-pull-up', () async {
@@ -205,7 +207,6 @@ void main() {
           .listen((line) => lines.add(line)),
     );
     expect(code, HookResult.rejected.index);
-    expect(lines.length, 4);
-    expect(lines[2], startsWith('  meta: 1.2.0 -> 1.'));
+    expect(lines, contains(startsWith('  [INF]   meta: 1.2.0 -> 1.')));
   });
 }

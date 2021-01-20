@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/console_logger.dart';
 import 'package:riverpod/all.dart'; // ignore: import_of_legacy_library_into_null_safe
 
 import 'analyze_task.dart';
@@ -5,9 +9,9 @@ import 'file_resolver.dart';
 import 'fix_imports_task.dart';
 import 'format_task.dart';
 import 'hooks.dart';
-import 'logger.dart';
 import 'program_runner.dart';
 import 'pull_up_dependencies_task.dart';
+import 'simple_logger.dart';
 
 class HooksConfig {
   final bool fixImports;
@@ -50,13 +54,26 @@ class HooksConfig {
 }
 
 class HooksProvider {
-  static FutureProviderFamily<Hooks, HooksConfig> get hookProvider =>
+  static AutoDisposeFutureProviderFamily<Hooks, HooksConfig> get hookProvider =>
       HooksProviderInternal.hookProvider;
 }
 
 class HooksProviderInternal {
-  static final loggerProvider = Provider(
-    (ref) => const Logger.standard(),
+  static final consoleLoggerProvider = Provider<Logger>(
+    (ref) => ConsoleLogger(),
+  );
+
+  static final simpleLoggerProvider = Provider<Logger>(
+    (ref) => SimpleLogger(),
+  );
+
+  static Provider<Logger> get loggerProvider =>
+      stdout.hasTerminal && stdout.supportsAnsiEscapes
+          ? consoleLoggerProvider
+          : simpleLoggerProvider;
+
+  static final taskLoggerProvider = Provider<TaskLogger>(
+    (ref) => ref.watch(loggerProvider),
   );
 
   static final fileResolverProvider = Provider(
@@ -64,7 +81,9 @@ class HooksProviderInternal {
   );
 
   static final programRunnerProvider = Provider(
-    (ref) => ProgramRunner(ref.watch(loggerProvider)),
+    (ref) => ProgramRunner(
+      logger: ref.watch(taskLoggerProvider),
+    ),
   );
 
   static final fixImportsProvider = FutureProvider(
@@ -72,26 +91,28 @@ class HooksProviderInternal {
   );
 
   static final formatProvider = Provider(
-    (ref) => FormatTask(ref.watch(programRunnerProvider)),
+    (ref) => FormatTask(
+      programRunner: ref.watch(programRunnerProvider),
+    ),
   );
 
   static final analyzeProvider = Provider(
     (ref) => AnalyzeTask(
-      logger: ref.watch(loggerProvider),
       fileResolver: ref.watch(fileResolverProvider),
       programRunner: ref.watch(programRunnerProvider),
+      logger: ref.watch(taskLoggerProvider),
     ),
   );
 
   static final pullUpDependenciesProvider = Provider(
     (ref) => PullUpDependenciesTask(
-      logger: ref.watch(loggerProvider),
       fileResolver: ref.watch(fileResolverProvider),
       programRunner: ref.watch(programRunnerProvider),
+      logger: ref.watch(taskLoggerProvider),
     ),
   );
 
-  static final hookProvider = FutureProvider.family(
+  static final hookProvider = FutureProvider.family.autoDispose(
     (ref, HooksConfig param) async => Hooks(
       logger: ref.watch(loggerProvider),
       resolver: ref.watch(fileResolverProvider),

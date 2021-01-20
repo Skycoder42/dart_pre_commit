@@ -8,14 +8,14 @@ import 'repo_entry.dart';
 import 'task_base.dart';
 
 class PullUpDependenciesTask implements RepoTask {
-  final Logger logger;
   final ProgramRunner programRunner;
   final FileResolver fileResolver;
+  final TaskLogger logger;
 
   const PullUpDependenciesTask({
-    required this.logger,
     required this.programRunner,
     required this.fileResolver,
+    required this.logger,
   });
 
   @override
@@ -33,7 +33,7 @@ class PullUpDependenciesTask implements RepoTask {
       return TaskResult.accepted;
     }
 
-    logger.log('Checking for updates packages...');
+    logger.debug('Checking for updated packages...');
     final lockFile = fileResolver.file('pubspec.lock');
     final pubspecLock = loadYaml(await lockFile.readAsString()) as YamlMap?;
     final resolvedVersions = _resolveLockVersions(pubspecLock);
@@ -50,7 +50,9 @@ class PullUpDependenciesTask implements RepoTask {
     );
 
     if (updateCnt > 0) {
-      logger.log('$updateCnt dependencies can be pulled up to newer versions!');
+      logger.info(
+        '$updateCnt dependencies can be pulled up to newer versions!',
+      );
       return TaskResult.rejected;
     } else {
       return TaskResult.accepted;
@@ -108,7 +110,7 @@ class PullUpDependenciesTask implements RepoTask {
           if (_checkValidRelease(resolvedVersion) &&
               resolvedVersion! > currentVersion) {
             ++updateCtr;
-            logger.log('  ${entry.key}: $currentVersion -> $resolvedVersion');
+            logger.info('  ${entry.key}: $currentVersion -> $resolvedVersion');
           }
         }
       }

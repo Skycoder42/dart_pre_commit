@@ -1,7 +1,7 @@
+import 'package:dart_pre_commit/src/logger.dart';
 import 'package:path/path.dart';
 
 import 'file_resolver.dart';
-import 'logger.dart';
 import 'program_runner.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
@@ -29,14 +29,14 @@ class AnalyzeResult {
 }
 
 class AnalyzeTask implements RepoTask {
-  final Logger logger;
   final ProgramRunner programRunner;
   final FileResolver fileResolver;
+  final TaskLogger logger;
 
   const AnalyzeTask({
-    required this.logger,
     required this.programRunner,
     required this.fileResolver,
+    required this.logger,
   });
 
   @override
@@ -55,7 +55,7 @@ class AnalyzeTask implements RepoTask {
     };
     assert(lints.isNotEmpty);
 
-    logger.log('Running dart analyze...');
+    logger.debug('Running dart analyze...');
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries
           .cast<MapEntry<String, List<AnalyzeResult>>?>()
@@ -74,12 +74,12 @@ class AnalyzeTask implements RepoTask {
       if (entry.value.isNotEmpty) {
         for (final lint in entry.value) {
           ++lintCnt;
-          logger.log(lint.toString());
+          logger.info(lint.toString());
         }
       }
     }
 
-    logger.log('$lintCnt issue(s) found.');
+    logger.info('$lintCnt issue(s) found.');
     return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 

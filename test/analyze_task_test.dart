@@ -16,19 +16,19 @@ import 'test_with_data.dart';
   ProgramRunner,
   FileResolver,
 ], customMocks: [
-  MockSpec<Logger>(returnNullOnMissingStub: true),
+  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
 ])
 void main() {
-  final mockLogger = MockLogger();
+  final mockLogger = MockTaskLogger();
   final mockRunner = MockProgramRunner();
-  final mockFileResolver = MockFileResolver();
+  final mockResolver = MockFileResolver();
 
   late AnalyzeTask sut;
 
   setUp(() {
     reset(mockLogger);
     reset(mockRunner);
-    reset(mockFileResolver);
+    reset(mockResolver);
 
     when(mockRunner.stream(
       any,
@@ -36,15 +36,15 @@ void main() {
       failOnExit: anyNamed('failOnExit'),
     )).thenAnswer((_) => Stream.fromIterable(const []));
 
-    when(mockFileResolver.resolve(any))
+    when(mockResolver.resolve(any))
         .thenAnswer((i) async => i.positionalArguments.first as String);
-    when(mockFileResolver.resolveAll(any)).thenAnswer((i) =>
+    when(mockResolver.resolveAll(any)).thenAnswer((i) =>
         Stream.fromIterable(i.positionalArguments.first as Iterable<String>));
 
     sut = AnalyzeTask(
       logger: mockLogger,
       programRunner: mockRunner,
-      fileResolver: mockFileResolver,
+      fileResolver: mockResolver,
     );
   });
 
@@ -115,12 +115,14 @@ void main() {
       FakeEntry('pipeline.yaml'),
     ]);
     expect(result, TaskResult.rejected);
-    verify(mockLogger.log('Running dart analyze...'));
-    verify(mockLogger.log('  A - a1 at a.dart:10:11 - (1)'));
-    verify(mockLogger.log('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'));
-    verify(mockLogger.log('  B - b3 at b/b.dart:30:31 - (3)'));
-    verify(mockLogger.log('  D - d5 at pubspec.yaml:50:51 - (5)'));
-    verify(mockLogger.log('4 issue(s) found.'));
+    verify(mockLogger.debug('Running dart analyze...'));
+    verify(mockLogger.info('  A - a1 at a.dart:10:11 - (1)'));
+    verify(
+      mockLogger.info('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'),
+    );
+    verify(mockLogger.info('  B - b3 at b/b.dart:30:31 - (3)'));
+    verify(mockLogger.info('  D - d5 at pubspec.yaml:50:51 - (5)'));
+    verify(mockLogger.info('4 issue(s) found.'));
     verifyNoMoreInteractions(mockLogger);
   });
 
@@ -137,6 +139,6 @@ void main() {
 
     final result = await sut([FakeEntry('a.dart')]);
     expect(result, TaskResult.accepted);
-    verify(mockLogger.log(any)).called(2);
+    verify(mockLogger.info(any)).called(1);
   });
 }
