@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:console/console.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:dart_pre_commit/src/console_logger.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
-import 'test_with_data.dart';
+import '../../test_with_data.dart';
 
 const eraseLine = '\x1B[0K';
 const newLine = '\x1B[1E';

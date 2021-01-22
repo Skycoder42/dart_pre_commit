@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/logger.dart';
-import 'package:dart_pre_commit/src/program_runner.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';

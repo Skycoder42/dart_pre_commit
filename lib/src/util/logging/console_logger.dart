@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:console/console.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:dart_pre_commit/src/logger.dart';
+
+import '../logger.dart';
 
 class ConsoleLogger implements Logger {
   String _statusMessage = '';

@@ -1,11 +1,11 @@
-import 'package:dart_pre_commit/src/analyze_task.dart';
-import 'package:dart_pre_commit/src/file_resolver.dart';
-import 'package:dart_pre_commit/src/fix_imports_task.dart';
-import 'package:dart_pre_commit/src/format_task.dart';
 import 'package:dart_pre_commit/src/hooks_provider.dart';
-import 'package:dart_pre_commit/src/logger.dart';
-import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:dart_pre_commit/src/pull_up_dependencies_task.dart';
+import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
+import 'package:dart_pre_commit/src/tasks/fix_imports_task.dart';
+import 'package:dart_pre_commit/src/tasks/format_task.dart';
+import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
+import 'package:dart_pre_commit/src/util/file_resolver.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:riverpod/riverpod.dart'; // ignore: import_of_legacy_library_into_null_safe

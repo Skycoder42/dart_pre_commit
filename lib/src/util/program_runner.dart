@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/logger.dart';
+import 'logger.dart';
 
 class ProgramExitException implements Exception {
   final int exitCode;
@@ -21,7 +21,7 @@ class ProgramExitException implements Exception {
     if (program != null) {
       progBuilder..write('"')..write(program!);
       if (arguments?.isNotEmpty ?? false) {
-        progBuilder..write(' ')..write(arguments!.join(', '));
+        progBuilder..write(' ')..write(arguments!.join(' '));
       }
       progBuilder.write('"');
     } else {
@@ -45,7 +45,7 @@ class ProgramRunner {
   }) async* {
     Future<void>? errLog;
     try {
-      logger.debug('Streaming $program ${arguments.join(', ')}');
+      logger.debug('Streaming: $program ${arguments.join(' ')}');
       final process = await Process.start(program, arguments);
       errLog = logger.pipeStderr(process.stderr);
       yield* process.stdout
@@ -69,7 +69,7 @@ class ProgramRunner {
   ) async {
     Future<void>? errLog;
     try {
-      logger.debug('Running $program ${arguments.join(', ')}');
+      logger.debug('Running: $program ${arguments.join(' ')}');
       final process = await Process.start(program, arguments);
       errLog = logger.pipeStderr(process.stderr);
       await process.stdout.drain<void>();

@@ -4,12 +4,12 @@ import 'dart:io';
 
 import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
-import 'repo_entry.dart';
-import 'task_base.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/logger.dart';
 
 class FixImportsTask implements FileTask {
   final String packageName;

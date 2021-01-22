@@ -1,6 +1,6 @@
-import 'program_runner.dart';
-import 'repo_entry.dart';
-import 'task_base.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/program_runner.dart';
 
 class FormatTask implements FileTask {
   final ProgramRunner programRunner;

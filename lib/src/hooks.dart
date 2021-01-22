@@ -1,17 +1,12 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:path/path.dart';
 
-import 'analyze_task.dart';
-import 'file_resolver.dart';
-import 'fix_imports_task.dart';
-import 'format_task.dart';
-import 'logger.dart';
-import 'program_runner.dart';
-import 'pull_up_dependencies_task.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
+import 'util/file_resolver.dart';
+import 'util/logger.dart';
+import 'util/program_runner.dart';
 
 /// The result of a LintHooks call.
 ///

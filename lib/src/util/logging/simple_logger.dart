@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/logger.dart';
+import '../logger.dart';
 
 class SimpleLogger implements Logger {
   final IOSink outSink;

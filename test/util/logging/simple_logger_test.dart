@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:dart_pre_commit/src/simple_logger.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/logging/simple_logger.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
+import '../../test_with_data.dart';
 import 'simple_logger_test.mocks.dart';
-import 'test_with_data.dart';
 
 @GenerateMocks([], customMocks: [
   MockSpec<IOSink>(returnNullOnMissingStub: true),

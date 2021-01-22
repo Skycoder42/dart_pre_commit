@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/file_resolver.dart';
+import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 

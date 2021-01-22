@@ -1,18 +1,18 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/file_resolver.dart';
-import 'package:dart_pre_commit/src/logger.dart';
-import 'package:dart_pre_commit/src/program_runner.dart';
-import 'package:dart_pre_commit/src/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
+import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
+import 'package:dart_pre_commit/src/util/file_resolver.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
-import 'global_mocks.dart';
+import '../global_mocks.dart';
+import '../test_with_data.dart';
 import 'pull_up_dependencies_task_test.mocks.dart';
-import 'test_with_data.dart';
 
 @GenerateMocks([
   TaskLogger,

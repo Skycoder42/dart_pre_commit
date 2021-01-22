@@ -1,17 +1,17 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:dart_pre_commit/src/console_logger.dart';
 import 'package:riverpod/all.dart'; // ignore: import_of_legacy_library_into_null_safe
 
-import 'analyze_task.dart';
-import 'file_resolver.dart';
-import 'fix_imports_task.dart';
-import 'format_task.dart';
 import 'hooks.dart';
-import 'program_runner.dart';
-import 'pull_up_dependencies_task.dart';
-import 'simple_logger.dart';
+import 'tasks/analyze_task.dart';
+import 'tasks/fix_imports_task.dart';
+import 'tasks/format_task.dart';
+import 'tasks/pull_up_dependencies_task.dart';
+import 'util/file_resolver.dart';
+import 'util/logger.dart';
+import 'util/logging/console_logger.dart';
+import 'util/logging/simple_logger.dart';
+import 'util/program_runner.dart';
 
 class HooksConfig {
   final bool fixImports;

@@ -1,10 +1,10 @@
-import 'package:dart_pre_commit/src/logger.dart';
 import 'package:path/path.dart';
 
-import 'file_resolver.dart';
-import 'program_runner.dart';
-import 'repo_entry.dart';
-import 'task_base.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/file_resolver.dart';
+import '../util/logger.dart';
+import '../util/program_runner.dart';
 
 class AnalyzeResult {
   final String category;

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/fix_imports_task.dart';
-import 'package:dart_pre_commit/src/logger.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
+import 'package:dart_pre_commit/src/tasks/fix_imports_task.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:meta/meta.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -11,8 +11,8 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
 
+import '../test_with_data.dart';
 import 'fix_imports_task_test.mocks.dart';
-import 'test_with_data.dart';
 
 @GenerateMocks([
   File,

@@ -1,11 +1,11 @@
 import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:yaml/yaml.dart';
 
-import 'file_resolver.dart';
-import 'logger.dart';
-import 'program_runner.dart';
-import 'repo_entry.dart';
-import 'task_base.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/file_resolver.dart';
+import '../util/logger.dart';
+import '../util/program_runner.dart';
 
 class PullUpDependenciesTask implements RepoTask {
   final ProgramRunner programRunner;
