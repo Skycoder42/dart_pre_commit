@@ -32,6 +32,7 @@ jobs:
       - uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
           min_coverage: 95
+          exclude: "**/hooks_provider.dart"
       - run: dart --enable-experiment=non-nullable pub publish --dry-run || true
 
   release:

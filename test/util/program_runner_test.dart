@@ -6,7 +6,9 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'package:tuple/tuple.dart';
 
+import '../test_with_data.dart';
 import 'program_runner_test.mocks.dart';
 
 @GenerateMocks([], customMocks: [
@@ -66,4 +68,22 @@ void main() {
       })));
     });
   });
+
+  testWithData<Tuple2<ProgramExitException, String>>(
+    'ProgramExitException shows correct error message',
+    const [
+      Tuple2(ProgramExitException(42), 'A subprocess failed with exit code 42'),
+      Tuple2(
+        ProgramExitException(13, 'dart'),
+        'dart failed with exit code 13',
+      ),
+      Tuple2(
+        ProgramExitException(7, 'dart', ['some', 'args']),
+        '"dart some args" failed with exit code 7',
+      ),
+    ],
+    (fixture) {
+      expect(fixture.item1.toString(), fixture.item2);
+    },
+  );
 }

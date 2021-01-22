@@ -9,7 +9,7 @@ class ProgramExitException implements Exception {
   final String? program;
   final List<String>? arguments;
 
-  ProgramExitException(
+  const ProgramExitException(
     this.exitCode, [
     this.program,
     this.arguments,
@@ -17,17 +17,17 @@ class ProgramExitException implements Exception {
 
   @override
   String toString() {
-    final progBuilder = StringBuffer();
+    String prefix;
     if (program != null) {
-      progBuilder..write('"')..write(program!);
       if (arguments?.isNotEmpty ?? false) {
-        progBuilder..write(' ')..write(arguments!.join(' '));
+        prefix = '"$program ${arguments!.join(' ')}"';
+      } else {
+        prefix = program!;
       }
-      progBuilder.write('"');
     } else {
-      progBuilder.write('A subprocess');
+      prefix = 'A subprocess';
     }
-    return '$progBuilder failed with exit code $exitCode';
+    return '$prefix failed with exit code $exitCode';
   }
 }
 
