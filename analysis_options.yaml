@@ -4,8 +4,8 @@ analyzer:
   enable-experiment:
     - non-nullable
   exclude:
-    - "test/.test_coverage.dart"
-    - "test/*.mocks.dart"
+    - "*.mocks.dart"
+    - "**/*.mocks.dart"
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
