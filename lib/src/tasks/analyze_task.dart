@@ -6,7 +6,7 @@ import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 
-class AnalyzeResult {
+class _AnalyzeResult {
   final String category;
   final String type;
   final String path;
@@ -14,7 +14,7 @@ class AnalyzeResult {
   final int column;
   final String description;
 
-  AnalyzeResult({
+  _AnalyzeResult({
     required this.category,
     required this.type,
     required this.path,
@@ -28,6 +28,10 @@ class AnalyzeResult {
       '  $category - $description at $path:$line:$column - ($type)';
 }
 
+/// A task the runs `dart analyze` to check for problems.
+///
+/// This task analyzes all files in the repository for problems and then filters
+/// the results for all files that have been staged in this
 class AnalyzeTask implements RepoTask {
   final ProgramRunner programRunner;
   final FileResolver fileResolver;
@@ -51,13 +55,13 @@ class AnalyzeTask implements RepoTask {
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     final lints = {
-      for (final entry in entries) entry.file.path: <AnalyzeResult>[],
+      for (final entry in entries) entry.file.path: <_AnalyzeResult>[],
     };
     assert(lints.isNotEmpty);
 
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries
-          .cast<MapEntry<String, List<AnalyzeResult>>?>()
+          .cast<MapEntry<String, List<_AnalyzeResult>>?>()
           .firstWhere(
             (lint) => equals(entry.path, lint!.key),
             orElse: () => null,
@@ -82,7 +86,7 @@ class AnalyzeTask implements RepoTask {
     return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 
-  Stream<AnalyzeResult> _runAnalyze() async* {
+  Stream<_AnalyzeResult> _runAnalyze() async* {
     yield* programRunner
         .stream(
           'dart',
@@ -100,7 +104,7 @@ class AnalyzeTask implements RepoTask {
 }
 
 extension _ResultTransformer on Stream<String> {
-  Stream<AnalyzeResult> parseResult({
+  Stream<_AnalyzeResult> parseResult({
     required FileResolver fileResolver,
     required TaskLogger logger,
   }) async* {
@@ -110,7 +114,7 @@ extension _ResultTransformer on Stream<String> {
     await for (final line in this) {
       final match = regExp.firstMatch(line);
       if (match != null) {
-        final res = AnalyzeResult(
+        final res = _AnalyzeResult(
           category: match[1]!,
           type: match[6]!,
           path: await fileResolver.resolve(match[3]!),
