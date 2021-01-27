@@ -21,5 +21,9 @@ void main() {
         expect(LogLevelX.parse(fixture.item2), fixture.item1);
       },
     );
+
+    test('throws if parse is called with invalid data', () {
+      expect(() => LogLevelX.parse('invalid'), throwsA(isA<ArgumentError>()));
+    });
   });
 }

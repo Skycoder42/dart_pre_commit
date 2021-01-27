@@ -8,8 +8,8 @@ import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null
 
 import '../../test_with_data.dart';
 
-const eraseLine = '\x1B[0K';
-const newLine = '\x1B[1E';
+const eraseLine = '\r\x1B[2K';
+const newLine = '\n';
 const beginItalic = '\x1B[3m';
 const endItalic = '\x1B[23m';
 String beginColor(int color) => '\x1B[${color}m';
@@ -40,9 +40,9 @@ void main() {
 
     testWithData<Tuple2<TaskStatus, String>>('prints status', const [
       Tuple2(TaskStatus.scanning, '🔎 '),
-      Tuple2(TaskStatus.clean, '✔ '),
-      Tuple2(TaskStatus.hasChanges, '🖉 '),
-      Tuple2(TaskStatus.hasUnstagedChanges, '⚠ '),
+      Tuple2(TaskStatus.clean, ' ✔ '),
+      Tuple2(TaskStatus.hasChanges, ' 🖉 '),
+      Tuple2(TaskStatus.hasUnstagedChanges, ' ⚠ '),
       Tuple2(TaskStatus.rejected, '❌ '),
     ], (fixture) {
       sut.updateStatus(message: 'test');
@@ -57,24 +57,30 @@ void main() {
     testWithData<Tuple5<String?, TaskStatus?, String?, bool, String>>(
         'update and clear use old state correctly', [
       Tuple5('msg', null, null, false, '🔎 msg${italic(' test2')}'),
-      Tuple5(null, TaskStatus.clean, null, false, '✔ test1${italic(' test2')}'),
+      Tuple5(
+        null,
+        TaskStatus.clean,
+        null,
+        false,
+        ' ✔ test1${italic(' test2')}',
+      ),
       Tuple5(null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, null, false, '✔ msg${italic(' test2')}'),
+      Tuple5('msg', TaskStatus.clean, null, false, ' ✔ msg${italic(' test2')}'),
       Tuple5('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', false, '✔ test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, 'dtl', false, '✔ msg${italic(' dtl')}'),
+      Tuple5(null, TaskStatus.clean, 'dtl', false, ' ✔ test1${italic(' dtl')}'),
+      Tuple5('msg', TaskStatus.clean, 'dtl', false, ' ✔ msg${italic(' dtl')}'),
       const Tuple5('msg', null, null, true, 'msg'),
-      const Tuple5(null, TaskStatus.clean, null, true, '✔ '),
+      const Tuple5(null, TaskStatus.clean, null, true, ' ✔ '),
       Tuple5(null, null, 'dtl', true, italic(' dtl')),
-      const Tuple5('msg', TaskStatus.clean, null, true, '✔ msg'),
+      const Tuple5('msg', TaskStatus.clean, null, true, ' ✔ msg'),
       Tuple5('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', true, '✔ ${italic(' dtl')}'),
+      Tuple5(null, TaskStatus.clean, 'dtl', true, ' ✔ ${italic(' dtl')}'),
       Tuple5(
         'msg',
         TaskStatus.clean,
         'dtl',
         true,
-        '✔ msg${italic(' dtl')}',
+        ' ✔ msg${italic(' dtl')}',
       ),
     ], (fixture) {
       sut
@@ -121,23 +127,36 @@ void main() {
         expect(
           output.toString(),
           startsWith(cleanLine(
-            '${beginColor(fixture.item2)}  ${fixture.item3}$endColor$newLine',
+            '${beginColor(fixture.item2)}    ${fixture.item3}$endColor$newLine',
           )),
         );
       },
     );
 
-    test('reprints status after any log', () {
+    test('writes first log to new line and reprints status', () {
+      sut.updateStatus(message: 'status');
+      output.clear();
+      sut.debug('debug');
+      expect(
+        output.toString(),
+        '\n${beginColor(37)}    debug$endColor$newLine${cleanLine('status')}',
+      );
+    });
+
+    test('writes second log, replacing the status and reprints it', () {
       sut
         ..updateStatus(message: 'status')
         ..debug('debug');
+      output.clear();
+      sut.info('info');
+
       expect(
         output.toString(),
-        cleanLine('status') +
-            cleanLine('${beginColor(37)}  debug$endColor$newLine') +
+        cleanLine('${beginColor(34)}    info$endColor$newLine') +
             cleanLine('status'),
       );
     });
+
     testWithData<
         Tuple3<LogLevel, void Function(ConsoleLogger)?,
             void Function(ConsoleLogger)?>>(
@@ -176,7 +195,7 @@ void main() {
     expect(
       output.toString(),
       startsWith(
-        cleanLine('${beginColor(31)}  msg1$endColor$newLine'),
+        cleanLine('${beginColor(31)}    msg1$endColor$newLine'),
       ),
     );
   });

@@ -147,8 +147,6 @@ class Hooks {
       return lintState;
     } on _RejectedException {
       return HookResult.rejected;
-    } finally {
-      logger.completeStatus();
     }
   }
 
@@ -171,6 +169,8 @@ class Hooks {
     } on _RejectedException {
       _logFileTaskResult(HookResult.rejected, entry);
       rethrow;
+    } finally {
+      logger.completeStatus();
     }
   }
 
@@ -233,6 +233,8 @@ class Hooks {
     } on _RejectedException {
       _logRepoTaskResult(HookResult.rejected, task);
       rethrow;
+    } finally {
+      logger.completeStatus();
     }
   }
 

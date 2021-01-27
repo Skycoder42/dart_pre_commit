@@ -17,6 +17,7 @@ class ConsoleLogger implements Logger {
   String _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
+  bool _freshStatus = false;
 
   @override
   LogLevel logLevel;
@@ -37,7 +38,9 @@ class ConsoleLogger implements Logger {
     _statusMessage = message ?? (clear ? '' : _statusMessage);
     _statusState = status ?? (clear ? null : _statusState);
     _statusDetail = detail ?? (clear ? null : _statusDetail);
-    Console.eraseLine();
+    _freshStatus = true;
+
+    Console.overwriteLine('');
     if (_statusState != null) {
       Console.write('${_statusState!.icon} ');
     }
@@ -53,7 +56,9 @@ class ConsoleLogger implements Logger {
   }
 
   @override
-  void completeStatus() => Console.nextLine();
+  void completeStatus() {
+    Console.write('\n');
+  }
 
   @override
   void debug(String message) => _log(LogLevel.debug, message, Color.LIGHT_GRAY);
@@ -87,18 +92,23 @@ class ConsoleLogger implements Logger {
     }
 
     try {
-      Console.eraseLine();
+      if (_freshStatus) {
+        Console.write('\n');
+      } else {
+        Console.overwriteLine('');
+      }
       if (color != null) {
         Console.setTextColor(color.id);
       }
-      Console.write('  ');
+      Console.write('    ');
       Console.write(message);
     } finally {
       if (color != null) {
         Console.resetTextColor();
       }
-      Console.nextLine();
+      Console.write('\n');
       updateStatus();
+      _freshStatus = false;
     }
   }
 }
@@ -109,11 +119,11 @@ extension _TaskStatusIconX on TaskStatus {
       case TaskStatus.scanning:
         return '🔎';
       case TaskStatus.clean:
-        return '✔';
+        return ' ✔';
       case TaskStatus.hasChanges:
-        return '🖉';
+        return ' 🖉';
       case TaskStatus.hasUnstagedChanges:
-        return '⚠';
+        return ' ⚠';
       case TaskStatus.rejected:
         return '❌';
     }
