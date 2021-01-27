@@ -2,9 +2,18 @@ import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/program_runner.dart';
 
+/// A task the runs `dart format` on the given file.
+///
+/// This task simply runs dart to format the staged file before committing it.
+/// The formatted file is immediatly saved and staged again, if something had to
+/// be fixed. In that case, [TaskResult.modified] is returned.
+///
+/// {@category tasks}
 class FormatTask implements FileTask {
+  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
+  /// Default Constructor.
   const FormatTask({
     required this.programRunner,
   });

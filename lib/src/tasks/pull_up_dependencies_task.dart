@@ -7,11 +7,49 @@ import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 
+/// This task scans the lockfile to check if dependencies should be pulled up.
+///
+/// Pulling up means, that the `pubspec.yaml` and `pubspec.lock` are scanned to
+/// check if any dependencies in the lockfile have a higher version then
+/// specified in the `pubspec.yaml`. If that is the case, the task will print
+/// out the dependencies as well as the version it should be pulled up to and
+/// exit with [TaskResult.rejected].
+///
+/// The task only checks for normal versions and ignores prereleases etc.
+/// However, it does include nullsafe versions.
+///
+/// If the lockfile is checked in, this task only runs whenever the lockfile has
+/// actually been staged. If it is ignored, the task instead runs on every
+/// commit to find dependencies.
+///
+/// Example:
+/// ```.yaml
+/// # pubspec.yaml
+/// dependencies:
+///   dep_a: ^1.0.0
+///   dep_b: ^2.0.0
+///
+/// # pubspec.lock
+/// dep_a:
+///   version: 1.0.0
+/// dep_b:
+///   version: 1.1.0
+/// ```
+/// In this example, the task would report `dep_b`, as the actually used version
+/// in the lockfile is higher then the minimal allowed version in the project.
+///
+/// {@category tasks}
 class PullUpDependenciesTask implements RepoTask {
+  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
+
+  /// The [FileResolver] instance used by this task.
   final FileResolver fileResolver;
+
+  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
+  /// Default Constructor.
   const PullUpDependenciesTask({
     required this.programRunner,
     required this.fileResolver,

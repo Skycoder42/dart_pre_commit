@@ -2,8 +2,21 @@ import 'dart:io';
 
 import '../logger.dart';
 
+/// A simple logger class, the provides file-optimized logs.
+///
+/// These logs are plain, color- and decoration-less, without any special
+/// symbols or control characters. You typically use this logger, if the logging
+/// target is a plain file or some other, linear data stream that is not meant
+/// to be displayed by a rich terminal.
+///
+/// For advanced logging, i.e. to a console/TTY, use [ConsoleLogger] instead.
 class SimpleLogger implements Logger {
+  /// The [IOSink] for normal log messages
   final IOSink outSink;
+
+  /// The [IOSink] for forwarding error output from subprocesses.
+  ///
+  /// See [pipeStderr()] for more details.
   final IOSink errSink;
 
   @override
@@ -13,6 +26,11 @@ class SimpleLogger implements Logger {
   TaskStatus? _statusState;
   String? _statusDetail;
 
+  /// Default constructor.
+  ///
+  /// If not specified, [outSink] and [errSink] will be set to [stdout] and
+  /// [stderr] repectively. The [logLevel], which is [LogLevel.info] by default,
+  /// can be adjusted to control how much is logged.
   SimpleLogger({
     IOSink? outSink,
     IOSink? errSink,

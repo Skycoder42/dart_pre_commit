@@ -8,7 +8,7 @@ import 'util/file_resolver.dart';
 import 'util/logger.dart';
 import 'util/program_runner.dart';
 
-/// The result of a LintHooks call.
+/// The result of a [Hooks] call.
 ///
 /// See [HookResultX] for extension methods defined on the enum.
 enum HookResult {
@@ -69,13 +69,16 @@ class _RejectedException implements Exception {
   const _RejectedException();
 }
 
-/// A callable class the runs the hooks on a repository
+/// A callable class the runs the hooks on a repository.
 ///
 /// This is the main entrypoint of the library. The class will scan your
 /// repository for staged files and run all activated hooks on them, reporting
 /// a result. Check the documentation of [FixImportsTask], [FormatTask],
 /// [AnalyzeTask] and [PullUpDependenciesTask] for more details on the actual
-/// supported hook operations.
+/// supported hook operations. Check the Tasks category for a list of all tasks.
+///
+/// For an easier use of this class and the standard hook tasks, see
+/// [HooksProvider].
 class Hooks {
   final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
@@ -89,62 +92,46 @@ class Hooks {
   /// Normally, once one of the hook operations detects an unfixable problem,
   /// the whole process is aborted with [HookResult.rejected]. If however
   /// [continueOnRejected] is set to true, instead processing will continue as
-  /// usualk. In both cases, [call()] will resolve with [HookResult.rejected].
+  /// usual. In both cases, [call()] will resolve with [HookResult.rejected].
   final bool continueOnRejected;
 
+  /// Returns all tasks this hook will run on the repository upon [call()].
   Iterable<String> get tasks => _tasks.map((t) => t.taskName);
 
   /// Constructs a new [Hooks] instance.
   ///
-  /// You can use [fixImports], [format] and [analyze] to specify which hooks to
-  /// run. By default, all three of them are enabled.
+  /// The [logger], [fileResolver] and [programRunner] are needed by this class,
+  /// see their documentation for details.
   ///
-  /// If [fixImports] is enabled, all staged files will be scanned for import
-  /// order and imports will be sorted, first by category (sdk, package,
-  /// relative) and then alphabetically. In addition, package imports of the
-  /// current package within lib will be converted to relative imports.
+  /// The [tasks] parameter can be used to provide a list of all tasks that
+  /// should be run upon [call()]. Each task can either be a [FileTask] or as
+  /// [RepoTask]. Check the Tasks category for a list of all tasks.
   ///
-  /// If [format] is true, then all staged files will be formatted with
-  /// `dartfmt`, enabeling all possible fixes.
-  ///
-  /// If [analyze] is set, as final step, the `dartanalyzer` tool will be run
-  /// and collect lints for all staged files. If at least one staged file has
-  /// problems, the problems will be printed out and the command will fail.
-  /// Lints are not fixed automatically. Instead, you have to fix them yourself
-  /// or ignore them.
-  ///
-  /// The [logger] writes data to [stdout]/[stderr] by default, but a custom
-  /// logger can be specified to customize how data is logged. See [Logger]
-  /// documentation for more details.
-  ///
-  /// The [continueOnError] can be used to control error behaviour. See
-  /// [this.continueOnError] for details.
+  /// The [continueOnRejected] can be used to control rejection behaviour. See
+  /// [this.continueOnRejected] for details.
   const Hooks({
     required this.logger,
-    required FileResolver resolver,
+    required FileResolver fileResolver,
     required ProgramRunner programRunner,
     required List<TaskBase> tasks,
     this.continueOnRejected = false,
-  })  : _fileResolver = resolver,
+  })  : _fileResolver = fileResolver,
         _programRunner = programRunner,
         _tasks = tasks;
 
   /// Executes all enabled hooks on the current repository.
   ///
   /// The command will run expecting [Directory.current] to be the git
-  /// repository to be processed. It collects all staged files and then runs all
-  /// enabled hooks on these files. See [Hooks.create()] for more details on
-  /// what hooks are available and how to configure this instance.
+  /// repository, or a subdirectory within it, to be processed. It collects all
+  /// staged files and then runs all enabled hooks on these files.
   ///
   /// The result is determined based on the collective result of all processed
   /// files and hooks. A [HookResult.clean] result is only possible if all
   /// operations are clean. If at least one staged file had to modified, the
   /// result is [HookResult.hasChanges]. If at least one file was partially
   /// staged, it will be [HookResult.hasUnstagedChanges] instead. The
-  /// [HookResult.linter] will be the result if the analyzer finds at least one
-  /// file with problems, regardless of error-level or whether files have
-  /// already been modified by other hooks. [HookResult.error] trumps all other
-  /// results, as at least one error means that the operation has failed.
+  /// [HookResult.rejected] will be the result if any task finds at least one
+  /// file with problems that cannot be fixed automatically.
   Future<HookResult> call() async {
     try {
       final entries = await _collectStagedFiles().toList();

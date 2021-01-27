@@ -37,7 +37,7 @@ void main() {
   ]) =>
       Hooks(
         logger: mockLogger,
-        resolver: mockResolver,
+        fileResolver: mockResolver,
         programRunner: mockRunner,
         tasks: tasks.toList(),
         continueOnRejected: continueOnRejected,

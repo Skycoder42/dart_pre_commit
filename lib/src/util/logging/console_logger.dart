@@ -5,6 +5,14 @@ import 'package:console/console.dart'; // ignore: import_of_legacy_library_into_
 
 import '../logger.dart';
 
+/// An advanced logger, that providers console optimized, interactive logging.
+///
+/// This class uses colors and other ANSI-escapes to provide logs to the user
+/// via a TTY. It constantly updates lines and replaces content to provide a
+/// smooth logging experience. This logger should not be used in conjunction
+/// with a logfile or other, non-console output.
+///
+/// For simple logging, i.e. to a file, use [SimpleLogger] instead.
 class ConsoleLogger implements Logger {
   String _statusMessage = '';
   TaskStatus? _statusState;
@@ -13,6 +21,10 @@ class ConsoleLogger implements Logger {
   @override
   LogLevel logLevel;
 
+  /// Default constructor.
+  ///
+  /// The [logLevel], which is [LogLevel.info] by default, can be adjusted to
+  /// control how much is logged.
   ConsoleLogger([this.logLevel = LogLevel.info]);
 
   @override

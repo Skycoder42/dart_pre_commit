@@ -11,17 +11,52 @@ import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 
+/// A task that scans dart files for unclean imports and fixes them.
+///
+/// This task consists of two steps, wich are run on all staged dart files:
+/// 1. Make absolute package imports relative
+/// 2. Organize imports
+///
+/// The first step simply checks if any library imports another library from the
+/// same package via an absolute package import. If that is the case, the import
+/// is simply replaced by a relative one.
+///
+/// The second step collects all imports of the file and the sorts them. They
+/// are grouped into dart imports, package imports and relative imports, each
+/// group seperated by a newline and the internally sorted alphabetically.
+///
+/// If any of these steps had to modify the file, it saves the changes to the
+/// file and returns a [TaskResult.modified] result.
+///
+/// {@category tasks}
 class FixImportsTask implements FileTask {
+  /// The name if the package that is beeing scanned.
+  ///
+  /// Must be the same as declared in the `pubspec.yaml`.
   final String packageName;
+
+  /// The path to the lib folder in this package.
+  ///
+  /// This is almost always simply `'lib'`.
   final Directory libDir;
+
+  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
+  /// Default Constructor.
+  ///
+  /// See [FixImportsTask.current()] for a simply instanciation.
   const FixImportsTask({
     required this.packageName,
     required this.libDir,
     required this.logger,
   });
 
+  /// Creates a [FixImportsTask] based on the current repository.
+  ///
+  /// This method looks and the `pubspec.yaml` in the current directory and uses
+  /// it to figure out the [packageName] and [libDir]. The [logger] is passed to
+  /// [this.logger].
   static Future<FixImportsTask> current({
     required TaskLogger logger,
   }) async {

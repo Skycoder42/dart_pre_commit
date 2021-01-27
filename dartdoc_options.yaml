@@ -1,2 +1,6 @@
 dartdoc:
   includeExternal: ["bin/dart_pre_commit.dart"]
+  categories:
+    tasks:
+      markdown: lib/src/tasks/tasks.md
+      name: Tasks

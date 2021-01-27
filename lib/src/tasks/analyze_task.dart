@@ -31,12 +31,22 @@ class _AnalyzeResult {
 /// A task the runs `dart analyze` to check for problems.
 ///
 /// This task analyzes all files in the repository for problems and then filters
-/// the results for all files that have been staged in this
+/// the results for all files that have been staged in this commit. If anything
+/// was found for the staged files, the task will print out the problems and
+/// exit with [TaskResult.rejected].
+///
+/// {@category tasks}
 class AnalyzeTask implements RepoTask {
+  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
+
+  /// The [FileResolver] instance used by this task.
   final FileResolver fileResolver;
+
+  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
+  /// Default Constructor.
   const AnalyzeTask({
     required this.programRunner,
     required this.fileResolver,

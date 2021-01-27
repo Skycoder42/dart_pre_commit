@@ -1,28 +1,28 @@
 import 'repo_entry.dart';
 
-/// The possible result states of a generic task
+/// The possible result states of a generic task.
 ///
-/// Check [TaskResultX] for extended functionality
+/// Check [TaskResultX] for extended functionality.
 enum TaskResult {
-  /// The task completed with success, nothing had to be modified
+  /// The task completed with success, nothing had to be modified.
   accepted,
 
   /// The task completed with success, but had to modify one or more files that
-  /// have to be added to the commit again
+  /// have to be added to the commit again.
   modified,
 
   /// The task completed, but detected a problem with the commit that must be
-  /// solved before the commit can be accepted
+  /// solved before the commit can be accepted.
   rejected,
 }
 
-/// Methodical extensions for the [TaskResult] enum
+/// Methodical extensions for the [TaskResult] enum.
 extension TaskResultX on TaskResult {
-  /// Raises the hook result to a more severe level, if required
+  /// Raises the hook result to a more severe level, if required.
   ///
   /// Compares this with [target] and returns the more severe result. The
   /// results severity is as according to the following table, the most severe
-  /// result at the top
+  /// result at the top:
   ///
   /// - [TaskResult.rejected]
   /// - [TaskResult.modified]
@@ -36,16 +36,16 @@ extension TaskResultX on TaskResult {
   TaskResult raiseTo(TaskResult target) => target.index > index ? target : this;
 }
 
-/// The base class for all tasks
+/// The base class for all tasks.
 ///
 /// **Important:** Do *not* implement this class directly, instead user either
 /// [FileTask] or [RepoTask], as one of these to is expected by [Hooks]. This
 /// class only exists to perform common operations on all types of tasks.
 abstract class TaskBase {
-  /// Returns the user-visible name of the task
+  /// Returns the user-visible name of the task.
   String get taskName;
 
-  /// Returns a pattern to check if a [RepoEntry] can be processed by this task
+  /// Returns a pattern to check if a [RepoEntry] can be processed by this task.
   ///
   /// The returned pattern is matched against the path of every staged or
   /// partially staged file. The paths are always relative to the current
@@ -57,7 +57,7 @@ abstract class TaskBase {
   Pattern get filePattern;
 }
 
-/// A task that is run multiple times, once for every matching file
+/// A task that is run multiple times, once for every matching file.
 ///
 /// For this task, all staged files are filtered based on [filePattern] and then
 /// each file is processed via [call()].
@@ -73,7 +73,7 @@ abstract class TaskBase {
 /// be processed in the same manner. All [FileTask]s are always run before any
 /// [RepoTask].
 abstract class FileTask extends TaskBase {
-  /// Executes the task on the given [entry]
+  /// Executes the task on the given [entry].
   ///
   /// **Important:** This function should run without sideeffects, i.e. the
   /// following two examples should yield the exact same results, no matter
@@ -100,7 +100,7 @@ abstract class FileTask extends TaskBase {
   Future<TaskResult> call(RepoEntry entry);
 }
 
-/// A task that runs once for the whole repository
+/// A task that runs once for the whole repository.
 ///
 /// For this task, all staged files are filtered based on [filePattern] and the
 /// list of filtered tasks is the passed to [call()]. If no files do match,
@@ -119,13 +119,13 @@ abstract class FileTask extends TaskBase {
 /// [FileTask].
 abstract class RepoTask extends TaskBase {
   /// Specifies, whether the task should still be executed, even if no files
-  /// match
+  /// match.
   ///
   /// If true, the task always gets called. Otherwise it only gets called if at
   /// least one file matches [filePattern].
   bool get callForEmptyEntries;
 
-  /// Executes the task on all given [entries]
+  /// Executes the task on all given [entries].
   ///
   /// While [entries] contains only the staged files, you can used all files
   /// in the repository.
@@ -137,9 +137,9 @@ abstract class RepoTask extends TaskBase {
   Future<TaskResult> call(Iterable<RepoEntry> entries);
 }
 
-/// Helper methods that decorate [TaskBase]
+/// Helper methods that decorate [TaskBase].
 extension TaskBaseX on TaskBase {
-  /// Check if this task can process the given [entry]
+  /// Check if this task can process the given [entry].
   ///
   /// Shortcut that uses [TaskBase.filePattern] to check if the [entry]s path
   /// matches the pattern and thus can be passed to the corresponding call
