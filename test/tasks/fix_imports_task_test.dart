@@ -100,7 +100,17 @@ void main() {
       inData:
           'import "package:mock/src/details.dart" show Details;   // ignore: some lint\n',
       outData:
-          'import "src/details.dart" show Details; // ignore: some lint\n\n',
+          'import "src/details.dart" show Details;   // ignore: some lint\n\n',
+    );
+
+    _runTest(
+      'works for multiline imports',
+      inData: '// comment\n'
+          'import "package:mock/src/details.dart" // comment\n'
+          '  as details; // comment\n',
+      outData: '// comment\n'
+          'import "src/details.dart" // comment\n'
+          '  as details; // comment\n\n',
     );
 
     _runTest(
@@ -153,29 +163,39 @@ import 'src/details.dart';
     );
 
     _runTest(
-      'keeps prefix and does not modify code',
+      'keeps prefix and suffix lines',
       inData: '''
 // prefix
-const i = 42;
-
-// more comments
 import 'dart:io';
-import 'dart:async';
-void main() {
-  this is definitly valid dart code
-}
+import 'dart:async'
+  as suffix;
+
+
+/// multiline
+/// 
+/// doc comment
+
+import 'dart:test' // with even more comments
+  // even here
+  
+  hide test;
+// and even more comments
+void main() {}
 ''',
       outData: '''
+import 'dart:async'
+  as suffix;
 // prefix
-const i = 42;
-
-// more comments
-import 'dart:async';
 import 'dart:io';
+/// multiline
+/// 
+/// doc comment
+import 'dart:test' // with even more comments
+  // even here
+  hide test;
 
-void main() {
-  this is definitly valid dart code
-}
+// and even more comments
+void main() {}
 ''',
     );
 
@@ -188,7 +208,10 @@ void main() {
 import '../code.dart';
 
 
-import 'dart:io';
+import 'dart:io'
+
+
+  as suffix;
 
 
 import 'package:a/a.dart';
@@ -199,13 +222,12 @@ import 'package:a/a.dart';
 
 ''',
       outData: '''
-// prefix
-
-
-import 'dart:io';
+import 'dart:io'
+  as suffix;
 
 import 'package:a/a.dart';
 
+// prefix
 import '../code.dart';
 
 // some code

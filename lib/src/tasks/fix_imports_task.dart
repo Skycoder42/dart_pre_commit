@@ -109,6 +109,24 @@ class FixImportsTask implements FileTask {
   }
 }
 
+class _SourceImport implements Comparable<_SourceImport> {
+  final String import;
+  final List<String> prefixLines;
+  final List<String> suffixLines;
+
+  _SourceImport(
+    this.import, {
+    List<String>? prefixLines,
+    List<String>? suffixLines,
+  })  : prefixLines = prefixLines ?? [],
+        suffixLines = suffixLines ?? [];
+
+  Iterable<String> get lines => [...prefixLines, import, ...suffixLines];
+
+  @override
+  int compareTo(_SourceImport other) => import.compareTo(other.import);
+}
+
 extension _ImportFixExtensions on Stream<String> {
   Stream<String> shaSum(AccumulatorSink<Digest> sink) async* {
     final input = sha512.startChunkedConversion(sink);
@@ -134,7 +152,8 @@ extension _ImportFixExtensions on Stream<String> {
     }
 
     final regexp = RegExp(
-        """^\\s*import\\s*(['"])package:$packageName\\/([^'"]*)['"]([^;]*);\\s*(\\/\\/.*)?\$""");
+      """^\\s*import\\s*(['"])package:${RegExp.escape(packageName)}\\/([^'"]*)['"](.*)\$""",
+    );
 
     await for (final line in this) {
       final trimmedLine = line.trim();
@@ -144,13 +163,12 @@ extension _ImportFixExtensions on Stream<String> {
         final quote = match[1];
         final importPath = match[2];
         final postfix = match[3];
-        final comment = match[4] != null ? ' ${match[4]}' : '';
         final relativeImport = relative(
           join('lib', importPath),
           from: file.parent.path,
         ).replaceAll('\\', '/');
 
-        yield 'import $quote$relativeImport$quote$postfix;$comment';
+        yield 'import $quote$relativeImport$quote$postfix';
       } else {
         yield line;
       }
@@ -158,68 +176,74 @@ extension _ImportFixExtensions on Stream<String> {
   }
 
   Stream<String> organizeImports(TaskLogger logger) async* {
-    final dartRegexp = RegExp(
-      r"""^\s*import\s+(?:"|')dart:[^;]+;\s*(?:\/\/.*)?$""",
-    );
-    final packageRegexp = RegExp(
-      r"""^\s*import\s+(?:"|')package:[^;]+;\s*(?:\/\/.*)?$""",
-    );
-    final relativeRegexp = RegExp(
-      r"""^\s*import\s+(?:"|')(?!package:|dart:)[^;]+;\s*(?:\/\/.*)?$""",
-    );
+    const baseRegExpPrefix = r'''^\s*import\s*(?:"|')''';
+    const baseRegExpSuffix = r'''[^'"]+(?:"|')([^;\/]*;)?.*?$''';
 
-    final prefixCode = <String>[];
-    final dartImports = <String>[];
-    final packageImports = <String>[];
-    final relativeImports = <String>[];
-    final code = <String>[];
+    final importGroups = <RegExp, List<_SourceImport>>{
+      RegExp('${baseRegExpPrefix}dart:$baseRegExpSuffix'): [],
+      RegExp('${baseRegExpPrefix}package:$baseRegExpSuffix'): [],
+      RegExp('$baseRegExpPrefix(?!package:|dart:)$baseRegExpSuffix'): [],
+    };
+    final openLineRegExp = RegExp(r'^[^\/]+;.*$');
 
-    // split into import types and code
+    final lineCache = <String>[];
+    _SourceImport? openImport;
+
     await for (final line in this) {
-      if (dartRegexp.hasMatch(line)) {
-        dartImports.add(line.trim());
-      } else if (packageRegexp.hasMatch(line)) {
-        packageImports.add(line.trim());
-      } else if (relativeRegexp.hasMatch(line)) {
-        relativeImports.add(line.trim());
-      } else if (dartImports.isEmpty &&
-          packageImports.isEmpty &&
-          relativeImports.isEmpty) {
-        prefixCode.add(line);
-      } else {
-        code.add(line);
+      var consumed = false;
+      for (final importGroup in importGroups.entries) {
+        final match = importGroup.key.firstMatch(line);
+        if (match != null) {
+          final import = _SourceImport(
+            line,
+            prefixLines: lineCache
+                .where((l) => l.trim().isNotEmpty)
+                .toList(growable: false),
+          );
+          lineCache.clear();
+          importGroup.value.add(import);
+          openImport = (match[1]?.isEmpty ?? true) ? import : null;
+          consumed = true;
+          break;
+        }
       }
-    }
+      if (consumed) {
+        continue;
+      }
 
-    // remove leading/trailing empty lines
-    while (code.isNotEmpty && code.first.trim().isEmpty) {
-      code.removeAt(0);
-    }
-    while (code.isNotEmpty && code.last.trim().isEmpty) {
-      code.removeLast();
+      // no match
+      if (openImport != null) {
+        if (line.trim().isNotEmpty) {
+          openImport.suffixLines.add(line);
+          if (openLineRegExp.hasMatch(line)) {
+            openImport = null;
+          }
+        }
+      } else {
+        lineCache.add(line);
+      }
     }
 
     // sort individual imports
     logger.debug('Sorting imports...');
-    dartImports.sort((a, b) => a.compareTo(b));
-    packageImports.sort((a, b) => a.compareTo(b));
-    relativeImports.sort((a, b) => a.compareTo(b));
+    for (final imports in importGroups.values) {
+      imports.sort((a, b) => a.compareTo(b));
+      if (imports.isNotEmpty) {
+        yield* Stream.fromIterable(imports).expand((i) => i.lines);
+        yield '';
+      }
+    }
 
-    // yield into result
-    yield* Stream.fromIterable(prefixCode);
-    if (dartImports.isNotEmpty) {
-      yield* Stream.fromIterable(dartImports);
-      yield '';
+    // remove leading/trailing empty lines, print code
+    while (lineCache.isNotEmpty && lineCache.first.trim().isEmpty) {
+      lineCache.removeAt(0);
     }
-    if (packageImports.isNotEmpty) {
-      yield* Stream.fromIterable(packageImports);
-      yield '';
+    while (lineCache.isNotEmpty && lineCache.last.trim().isEmpty) {
+      lineCache.removeLast();
     }
-    if (relativeImports.isNotEmpty) {
-      yield* Stream.fromIterable(relativeImports);
-      yield '';
+    if (lineCache.isNotEmpty) {
+      yield* Stream.fromIterable(lineCache);
     }
-    yield* Stream.fromIterable(code);
   }
 
   Stream<String> withNewlines() async* {
