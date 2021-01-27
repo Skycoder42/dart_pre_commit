@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - pull-up-dependencies now works in subdirs (#8)
 - pull-up-dependencies now correctly handles nullsafety releases
+- fix-imports can now handle multiline imports correctly (#9)
+  - this includes comments before, after or between the import and the 
+  semicolon, as well as `as/show/hide` statements, that fall into a new line
 ### Security
 
 ## [2.0.0-nullsafety.0] - 2020-12-10
