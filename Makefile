@@ -49,11 +49,23 @@ doc: get
 doc-open: doc
 	xdg-open doc/api/index.html || start doc/api/index.html
 
+pre-publish:
+	rm lib/src/.gitignore
+
+post-publish:
+	echo '# Generated dart files' > lib/src/.gitignore
+	echo '*.freezed.dart' >> lib/src/.gitignore
+	echo '*.g.dart' >> lib/src/.gitignore
+
 publish-dry: get
+	$(MAKE) pre-publish
 	dart pub publish --dry-run
+	$(MAKE) post-publish
 
 publish: get
+	$(MAKE) pre-publish
 	dart pub publish --force
+	$(MAKE) post-publish
 
 verify: get
 	$(MAKE) build-clean

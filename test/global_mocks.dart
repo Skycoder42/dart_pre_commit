@@ -15,13 +15,16 @@ class FakeFile extends Fake implements File {
   FakeFile(this.path, {bool exists = true}) : _exists = exists;
 }
 
-class FakeEntry extends RepoEntry {
+class FakeEntry extends Fake implements RepoEntry {
+  @override
+  final FakeFile file;
+
+  @override
+  final bool partiallyStaged;
+
   FakeEntry(
     String path, {
-    bool partiallyStaged = false,
+    this.partiallyStaged = false,
     bool exists = true,
-  }) : super(
-          file: FakeFile(path, exists: exists),
-          partiallyStaged: partiallyStaged,
-        );
+  }) : file = FakeFile(path, exists: exists);
 }

@@ -24,16 +24,17 @@ jobs:
         with:
           release-channel: beta
       - uses: actions/checkout@v2
-      - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable run build_runner build
-      - run: dart --enable-experiment=non-nullable analyze --fatal-infos
-      - run: dart --enable-experiment=non-nullable --no-sound-null-safety test --coverage=coverage
-      - run: dart --enable-experiment=non-nullable run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+      - run: dart pub get
+      - run: dart run build_runner build
+      - run: dart analyze --fatal-infos
+      - run: dart --no-sound-null-safety test --coverage=coverage
+      - run: dart run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
       - uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
           min_coverage: 95
           exclude: "**/hooks_provider.dart"
-      - run: dart --enable-experiment=non-nullable pub publish --dry-run || true
+      - run: rm lib/src/.gitignore
+      - run: dart pub publish --dry-run
 
   release:
     runs-on: ubuntu-latest
@@ -71,13 +72,14 @@ jobs:
         with:
           release-channel: beta
       - uses: actions/checkout@v2
-      - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable run build_runner build
+      - run: dart pub get
+      - run: dart run build_runner build
+      - run: rm lib/src/.gitignore
       - name: store credentials
         run: |
           mkdir -p ~/.pub-cache
           echo '${{ secrets.PUB_DEV_CREDENTIALS }}' > ~/.pub-cache/credentials.json
-      - run: dart --enable-experiment=non-nullable pub publish --force
+      - run: dart pub publish --force
       - name: clean up credentials
         if: always()
         run: shred -fzvu ~/.pub-cache/credentials.json
@@ -92,9 +94,9 @@ jobs:
         with:
           release-channel: beta
       - uses: actions/checkout@v2
-      - run: dart --enable-experiment=non-nullable pub get
-      - run: dart --enable-experiment=non-nullable run build_runner build
-      - run: dartdoc --enable-experiment=non-nullable
+      - run: dart pub get
+      - run: dart run build_runner build
+      - run: dartdoc
       - name: upload doc
         uses: peaceiris/actions-gh-pages@v3
         with:

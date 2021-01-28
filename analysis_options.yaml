@@ -4,7 +4,8 @@ analyzer:
   enable-experiment:
     - non-nullable
   exclude:
-    - "*.mocks.dart"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
     - "**/*.mocks.dart"
   strong-mode:
     implicit-casts: false

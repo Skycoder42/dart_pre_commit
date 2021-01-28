@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/all.dart'; // ignore: import_of_legacy_library_into_null_safe
 
 import 'hooks.dart';
+import 'task_base.dart';
 import 'tasks/analyze_task.dart';
 import 'tasks/fix_imports_task.dart';
 import 'tasks/format_task.dart';
@@ -14,66 +16,36 @@ import 'util/logging/console_logger.dart';
 import 'util/logging/simple_logger.dart';
 import 'util/program_runner.dart';
 
+part 'hooks_provider.freezed.dart';
+
 /// The configuration to create dependency-injected [Hooks] via [HooksProvider].
-class HooksConfig {
-  /// Specifies, whether the [FixImportsTask] should be enabled.
-  final bool fixImports;
-
-  /// Specifies, whether the [FormatTask] should be enabled.
-  final bool format;
-
-  /// Specifies, whether the [AnalyzeTask] should be enabled.
-  final bool analyze;
-
-  /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
-  final bool pullUpDependencies;
-
-  /// Sets [Hooks.continueOnRejected].
-  final bool continueOnRejected;
-
-  /// A list of additional tasks to be added to the hook.
-  ///
-  /// These are added in addition to the four primary tasks. They are always
-  /// added last to the hook, so they will also run last. If you need more
-  /// control over the order, instanciate the primary tasks by hand, using
-  /// [HooksProviderInternal]
-  final List<TaskBase>? extraTasks;
-
+@freezed
+abstract class HooksConfig with _$HooksConfig {
   /// Default constructor.
-  const HooksConfig({
-    this.fixImports = false,
-    this.format = false,
-    this.analyze = false,
-    this.pullUpDependencies = false,
-    this.continueOnRejected = false,
-    this.extraTasks,
-  });
+  const factory HooksConfig({
+    /// Specifies, whether the [FixImportsTask] should be enabled.
+    @Default(false) bool fixImports,
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other is! HooksConfig) {
-      return false;
-    }
-    return fixImports == other.fixImports &&
-        format == other.format &&
-        analyze == other.analyze &&
-        pullUpDependencies == other.pullUpDependencies &&
-        continueOnRejected == other.continueOnRejected &&
-        extraTasks == other.extraTasks;
-  }
+    /// Specifies, whether the [FormatTask] should be enabled.
+    @Default(false) bool format,
 
-  @override
-  int get hashCode =>
-      runtimeType.hashCode ^
-      fixImports.hashCode ^
-      format.hashCode ^
-      analyze.hashCode ^
-      pullUpDependencies.hashCode ^
-      continueOnRejected.hashCode ^
-      extraTasks.hashCode;
+    /// Specifies, whether the [AnalyzeTask] should be enabled.
+    @Default(false) bool analyze,
+
+    /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
+    @Default(false) bool pullUpDependencies,
+
+    /// Sets [Hooks.continueOnRejected].
+    @Default(false) bool continueOnRejected,
+
+    /// A list of additional tasks to be added to the hook.
+    ///
+    /// These are added in addition to the four primary tasks. They are always
+    /// added last to the hook, so they will also run last. If you need more
+    /// control over the order, instanciate the primary tasks by hand, using
+    /// [HooksProviderInternal]
+    List<TaskBase>? extraTasks,
+  }) = _HooksConfig;
 }
 
 /// A static class to give scope to [hookProvider].
