@@ -139,11 +139,11 @@ void main() {
 
     final data = await _readFile('lib/src/fix_imports.dart');
     expect(data, '''
-// this is important
 import 'dart:io';
 
 import 'package:stuff/stuff.dart';
 
+// this is important
 import '../test_project.dart';
 
 void main() {}
