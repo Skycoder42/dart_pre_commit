@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+## [2.0.0-nullsafety.1] - 2020-01-28
+### Added
 - Basic Interface to create custom file and repository based tasks (#6)
 - Made all tasks and helper classes public (#5)
 - Added riverpod-based HooksProvider for easier use (replaces Hooks.create)
@@ -22,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   associated with the task
   - debug-logging has been added to all tasks
   - log-levels can be configured to show certain log messages
-### Deprecated
 ### Removed
 - Hooks.create was removed, use the provider instead
 - TaskException was removed in favor of normal exceptions
@@ -32,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix-imports can now handle multiline imports correctly (#9)
   - this includes comments before, after or between the import and the 
   semicolon, as well as `as/show/hide` statements, that fall into a new line
-### Security
 
 ## [2.0.0-nullsafety.0] - 2020-12-10
 ### Changed
