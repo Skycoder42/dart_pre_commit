@@ -35,6 +35,7 @@ test-coverage: get
 	@rm -rf coverage
 	dart --no-sound-null-safety test --coverage=coverage
 	dart run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+	lcov --remove coverage/lcov.info -o coverage/lcov.info "**/hooks_provider.dart" "**/*.g.dart" "**/*.freezed.dart"
 
 coverage: test-coverage
 	genhtml -o coverage/html coverage/lcov.info
