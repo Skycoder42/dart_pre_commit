@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/all.dart'; // ignore: import_of_legacy_library_into_null_safe
 
@@ -34,6 +34,15 @@ abstract class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
     @Default(false) bool pullUpDependencies,
+
+    /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
+    ///
+    /// The [outdated] value is used to initialize the task with that value.
+    OutdatedLevel? outdated,
+
+    /// Specifies, whether the [OutdatedTask] in nullsafety mode should be
+    /// enabled.
+    @Default(false) bool nullsafe,
 
     /// Sets [Hooks.continueOnRejected].
     @Default(false) bool continueOnRejected,
@@ -75,6 +84,9 @@ abstract class HooksProvider {
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
         if (param.pullUpDependencies)
           ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
+        if (param.outdated != null)
+          ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
+        if (param.nullsafe) ref.watch(HooksProviderInternal.nullsafeProvider),
         if (param.extraTasks != null) ...param.extraTasks!,
       ],
     ),
@@ -158,6 +170,21 @@ abstract class HooksProviderInternal {
   static final pullUpDependenciesProvider = Provider(
     (ref) => PullUpDependenciesTask(
       fileResolver: ref.watch(fileResolverProvider),
+      programRunner: ref.watch(programRunnerProvider),
+      logger: ref.watch(taskLoggerProvider),
+    ),
+  );
+
+  static final outdatedProvider = Provider.family(
+    (ref, OutdatedLevel level) => OutdatedTask(
+      programRunner: ref.watch(programRunnerProvider),
+      logger: ref.watch(taskLoggerProvider),
+      outdatedLevel: level,
+    ),
+  );
+
+  static final nullsafeProvider = Provider(
+    (ref) => NullsafeTask(
       programRunner: ref.watch(programRunnerProvider),
       logger: ref.watch(taskLoggerProvider),
     ),

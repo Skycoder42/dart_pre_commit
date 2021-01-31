@@ -22,11 +22,22 @@ enum TaskStatus {
 ///
 /// See [LogLevelX] for extensions on the enum.
 enum LogLevel {
+  /// Print all messages.
   debug,
+
+  /// Print informational messages.
   info,
+
+  /// Print warnings and errors only.
   warn,
+
+  /// Print errors only.
   error,
+
+  /// Print exceptions only.
   except,
+
+  /// Print nothing at all.
   nothing,
 }
 

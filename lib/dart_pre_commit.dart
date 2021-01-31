@@ -5,6 +5,7 @@ export 'src/task_base.dart';
 export 'src/tasks/analyze_task.dart';
 export 'src/tasks/fix_imports_task.dart';
 export 'src/tasks/format_task.dart';
+export 'src/tasks/outdated_task.dart';
 export 'src/tasks/pull_up_dependencies_task.dart';
 export 'src/util/file_resolver.dart';
 export 'src/util/logger.dart';

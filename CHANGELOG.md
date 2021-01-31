@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
-## [2.0.0-nullsafety.1] - 2020-01-28
+## [2.0.0-nullsafety.1] - 2021-01-28
 ### Added
 - Basic Interface to create custom file and repository based tasks (#6)
 - Made all tasks and helper classes public (#5)

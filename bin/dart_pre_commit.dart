@@ -12,13 +12,15 @@
 /// `dart pub run dart_pre_commit --help`.
 ///
 /// ### Parsing Options
-///  Option                             | Default | Description
-/// ------------------------------------|---------|-------------
-/// `-i`, `--[no-]fix-imports`          | on      | Format and sort imports of staged files.
-/// `-f`, `--[no-]format`               | on      | Format staged files with dart format.
-/// `-a`, `--[no-]analyze`              | on      | Run dart analyze to find issue for the staged files.
-/// `-p`, `--[no-]check-pull-up`        | off     | Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.
-/// `-c`, `--[no-]continue-on-rejected` | off     | Continue checks even if a task rejects a certain file. The whole hook will still exit with rejected, but only after all files have been processed.
+///  Option                             | Default    | Description
+/// ------------------------------------|------------|-------------
+/// `-i`, `--[no-]fix-imports`          | on         | Format and sort imports of staged files.
+/// `-f`, `--[no-]format`               | on         | Format staged files with dart format.
+/// `-a`, `--[no-]analyze`              | on         | Run dart analyze to find issue for the staged files.
+/// `-p`, `--[no-]check-pull-up`        | off        | Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.
+/// `-c`, `--[no-]continue-on-rejected` | off        | Continue checks even if a task rejects a certain file. The whole hook will still exit with rejected, but only after all files have been processed.
+/// `-o`, `--outdated=<level>`          | `disabled` | Enables the outdated packages check. You can choose one of the levels described below to require certain package updates. If they are not met, the hook will fail. No matter what level, as long as it is not disabled - which will completly disable the hook - it will still print available package updates without failing. Can be any of [OutdatedLevel].
+/// `-n`, `--[no-]nullsafe`             | off        | Activates null-safety checks. Will check all installed dependencies for null-safety updates and fail if any can be installed without problems.
 ///
 /// ### Other
 ///  Option                           | Default             | Description
@@ -35,7 +37,10 @@ import 'dart:io';
 import 'package:args/args.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:dart_pre_commit/src/hooks_provider.dart';
+import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:riverpod/riverpod.dart'; // ignore: import_of_legacy_library_into_null_safe
+
+const disabledOutdatedLevel = 'disabled';
 
 /// @nodoc
 void main(List<String> args) {
@@ -71,6 +76,39 @@ Future<int> _run(List<String> args) async {
           'higher versions then specified in pubspec.yaml and warn if '
           'that´s the case.',
     )
+    ..addOption(
+      'outdated',
+      abbr: 'o',
+      allowed: OutdatedLevel.values
+          .map((e) => e.name)
+          .followedBy([disabledOutdatedLevel]),
+      defaultsTo: disabledOutdatedLevel,
+      help: 'Enables the outdated packages check. You can choose one of the '
+          'levels described below to require certain package updates. If they '
+          'are not met, the hook will fail. No matter what level, as long as '
+          'it is not disabled - which will completly disable the hook - it '
+          'will still print available package updates without failing.',
+      valueHelp: 'level',
+      allowedHelp: {
+        disabledOutdatedLevel: 'Do not run the hook.',
+        OutdatedLevel.none.name:
+            'Only print recommended updates, do not require any.',
+        OutdatedLevel.major.name:
+            'Only require major updates, e.g. 1.X.Y-Z to 2.0.0-0.',
+        OutdatedLevel.minor.name:
+            'Only require minor updates, e.g. 1.0.X-Y to 1.1.0-0.',
+        OutdatedLevel.patch.name:
+            'Only require patch updates, e.g. 1.0.0-X to 1.0.1-0.',
+        OutdatedLevel.any.name: 'Require all updates that are available.',
+      },
+    )
+    ..addFlag(
+      'nullsafe',
+      abbr: 'n',
+      help: 'Activates null-safety checks. Will check all installed '
+          'dependencies for null-safety updates and fail if any can be '
+          'installed without problems.',
+    )
     ..addFlag(
       'continue-on-rejected',
       abbr: 'c',
@@ -102,12 +140,12 @@ Future<int> _run(List<String> args) async {
           'details of tasks, not the status update message. The levels are:',
       valueHelp: 'level',
       allowedHelp: {
-        LogLevel.debug.name: 'Print all messages',
-        LogLevel.info.name: 'Print informational messages',
-        LogLevel.warn.name: 'Print warnings and errors only',
-        LogLevel.error.name: 'Print errors only',
-        LogLevel.except.name: 'Print exceptions only',
-        LogLevel.nothing.name: 'Print nothing at all',
+        LogLevel.debug.name: 'Print all messages.',
+        LogLevel.info.name: 'Print informational messages.',
+        LogLevel.warn.name: 'Print warnings and errors only.',
+        LogLevel.error.name: 'Print errors only.',
+        LogLevel.except.name: 'Print exceptions only.',
+        LogLevel.nothing.name: 'Print nothing at all.',
       },
     )
     ..addFlag(
@@ -135,11 +173,16 @@ Future<int> _run(List<String> args) async {
       Directory.current = dir;
     }
 
+    final outdatedLevel = options['outdated'] as String;
     final hooks = await di.read(HooksProvider.hookProvider(HooksConfig(
       fixImports: options['fix-imports'] as bool,
       format: options['format'] as bool,
       analyze: options['analyze'] as bool,
       pullUpDependencies: options['check-pull-up'] as bool,
+      outdated: outdatedLevel == disabledOutdatedLevel
+          ? null
+          : OutdatedLevelX.parse(outdatedLevel),
+      nullsafe: options['nullsafe'] as bool,
       continueOnRejected: options['continue-on-rejected'] as bool,
     )).future);
     hooks.logger.logLevel = LogLevelX.parse(options['log-level'] as String);
