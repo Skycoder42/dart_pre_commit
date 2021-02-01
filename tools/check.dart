@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:test/test.dart';
 
 class TaskRejectedException implements Exception {
   final TaskBase task;
