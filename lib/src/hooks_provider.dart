@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/all.dart';
 
@@ -9,6 +8,7 @@ import 'task_base.dart';
 import 'tasks/analyze_task.dart';
 import 'tasks/fix_imports_task.dart';
 import 'tasks/format_task.dart';
+import 'tasks/outdated_task.dart';
 import 'tasks/pull_up_dependencies_task.dart';
 import 'util/file_resolver.dart';
 import 'util/logger.dart';

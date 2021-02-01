@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [2.1.0-nullsafety.0] - 2021-02-01
+### Added
+- Outdated task: Checks if any packages can be updated
+- Nullsafe task: Checks if any packages can be updated to a nullsafe version
+### Changed
+- Ported package to use freezed dataclasses
+
 ## [2.0.0-nullsafety.1] - 2021-01-28
 ### Added
 - Basic Interface to create custom file and repository based tasks (#6)
