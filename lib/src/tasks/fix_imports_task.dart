@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:convert/convert.dart'; // ignore: import_of_legacy_library_into_null_safe
-import 'package:crypto/crypto.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:convert/convert.dart';
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:riverpod/all.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:riverpod/all.dart';
 
 import 'hooks.dart';
 import 'task_base.dart';

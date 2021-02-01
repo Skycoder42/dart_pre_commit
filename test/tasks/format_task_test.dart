@@ -4,7 +4,7 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:tuple/tuple.dart';
 
 import '../global_mocks.dart';
 import '../test_with_data.dart';

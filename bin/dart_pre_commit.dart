@@ -38,7 +38,7 @@ import 'package:args/args.dart'; // ignore: import_of_legacy_library_into_null_s
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:dart_pre_commit/src/hooks_provider.dart';
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
-import 'package:riverpod/riverpod.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:riverpod/riverpod.dart';
 
 const disabledOutdatedLevel = 'disabled';
 

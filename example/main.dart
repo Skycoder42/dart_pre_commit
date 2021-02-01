@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:riverpod/riverpod.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:riverpod/riverpod.dart';
 
 Future<void> main(List<String> arguments) async {
   // assume first arg is the git directory to handle

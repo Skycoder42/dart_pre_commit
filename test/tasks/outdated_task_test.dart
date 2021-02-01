@@ -11,7 +11,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:tuple/tuple.dart';
 
 import '../test_with_data.dart';
 import 'outdated_task_test.mocks.dart';

@@ -7,7 +7,7 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  args: ^1.6.0 # !(test)
+  args: ^1.6.0 # !(test?, mockito, coverage)
   console: ^3.1.0 # X
   convert: ^3.0.0-nullsafety.0
   crypto: ^3.0.0-nullsafety.0
@@ -23,11 +23,11 @@ dev_dependencies:
   build_runner: ^1.11.0 # X
   # cider: ^0.0.5 # X
   coverage: ^0.15.1 # X
-  freezed: ^0.13.0-nullsafety.1
+  freezed: ^0.13.0-nullsafety.2
   json_serializable: ^4.0.0-nullsafety.0
   lint: ^1.5.1
   mockito: ^5.0.0-nullsafety.5
-  test: ^1.16.0-nullsafety.16
+  test: ^1.16.0-nullsafety.17
   tuple: ^2.0.0-nullsafety.0
 
 executables:
