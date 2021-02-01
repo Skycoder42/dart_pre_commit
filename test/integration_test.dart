@@ -97,6 +97,7 @@ environment:
 
 dependencies:
   meta: ^1.2.0
+  mobx: 1.1.0
   dart_pre_commit:
     path: ${Directory.current.path}
 
@@ -208,5 +209,55 @@ void main() {
     );
     expect(code, HookResult.rejected.index);
     expect(lines, contains(startsWith('  [INF]   meta: 1.2.0 -> 1.')));
+  });
+
+  test('outdated', () async {
+    final lines = <String>[];
+    final code = await _sut(
+      const [
+        '--no-fix-imports',
+        '--no-format',
+        '--no-analyze',
+        '--outdated=any',
+        '--detailed-exit-code',
+      ],
+      failOnError: false,
+      onStdout: (stream) => stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) => lines.add(line)),
+    );
+    expect(code, HookResult.rejected.index);
+    expect(
+      lines,
+      contains(
+        startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
+      ),
+    );
+  });
+
+  test('nullsafe', () async {
+    final lines = <String>[];
+    final code = await _sut(
+      const [
+        '--no-fix-imports',
+        '--no-format',
+        '--no-analyze',
+        '--nullsafe',
+        '--detailed-exit-code',
+      ],
+      failOnError: false,
+      onStdout: (stream) => stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) => lines.add(line)),
+    );
+    expect(code, HookResult.rejected.index);
+    expect(
+      lines,
+      contains(
+        startsWith('  [INF] Upgradeable: mobx: 1.1.0 -> '),
+      ),
+    );
   });
 }

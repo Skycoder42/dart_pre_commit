@@ -34,7 +34,7 @@ jobs:
           min_coverage: 95
           exclude: "**/hooks_provider.dart **/*.g.dart **/*.freezed.dart"
       - run: rm lib/src/.gitignore
-      - run: dart pub publish --dry-run
+      - run: dart pub publish --dry-run || true
 
   release:
     runs-on: ubuntu-latest
