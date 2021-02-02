@@ -32,9 +32,6 @@ abstract class HooksConfig with _$HooksConfig {
     /// Specifies, whether the [AnalyzeTask] should be enabled.
     @Default(false) bool analyze,
 
-    /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
-    @Default(false) bool pullUpDependencies,
-
     /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
     ///
     /// The [outdated] value is used to initialize the task with that value.
@@ -43,6 +40,9 @@ abstract class HooksConfig with _$HooksConfig {
     /// Specifies, whether the [OutdatedTask] in nullsafety mode should be
     /// enabled.
     @Default(false) bool nullsafe,
+
+    /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
+    @Default(false) bool pullUpDependencies,
 
     /// Sets [Hooks.continueOnRejected].
     @Default(false) bool continueOnRejected,
@@ -82,11 +82,11 @@ abstract class HooksProvider {
           await ref.watch(HooksProviderInternal.fixImportsProvider.future),
         if (param.format) ref.watch(HooksProviderInternal.formatProvider),
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
-        if (param.pullUpDependencies)
-          ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
         if (param.outdated != null)
           ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
         if (param.nullsafe) ref.watch(HooksProviderInternal.nullsafeProvider),
+        if (param.pullUpDependencies)
+          ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
         if (param.extraTasks != null) ...param.extraTasks!,
       ],
     ),
@@ -96,6 +96,8 @@ abstract class HooksProvider {
 /// A static class that contains all internally used providers.
 abstract class HooksProviderInternal {
   const HooksProviderInternal._();
+
+  static bool ansiSupported = stdout.hasTerminal && stdout.supportsAnsiEscapes;
 
   /// A simple provider for [ConsoleLogger] as [Logger]
   static final consoleLoggerProvider = Provider<Logger>(
@@ -108,9 +110,7 @@ abstract class HooksProviderInternal {
   );
 
   static Provider<Logger> get loggerProvider =>
-      stdout.hasTerminal && stdout.supportsAnsiEscapes
-          ? consoleLoggerProvider
-          : simpleLoggerProvider;
+      ansiSupported ? consoleLoggerProvider : simpleLoggerProvider;
 
   /// A simple provider for [TaskLogger]
   ///

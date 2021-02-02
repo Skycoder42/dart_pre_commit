@@ -4,18 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.2.0-nullsafety.0] - 2021-02-02
 ### Added
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Security
+- `--[no-]ansi` CLI option to explicitly enable/disable rich logging (#10)
 
 ## [2.1.0-nullsafety.0] - 2021-02-01
 ### Added
-- Outdated task: Checks if any packages can be updated
-- Nullsafe task: Checks if any packages can be updated to a nullsafe version
+- Outdated task: Checks if any packages can be updated (#7)
+- Nullsafe task: Checks if any packages can be updated to a nullsafe version (#7)
 ### Changed
 - Ported package to use freezed dataclasses
 
@@ -91,3 +87,11 @@ higher version from the lockfile
 
 ## [0.1.0] - 2020-10-02
 - Initial release
+
+## [Unreleased]
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security

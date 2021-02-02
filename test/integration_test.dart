@@ -77,7 +77,13 @@ void main() {
     Function(Stream<List<int>>)? onStdout,
   }) =>
       _pub(
-        ['run', '--no-sound-null-safety', 'dart_pre_commit', ...arguments],
+        [
+          'run',
+          '--no-sound-null-safety',
+          'dart_pre_commit',
+          '--no-ansi',
+          ...arguments,
+        ],
         failOnError: failOnError,
         onStdout: onStdout,
       );

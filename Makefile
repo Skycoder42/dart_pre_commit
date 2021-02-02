@@ -50,6 +50,9 @@ doc: get
 doc-open: doc
 	xdg-open doc/api/index.html || start doc/api/index.html
 
+checkup: get
+	dart --no-sound-null-safety tool/check.dart
+
 pre-publish:
 	rm lib/src/.gitignore
 
@@ -58,12 +61,12 @@ post-publish:
 	echo '*.freezed.dart' >> lib/src/.gitignore
 	echo '*.g.dart' >> lib/src/.gitignore
 
-publish-dry: get
+publish-dry: get checkup
 	$(MAKE) pre-publish
 	dart pub publish --dry-run
 	$(MAKE) post-publish
 
-publish: get
+publish: get checkup
 	$(MAKE) pre-publish
 	dart pub publish --force
 	$(MAKE) post-publish
