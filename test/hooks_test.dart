@@ -55,6 +55,7 @@ void main() {
       status: anyNamed('status'),
       detail: anyNamed('detail'),
       clear: anyNamed('clear'),
+      refresh: anyNamed('refresh'),
     )).thenReturn(null);
     when(mockLogger.completeStatus()).thenReturn(null);
 
@@ -104,22 +105,27 @@ void main() {
       verify(mockLogger.updateStatus(
         message: 'Scanning a.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verify(mockLogger.updateStatus(
         message: 'Scanning path${separator}b.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verify(mockLogger.updateStatus(
         message: 'Scanning c.g.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verify(mockLogger.updateStatus(
         message: 'Scanning any.txt...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verifyNever(mockLogger.updateStatus(
         message: anyNamed('message'),
         status: anyNamed('status'),
+        refresh: anyNamed('refresh'),
       ));
     });
 
@@ -144,10 +150,12 @@ void main() {
       verify(mockLogger.updateStatus(
         message: 'Scanning b.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verifyNever(mockLogger.updateStatus(
         message: anyNamed('message'),
         status: anyNamed('status'),
+        refresh: anyNamed('refresh'),
       ));
     });
 
@@ -178,14 +186,17 @@ void main() {
       verify(mockLogger.updateStatus(
         message: 'Scanning a.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verify(mockLogger.updateStatus(
         message: 'Scanning subdir${separator}b.dart...',
         status: TaskStatus.scanning,
+        refresh: anyNamed('refresh'),
       ));
       verifyNever(mockLogger.updateStatus(
         message: anyNamed('message'),
         status: anyNamed('status'),
+        refresh: anyNamed('refresh'),
       ));
     });
   });

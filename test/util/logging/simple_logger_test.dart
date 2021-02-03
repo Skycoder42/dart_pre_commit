@@ -66,6 +66,19 @@ void main() {
       verifyNoMoreInteractions(mockOutSink);
     });
 
+    test('refresh caches update but does not print yet', () {
+      sut.updateStatus(message: 'test', refresh: false);
+      verifyZeroInteractions(mockOutSink);
+
+      sut.updateStatus(detail: 'detail');
+      verifyInOrder([
+        mockOutSink.write('test'),
+        mockOutSink.write(' detail'),
+        mockOutSink.writeln(),
+      ]);
+      verifyNoMoreInteractions(mockOutSink);
+    });
+
     testWithData<Tuple5<String?, TaskStatus?, String?, bool, Iterable<String>>>(
       'update and clear use old state correctly',
       const [

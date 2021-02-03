@@ -34,10 +34,14 @@ class ConsoleLogger implements Logger {
     TaskStatus? status,
     String? detail,
     bool clear = false,
+    bool refresh = true,
   }) {
     _statusMessage = message ?? (clear ? '' : _statusMessage);
     _statusState = status ?? (clear ? null : _statusState);
     _statusDetail = detail ?? (clear ? null : _statusDetail);
+    if (!refresh) {
+      return;
+    }
     _freshStatus = true;
 
     Console.overwriteLine('');
@@ -119,11 +123,11 @@ extension _TaskStatusIconX on TaskStatus {
       case TaskStatus.scanning:
         return '🔎';
       case TaskStatus.clean:
-        return ' ✔';
+        return '✔️';
       case TaskStatus.hasChanges:
-        return ' 🖉';
+        return '✏️';
       case TaskStatus.hasUnstagedChanges:
-        return ' ⚠';
+        return '⚠️';
       case TaskStatus.rejected:
         return '❌';
     }

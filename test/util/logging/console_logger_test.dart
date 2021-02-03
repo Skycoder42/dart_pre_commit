@@ -40,9 +40,9 @@ void main() {
 
     testWithData<Tuple2<TaskStatus, String>>('prints status', const [
       Tuple2(TaskStatus.scanning, '🔎 '),
-      Tuple2(TaskStatus.clean, ' ✔ '),
-      Tuple2(TaskStatus.hasChanges, ' 🖉 '),
-      Tuple2(TaskStatus.hasUnstagedChanges, ' ⚠ '),
+      Tuple2(TaskStatus.clean, '✔️ '),
+      Tuple2(TaskStatus.hasChanges, '✏️ '),
+      Tuple2(TaskStatus.hasUnstagedChanges, '⚠️ '),
       Tuple2(TaskStatus.rejected, '❌ '),
     ], (fixture) {
       sut.updateStatus(message: 'test');
@@ -54,6 +54,14 @@ void main() {
       expect(output.toString(), cleanLine(italic(' test')));
     });
 
+    test('refresh caches update but does not print yet', () {
+      sut.updateStatus(message: 'test', refresh: false);
+      expect(output.toString(), isEmpty);
+
+      sut.updateStatus(detail: 'test');
+      expect(output.toString(), cleanLine('test${italic(' test')}'));
+    });
+
     testWithData<Tuple5<String?, TaskStatus?, String?, bool, String>>(
         'update and clear use old state correctly', [
       Tuple5('msg', null, null, false, '🔎 msg${italic(' test2')}'),
@@ -62,25 +70,25 @@ void main() {
         TaskStatus.clean,
         null,
         false,
-        ' ✔ test1${italic(' test2')}',
+        '✔️ test1${italic(' test2')}',
       ),
       Tuple5(null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, null, false, ' ✔ msg${italic(' test2')}'),
+      Tuple5('msg', TaskStatus.clean, null, false, '✔️ msg${italic(' test2')}'),
       Tuple5('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', false, ' ✔ test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, 'dtl', false, ' ✔ msg${italic(' dtl')}'),
+      Tuple5(null, TaskStatus.clean, 'dtl', false, '✔️ test1${italic(' dtl')}'),
+      Tuple5('msg', TaskStatus.clean, 'dtl', false, '✔️ msg${italic(' dtl')}'),
       const Tuple5('msg', null, null, true, 'msg'),
-      const Tuple5(null, TaskStatus.clean, null, true, ' ✔ '),
+      const Tuple5(null, TaskStatus.clean, null, true, '✔️ '),
       Tuple5(null, null, 'dtl', true, italic(' dtl')),
-      const Tuple5('msg', TaskStatus.clean, null, true, ' ✔ msg'),
+      const Tuple5('msg', TaskStatus.clean, null, true, '✔️ msg'),
       Tuple5('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', true, ' ✔ ${italic(' dtl')}'),
+      Tuple5(null, TaskStatus.clean, 'dtl', true, '✔️ ${italic(' dtl')}'),
       Tuple5(
         'msg',
         TaskStatus.clean,
         'dtl',
         true,
-        ' ✔ msg${italic(' dtl')}',
+        '✔️ msg${italic(' dtl')}',
       ),
     ], (fixture) {
       sut

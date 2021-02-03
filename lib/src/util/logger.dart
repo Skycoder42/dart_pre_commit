@@ -120,6 +120,7 @@ abstract class Logger implements TaskLogger {
     TaskStatus? status,
     String? detail,
     bool clear = false,
+    bool refresh = true,
   });
 
   /// Completes the current status message.

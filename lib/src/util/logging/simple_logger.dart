@@ -44,10 +44,15 @@ class SimpleLogger implements Logger {
     TaskStatus? status,
     String? detail,
     bool clear = false,
+    bool refresh = true,
   }) {
     _statusMessage = message ?? (clear ? '' : _statusMessage);
     _statusState = status ?? (clear ? null : _statusState);
     _statusDetail = detail ?? (clear ? null : _statusDetail);
+    if (!refresh) {
+      return;
+    }
+
     if (_statusState != null) {
       outSink.write('${_statusState!.icon} ');
     }

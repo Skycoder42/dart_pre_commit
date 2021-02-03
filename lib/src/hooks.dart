@@ -155,6 +155,7 @@ class Hooks {
       logger.updateStatus(
         message: 'Scanning ${entry.file.path}...',
         status: TaskStatus.scanning,
+        refresh: false,
       );
       var scanResult = TaskResult.accepted;
       for (final task in _tasks.whereType<FileTask>()) {
@@ -198,7 +199,7 @@ class Hooks {
         break;
     }
     logger.updateStatus(
-      status: TaskStatus.clean,
+      status: hookResult._toStatus(),
       message: message,
       clear: true,
     );

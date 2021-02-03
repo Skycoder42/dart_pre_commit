@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0-nullsafety.0] - 2021-02-02
+## [2.2.0-nullsafety.0] - 2021-02-03
 ### Added
 - `--[no-]ansi` CLI option to explicitly enable/disable rich logging (#10)
+### Changed
+- Added `refresh` parameter to logger interface
 
 ## [2.1.0-nullsafety.0] - 2021-02-01
 ### Added
@@ -14,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nullsafe task: Checks if any packages can be updated to a nullsafe version (#7)
 ### Changed
 - Ported package to use freezed dataclasses
+- Improved status icons
 
 ## [2.0.0-nullsafety.1] - 2021-01-28
 ### Added
