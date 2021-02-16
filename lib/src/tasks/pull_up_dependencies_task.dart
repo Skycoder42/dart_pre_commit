@@ -1,4 +1,4 @@
-import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import '../repo_entry.dart';

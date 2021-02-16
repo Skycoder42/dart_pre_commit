@@ -35,7 +35,7 @@ library dart_pre_commit_bin;
 
 import 'dart:io';
 
-import 'package:args/args.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:riverpod/riverpod.dart';
 

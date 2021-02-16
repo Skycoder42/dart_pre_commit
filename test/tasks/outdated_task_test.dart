@@ -9,7 +9,7 @@ import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 

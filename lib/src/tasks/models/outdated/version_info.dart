@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pub_semver/pub_semver.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:pub_semver/pub_semver.dart';
 
 part 'version_info.freezed.dart';
 part 'version_info.g.dart';
