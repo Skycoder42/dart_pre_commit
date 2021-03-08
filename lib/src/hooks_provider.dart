@@ -20,7 +20,7 @@ part 'hooks_provider.freezed.dart';
 
 /// The configuration to create dependency-injected [Hooks] via [HooksProvider].
 @freezed
-abstract class HooksConfig with _$HooksConfig {
+class HooksConfig with _$HooksConfig {
   /// Default constructor.
   const factory HooksConfig({
     /// Specifies, whether the [FixImportsTask] should be enabled.

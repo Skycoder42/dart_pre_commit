@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/repo_entry.dart';
@@ -14,9 +15,28 @@ import 'package:tuple/tuple.dart';
 import '../test_with_data.dart';
 import 'fix_imports_task_test.mocks.dart';
 
-@GenerateMocks([
-  File,
-], customMocks: [
+class MockFile extends Mock implements File {
+  @override
+  Future<File> writeAsString(
+    String? contents, {
+    FileMode? mode = FileMode.write,
+    Encoding? encoding = utf8,
+    bool? flush = false,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #writeAsString,
+          [contents],
+          {
+            #mode: mode,
+            #encoding: encoding,
+            #flush: flush,
+          },
+        ),
+      ) as Future<File>;
+}
+
+@GenerateMocks([], customMocks: [
   MockSpec<TaskLogger>(returnNullOnMissingStub: true),
 ])
 void main() {

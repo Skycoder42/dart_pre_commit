@@ -21,8 +21,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: cedx/setup-dart@v2
-        with:
-          release-channel: beta
       - uses: actions/checkout@v2
       - run: dart pub get
       - run: dart run build_runner build
@@ -47,8 +45,6 @@ jobs:
       tag_name: ${{ steps.version.outputs.tag_name }}
     steps:
       - uses: cedx/setup-dart@v2
-        with:
-          release-channel: beta
       - uses: actions/checkout@v2
       - uses: Skycoder42/action-dart-release@v1
         id: version
@@ -69,8 +65,6 @@ jobs:
     if: needs.release.outputs.update == 'true'
     steps:
       - uses: cedx/setup-dart@v2
-        with:
-          release-channel: beta
       - uses: actions/checkout@v2
       - run: dart pub get
       - run: dart run build_runner build
@@ -91,8 +85,6 @@ jobs:
     if: needs.release.outputs.update == 'true'
     steps:
       - uses: cedx/setup-dart@v2
-        with:
-          release-channel: beta
       - uses: actions/checkout@v2
       - run: dart pub get
       - run: dart run build_runner build

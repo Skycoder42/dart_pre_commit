@@ -7,7 +7,7 @@ part 'package_info.g.dart';
 
 @freezed
 @internal
-abstract class PackageInfo with _$PackageInfo {
+class PackageInfo with _$PackageInfo {
   const factory PackageInfo({
     required String package,
     VersionInfo? current,

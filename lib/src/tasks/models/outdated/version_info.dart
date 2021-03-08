@@ -6,7 +6,7 @@ part 'version_info.g.dart';
 
 @freezed
 @internal
-abstract class VersionInfo with _$VersionInfo {
+class VersionInfo with _$VersionInfo {
   const factory VersionInfo({
     @JsonKey(
       fromJson: VersionInfo._versionFromJson,

@@ -7,7 +7,7 @@ part 'outdated_info.g.dart';
 
 @freezed
 @internal
-abstract class OutdatedInfo with _$OutdatedInfo {
+class OutdatedInfo with _$OutdatedInfo {
   const factory OutdatedInfo({
     required List<PackageInfo> packages,
   }) = _OutdatedInfo;
