@@ -20,31 +20,31 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart run build_runner build
-      - run: dart analyze --fatal-infos
-      - run: dart --no-sound-null-safety test --coverage=coverage
-      - run: dart run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
+      - run: make get
+      - run: make build
+      - run: make analyze
+      - run: make test-coverage
       - uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
           min_coverage: 95
-          exclude: "**/hooks_provider.dart **/*.g.dart **/*.freezed.dart"
-      - run: rm lib/src/.gitignore
-      - run: dart pub publish --dry-run || true
+          exclude: |
+            **/hooks_provider.dart
+            **/*.g.dart
+            **/*.freezed.dart"
+      - run: make publish-dry
 
   release:
     runs-on: ubuntu-latest
     needs:
       - test
-    # if: github.ref == 'refs/heads/master'
-    if: github.ref == 'refs/heads/null-safety'
+    if: github.ref == 'refs/heads/master'
     outputs:
       update: ${{ steps.version.outputs.update }}
       tag_name: ${{ steps.version.outputs.tag_name }}
     steps:
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - uses: actions/checkout@v2
       - uses: Skycoder42/action-dart-release@v1
         id: version
@@ -64,16 +64,15 @@ jobs:
       - release
     if: needs.release.outputs.update == 'true'
     steps:
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart run build_runner build
-      - run: rm lib/src/.gitignore
+      - run: make get
+      - run: make build
       - name: store credentials
         run: |
           mkdir -p ~/.pub-cache
           echo '${{ secrets.PUB_DEV_CREDENTIALS }}' > ~/.pub-cache/credentials.json
-      - run: dart pub publish --force
+      - run: make publish
       - name: clean up credentials
         if: always()
         run: shred -fzvu ~/.pub-cache/credentials.json
@@ -84,11 +83,11 @@ jobs:
       - release
     if: needs.release.outputs.update == 'true'
     steps:
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - uses: actions/checkout@v2
-      - run: dart pub get
-      - run: dart run build_runner build
-      - run: dartdoc
+      - run: make get
+      - run: make build
+      - run: make doc
       - name: upload doc
         uses: peaceiris/actions-gh-pages@v3
         with:

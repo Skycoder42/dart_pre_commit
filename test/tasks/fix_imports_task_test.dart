@@ -17,6 +17,30 @@ import 'fix_imports_task_test.mocks.dart';
 
 class MockFile extends Mock implements File {
   @override
+  String get path => super.noSuchMethod(
+        Invocation.getter(#path),
+        returnValue: '',
+        returnValueForMissingStub: '',
+      ) as String;
+
+  @override
+  Directory get parent => super.noSuchMethod(
+        Invocation.getter(#parent),
+        returnValue: Directory.systemTemp,
+        returnValueForMissingStub: Directory.systemTemp,
+      ) as Directory;
+
+  @override
+  Future<String> readAsString({Encoding? encoding = utf8}) =>
+      super.noSuchMethod(
+        Invocation.method(#readAsString, [], {
+          #encoding: encoding,
+        }),
+        returnValue: Future.value(''),
+        returnValueForMissingStub: Future.value(''),
+      ) as Future<String>;
+
+  @override
   Future<File> writeAsString(
     String? contents, {
     FileMode? mode = FileMode.write,
@@ -33,6 +57,8 @@ class MockFile extends Mock implements File {
             #flush: flush,
           },
         ),
+        returnValue: Future.value(this),
+        returnValueForMissingStub: Future.value(this),
       ) as Future<File>;
 }
 

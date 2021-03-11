@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/task_base.dart';
@@ -14,7 +15,17 @@ import '../global_mocks.dart';
 import '../test_with_data.dart';
 import 'pull_up_dependencies_task_test.mocks.dart';
 
-class MockFile extends Mock implements File {}
+class MockFile extends Mock implements File {
+  @override
+  Future<String> readAsString({Encoding? encoding = utf8}) =>
+      super.noSuchMethod(
+        Invocation.method(#readAsString, [], {
+          #encoding: encoding,
+        }),
+        returnValue: Future.value(''),
+        returnValueForMissingStub: Future.value(''),
+      ) as Future<String>;
+}
 
 @GenerateMocks([
   TaskLogger,

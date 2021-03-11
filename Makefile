@@ -29,11 +29,11 @@ analyze: get
 	dart analyze --fatal-infos
 
 test: get
-	dart --no-sound-null-safety test
+	dart test
 
 test-coverage: get
 	@rm -rf coverage
-	dart --no-sound-null-safety test --coverage=coverage
+	dart test --coverage=coverage
 	dart run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
 	lcov --remove coverage/lcov.info -o coverage/lcov.info "**/hooks_provider.dart" "**/*.g.dart" "**/*.freezed.dart"
 
@@ -51,7 +51,7 @@ doc-open: doc
 	xdg-open doc/api/index.html || start doc/api/index.html
 
 checkup: get
-	dart --no-sound-null-safety tool/check.dart
+	dart tool/check.dart
 
 pre-publish:
 	rm lib/src/.gitignore

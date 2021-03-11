@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:console/console.dart'; // ignore: import_of_legacy_library_into_null_safe
+import 'package:console/console.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
 import 'package:test/test.dart';
