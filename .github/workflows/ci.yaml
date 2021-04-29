@@ -30,9 +30,8 @@ jobs:
         with:
           min_coverage: 95
           exclude: |
-            **/hooks_provider.dart
+            **/*.freezed.dart 
             **/*.g.dart
-            **/*.freezed.dart"
       - run: make publish-dry
 
   release:
