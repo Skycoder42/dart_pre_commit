@@ -25,7 +25,7 @@ jobs:
       - run: make get
       - run: make build
       - run: make analyze
-      - run: make test-coverage
+      - run: make unit-tests-coverage
       - uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
         with:
           min_coverage: 95
