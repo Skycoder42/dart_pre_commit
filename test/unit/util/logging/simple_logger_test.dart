@@ -7,7 +7,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
+import '../../../test_with_data.dart';
 import 'simple_logger_test.mocks.dart';
 
 @GenerateMocks([], customMocks: [

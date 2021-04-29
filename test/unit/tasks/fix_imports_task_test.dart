@@ -12,7 +12,7 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../test_with_data.dart';
+import '../../test_with_data.dart';
 import 'fix_imports_task_test.mocks.dart';
 
 class MockFile extends Mock implements File {

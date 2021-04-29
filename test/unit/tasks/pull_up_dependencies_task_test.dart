@@ -11,8 +11,8 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../test_with_data.dart';
 import '../global_mocks.dart';
-import '../test_with_data.dart';
 import 'pull_up_dependencies_task_test.mocks.dart';
 
 class MockFile extends Mock implements File {

@@ -1,58 +1,94 @@
-# files
+# sources
+LIB_FILES = $(shell find ./lib -type f -iname "*.dart")
+SRC_FILES = $(shell find ./lib/src -type f -iname "*.dart")
+UNIT_TEST_FILES = $(shell find ./test/unit -type f -iname "*.dart")
+INTEGRATION_TEST_FILES = $(shell find ./test/integration -type f -iname "*.dart")
+TEST_FILES = $(UNIT_TEST_FILES) $(INTEGRATION_TEST_FILES)
+
+MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
+
+#get 
 .packages: pubspec.yaml
 	dart pub get
 
-# targets
 get: .packages
 
 get-clean:
 	rm -rf .dart_tool
 	rm -rf .packages
-	$(MAKE) get
+	$(MAKE) -f $(MAKEFILE) get
 
-upgrade: get
+upgrade: .packages
 	dart pub upgrade
 
-build: get
+# build
+build: .packages
 	dart run build_runner build
 
 build-clean: upgrade
 	dart run build_runner build --delete-conflicting-outputs
 	
-watch: get
+watch: .packages
 	dart run build_runner watch
 	
 watch-clean: upgrade
 	dart run build_runner watch --delete-conflicting-outputs
 
-analyze: get
+# analyze
+analyze: .packages
 	dart analyze --fatal-infos
 
-test: get
-	dart test
+# unit-tests
+unit-tests: .packages
+	dart test test/unit
 
-test-coverage: get
+# integration-tests
+integration-tests: .packages
+	dart test test/integration
+
+test: .packages
+	$(MAKE) -f $(MAKEFILE) unit-tests
+	$(MAKE) -f $(MAKEFILE) integration-tests
+
+# coverage
+coverage/.generated: .packages $(SRC_FILES) $(UNIT_TEST_FILES)
 	@rm -rf coverage
-	dart test --coverage=coverage
-	dart run coverage:format_coverage --lcov -i coverage -o coverage/lcov.info --packages .packages --report-on lib -c
-	lcov --remove coverage/lcov.info -o coverage/lcov.info "**/hooks_provider.dart" "**/*.g.dart" "**/*.freezed.dart"
+	dart test --coverage=coverage test/unit
+	touch coverage/.generated
 
-coverage: test-coverage
-	genhtml -o coverage/html coverage/lcov.info
+coverage/lcov.info: coverage/.generated
+	dart run coverage:format_coverage --lcov --check-ignore \
+		--in coverage \
+		--out coverage/lcov.info \
+		--packages .packages \
+		--report-on lib
 
-coverage-open: coverage
+coverage/lcov_cleaned.info: coverage/lcov.info
+	lcov --remove coverage/lcov.info -output-file coverage/lcov_cleaned.info \
+		'**/*.freezed.dart' \
+		'**/*.g.dart'
+
+coverage/html/index.html: coverage/lcov_cleaned.info
+	genhtml --no-function-coverage -o coverage/html coverage/lcov_cleaned.info
+
+coverage: coverage/html/index.html
+
+unit-tests-coverage: coverage/.generated
+
+coverage-open: coverage/html/index.html
 	xdg-open coverage/html/index.html || start coverage/html/index.html
 
-doc: get
+#doc 
+doc/api/index.html: .packages $(LIB_FILES)
 	@rm -rf doc
 	dartdoc --show-progress
+
+doc: doc/api/index.html
 
 doc-open: doc
 	xdg-open doc/api/index.html || start doc/api/index.html
 
-checkup: get
-	dart tool/check.dart
-
+# publish
 pre-publish:
 	rm lib/src/.gitignore
 
@@ -61,21 +97,26 @@ post-publish:
 	echo '*.freezed.dart' >> lib/src/.gitignore
 	echo '*.g.dart' >> lib/src/.gitignore
 
-publish-dry: get checkup
-	$(MAKE) pre-publish
+publish-dry: .packages
+	$(MAKE) -f $(MAKEFILE) pre-publish
 	dart pub publish --dry-run
-	$(MAKE) post-publish
+	$(MAKE) -f $(MAKEFILE) post-publish
 
-publish: get checkup
-	$(MAKE) pre-publish
+publish: .packages
+	$(MAKE) -f $(MAKEFILE) pre-publish
 	dart pub publish --force
-	$(MAKE) post-publish
+	$(MAKE) -f $(MAKEFILE) post-publish
 
-verify: get
-	$(MAKE) build-clean
-	$(MAKE) analyze
-	$(MAKE) coverage-open
-	$(MAKE) doc-open
-	$(MAKE) publish-dry
+# verify
+verify:
+	$(MAKE) -f $(MAKEFILE) build-clean
+	$(MAKE) -f $(MAKEFILE) analyze
+	$(MAKE) -f $(MAKEFILE) unit-tests-coverage
+	$(MAKE) -f $(MAKEFILE) integration-tests
+	$(MAKE) -f $(MAKEFILE) coverage-open
+	$(MAKE) -f $(MAKEFILE) doc-open
+	$(MAKE) -f $(MAKEFILE) publish-dry
 
-.PHONY: build test coverage doc
+
+
+.PHONY: build test coverage coverage-vm coverage-js doc

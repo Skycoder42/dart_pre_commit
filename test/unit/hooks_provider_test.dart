@@ -12,8 +12,8 @@ import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import '../test_with_data.dart';
 import 'hooks_provider_test.mocks.dart';
-import 'test_with_data.dart';
 
 @GenerateMocks([
   Logger,

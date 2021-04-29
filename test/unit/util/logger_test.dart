@@ -2,7 +2,7 @@ import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../test_with_data.dart';
+import '../../test_with_data.dart';
 
 void main() {
   group('LogLevel', () {

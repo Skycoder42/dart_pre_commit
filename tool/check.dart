@@ -24,8 +24,8 @@ Future<void> main() async {
       Directory('.dart_tool'),
       Directory('coverage'),
       Directory('doc'),
-      File('test/tasks/fix_imports_task_test.dart'),
-      File('test/integration_test.dart'),
+      File('test/unit/tasks/fix_imports_task_test.dart'),
+      File('test/integration/integration_test.dart'),
     ];
 
     await Directory.current

@@ -6,7 +6,7 @@ import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
+import '../../../test_with_data.dart';
 
 const eraseLine = '\r\x1B[2K';
 const newLine = '\n';

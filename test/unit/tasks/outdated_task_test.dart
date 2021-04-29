@@ -13,7 +13,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../test_with_data.dart';
+import '../../test_with_data.dart';
 import 'outdated_task_test.mocks.dart';
 
 @GenerateMocks([
