@@ -1,18 +1,15 @@
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../test_with_data.dart';
 import '../global_mocks.dart';
-import 'format_task_test.mocks.dart';
 
-@GenerateMocks([
-  ProgramRunner,
-])
+class MockProgramRunner extends Mock implements ProgramRunner {}
+
 void main() {
   final fakeEntry = FakeEntry('mock.dart');
 
@@ -23,7 +20,7 @@ void main() {
   setUp(() {
     reset(mockRunner);
 
-    when(mockRunner.run(any, any)).thenAnswer((_) async => 0);
+    when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 0);
 
     sut = FormatTask(
       programRunner: mockRunner,
@@ -55,25 +52,25 @@ void main() {
   test('calls dart format with correct arguments', () async {
     final res = await sut(fakeEntry);
     expect(res, TaskResult.accepted);
-    verify(mockRunner.run(
-      'dart',
-      const [
-        'format',
-        '--fix',
-        '--set-exit-if-changed',
-        'mock.dart',
-      ],
-    ));
+    verify(() => mockRunner.run(
+          'dart',
+          const [
+            'format',
+            '--fix',
+            '--set-exit-if-changed',
+            'mock.dart',
+          ],
+        ));
   });
 
   test('returns true if dart format returns 1', () async {
-    when(mockRunner.run(any, any)).thenAnswer((_) async => 1);
+    when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 1);
     final res = await sut(fakeEntry);
     expect(res, TaskResult.modified);
   });
 
   test('throws exception if dart format returns >1', () async {
-    when(mockRunner.run(any, any)).thenAnswer((_) async => 42);
+    when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 42);
     expect(() => sut(fakeEntry), throwsA(isA<ProgramExitException>()));
   });
 }

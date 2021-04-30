@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/repo_entry.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
 class FakeFile extends Fake implements File {
   final bool _exists;

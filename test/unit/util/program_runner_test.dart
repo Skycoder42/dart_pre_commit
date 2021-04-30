@@ -3,26 +3,27 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../test_with_data.dart';
-import 'program_runner_test.mocks.dart';
 
-@GenerateMocks([], customMocks: [
-  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
-])
+class MockTaskLogger extends Mock implements TaskLogger {}
+
 void main() {
   final mockLogger = MockTaskLogger();
 
   late ProgramRunner sut;
 
+  setUpAll(() {
+    registerFallbackValue<Stream<List<int>>>(const Stream.empty());
+  });
+
   setUp(() {
     reset(mockLogger);
 
-    when(mockLogger.pipeStderr(any)).thenAnswer((i) async {});
+    when(() => mockLogger.pipeStderr(any())).thenAnswer((i) async {});
 
     sut = ProgramRunner(
       logger: mockLogger,

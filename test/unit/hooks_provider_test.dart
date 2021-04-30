@@ -6,24 +6,28 @@ import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../test_with_data.dart';
-import 'hooks_provider_test.mocks.dart';
 
-@GenerateMocks([
-  Logger,
-  FileResolver,
-  ProgramRunner,
-  FixImportsTask,
-  FormatTask,
-  AnalyzeTask,
-  PullUpDependenciesTask,
-])
+class MockLogger extends Mock implements Logger {}
+
+class MockFileResolver extends Mock implements FileResolver {}
+
+class MockProgramRunner extends Mock implements ProgramRunner {}
+
+class MockFixImportsTask extends Mock implements FixImportsTask {}
+
+class MockFormatTask extends Mock implements FormatTask {}
+
+class MockAnalyzeTask extends Mock implements AnalyzeTask {}
+
+class MockPullUpDependenciesTask extends Mock
+    implements PullUpDependenciesTask {}
+
 void main() {
   final mockLogger = MockLogger();
   final mockResolver = MockFileResolver();
@@ -53,10 +57,10 @@ void main() {
     reset(mockAnalayze);
     reset(mockPullUp);
 
-    when(mockFormat.taskName).thenReturn('mockFormat');
-    when(mockFixImports.taskName).thenReturn('mockFixImports');
-    when(mockAnalayze.taskName).thenReturn('mockAnalayze');
-    when(mockPullUp.taskName).thenReturn('mockPullUp');
+    when(() => mockFormat.taskName).thenReturn('mockFormat');
+    when(() => mockFixImports.taskName).thenReturn('mockFixImports');
+    when(() => mockAnalayze.taskName).thenReturn('mockAnalayze');
+    when(() => mockPullUp.taskName).thenReturn('mockPullUp');
   });
 
   testWithData<Tuple3<HooksConfig, Iterable<String>, bool>>(

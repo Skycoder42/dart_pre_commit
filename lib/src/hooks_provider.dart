@@ -176,6 +176,9 @@ abstract class HooksProviderInternal {
     ),
   );
 
+  /// A simple provider for [OutdatedTask].
+  ///
+  /// Uses [programRunnerProvider] and [taskLoggerProvider].
   static final outdatedProvider = Provider.family(
     (ref, OutdatedLevel level) => OutdatedTask(
       programRunner: ref.watch(programRunnerProvider),
@@ -184,6 +187,9 @@ abstract class HooksProviderInternal {
     ),
   );
 
+  /// A simple provider for [NullsafeTask].
+  ///
+  /// Uses [programRunnerProvider] and [taskLoggerProvider].
   static final nullsafeProvider = Provider(
     (ref) => NullsafeTask(
       programRunner: ref.watch(programRunnerProvider),

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/repo_entry.dart';
@@ -6,65 +5,17 @@ import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/fix_imports_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:meta/meta.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../test_with_data.dart';
-import 'fix_imports_task_test.mocks.dart';
 
-class MockFile extends Mock implements File {
-  @override
-  String get path => super.noSuchMethod(
-        Invocation.getter(#path),
-        returnValue: '',
-        returnValueForMissingStub: '',
-      ) as String;
+class MockFile extends Mock implements File {}
 
-  @override
-  Directory get parent => super.noSuchMethod(
-        Invocation.getter(#parent),
-        returnValue: Directory.systemTemp,
-        returnValueForMissingStub: Directory.systemTemp,
-      ) as Directory;
+class MockTaskLogger extends Mock implements TaskLogger {}
 
-  @override
-  Future<String> readAsString({Encoding? encoding = utf8}) =>
-      super.noSuchMethod(
-        Invocation.method(#readAsString, [], {
-          #encoding: encoding,
-        }),
-        returnValue: Future.value(''),
-        returnValueForMissingStub: Future.value(''),
-      ) as Future<String>;
-
-  @override
-  Future<File> writeAsString(
-    String? contents, {
-    FileMode? mode = FileMode.write,
-    Encoding? encoding = utf8,
-    bool? flush = false,
-  }) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #writeAsString,
-          [contents],
-          {
-            #mode: mode,
-            #encoding: encoding,
-            #flush: flush,
-          },
-        ),
-        returnValue: Future.value(this),
-        returnValueForMissingStub: Future.value(this),
-      ) as Future<File>;
-}
-
-@GenerateMocks([], customMocks: [
-  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
-])
 void main() {
   final mockFile = MockFile();
   final mockLogger = MockTaskLogger();
@@ -79,7 +30,7 @@ void main() {
     Function? setUp,
   }) {
     test(message, () async {
-      when(mockFile.readAsString()).thenAnswer((_) async => inData);
+      when(() => mockFile.readAsString()).thenAnswer((_) async => inData);
       if (setUp != null) {
         setUp();
       }
@@ -87,10 +38,10 @@ void main() {
       final res = await sut(RepoEntry(file: mockFile, partiallyStaged: false));
       if (outData != null) {
         expect(res, TaskResult.modified);
-        verify(mockFile.writeAsString(outData));
+        verify(() => mockFile.writeAsString(outData));
       } else {
         expect(res, TaskResult.accepted);
-        verifyNever(mockFile.writeAsString(any));
+        verifyNever(() => mockFile.writeAsString(any()));
       }
     });
   }
@@ -99,9 +50,9 @@ void main() {
     reset(mockFile);
     reset(mockLogger);
 
-    when(mockFile.path).thenReturn(join('lib', 'tst_mock.dart'));
-    when(mockFile.parent).thenReturn(Directory('lib'));
-    when(mockFile.writeAsString(any)).thenAnswer(
+    when(() => mockFile.path).thenReturn(join('lib', 'tst_mock.dart'));
+    when(() => mockFile.parent).thenReturn(Directory('lib'));
+    when(() => mockFile.writeAsString(any())).thenAnswer(
       (realInvocation) async => mockFile,
     );
 
@@ -163,8 +114,8 @@ void main() {
       'does not modify imports outside lib',
       inData: 'import "package:mock/src/details.dart";\n',
       setUp: () {
-        when(mockFile.path).thenReturn(join('bin', 'tst_mock.dart'));
-        when(mockFile.parent).thenReturn(Directory('bin'));
+        when(() => mockFile.path).thenReturn(join('bin', 'tst_mock.dart'));
+        when(() => mockFile.parent).thenReturn(Directory('bin'));
       },
     );
 

@@ -2,17 +2,14 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/simple_logger.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../../test_with_data.dart';
-import 'simple_logger_test.mocks.dart';
 
-@GenerateMocks([], customMocks: [
-  MockSpec<IOSink>(returnNullOnMissingStub: true),
-])
+class MockIOSink extends Mock implements IOSink {}
+
 void main() {
   final mockOutSink = MockIOSink();
   final mockErrSink = MockIOSink();
@@ -34,8 +31,8 @@ void main() {
     test('prints message', () {
       sut.updateStatus(message: 'message');
       verifyInOrder([
-        mockOutSink.write('message'),
-        mockOutSink.writeln(),
+        () => mockOutSink.write('message'),
+        () => mockOutSink.writeln(),
       ]);
       verifyNoMoreInteractions(mockOutSink);
     });
@@ -49,9 +46,9 @@ void main() {
     ], (fixture) {
       sut.updateStatus(status: fixture.item1);
       verifyInOrder([
-        mockOutSink.write(fixture.item2),
-        mockOutSink.write(''),
-        mockOutSink.writeln(),
+        () => mockOutSink.write(fixture.item2),
+        () => mockOutSink.write(''),
+        () => mockOutSink.writeln(),
       ]);
       verifyNoMoreInteractions(mockOutSink);
     });
@@ -59,9 +56,9 @@ void main() {
     test('prints detail', () {
       sut.updateStatus(detail: 'detail');
       verifyInOrder([
-        mockOutSink.write(''),
-        mockOutSink.write(' detail'),
-        mockOutSink.writeln(),
+        () => mockOutSink.write(''),
+        () => mockOutSink.write(' detail'),
+        () => mockOutSink.writeln(),
       ]);
       verifyNoMoreInteractions(mockOutSink);
     });
@@ -72,9 +69,9 @@ void main() {
 
       sut.updateStatus(detail: 'detail');
       verifyInOrder([
-        mockOutSink.write('test'),
-        mockOutSink.write(' detail'),
-        mockOutSink.writeln(),
+        () => mockOutSink.write('test'),
+        () => mockOutSink.write(' detail'),
+        () => mockOutSink.writeln(),
       ]);
       verifyNoMoreInteractions(mockOutSink);
     });
@@ -117,12 +114,12 @@ void main() {
             clear: fixture.item4,
           );
         verifyInOrder([
-          mockOutSink.write('[S] '),
-          mockOutSink.write('test1'),
-          mockOutSink.write(' test2'),
-          mockOutSink.writeln(),
-          ...fixture.item5.map((e) => mockOutSink.write(e)),
-          mockOutSink.writeln(),
+          () => mockOutSink.write('[S] '),
+          () => mockOutSink.write('test1'),
+          () => mockOutSink.write(' test2'),
+          () => mockOutSink.writeln(),
+          ...fixture.item5.map((e) => () => mockOutSink.write(e)),
+          () => mockOutSink.writeln(),
         ]);
         verifyNoMoreInteractions(mockOutSink);
       },
@@ -150,7 +147,7 @@ void main() {
       ],
       (fixture) {
         fixture.item1(sut);
-        verify(mockOutSink.writeln(fixture.item2));
+        verify(() => mockOutSink.writeln(fixture.item2));
         verifyNoMoreInteractions(mockOutSink);
       },
     );
@@ -179,7 +176,7 @@ void main() {
 
         if (fixture.item3 != null) {
           fixture.item3!(sut);
-          verify(mockOutSink.writeln(any)).called(1);
+          verify(() => mockOutSink.writeln(any())).called(1);
           verifyNoMoreInteractions(mockOutSink);
         }
       },
@@ -195,8 +192,8 @@ void main() {
     await sut.pipeStderr(errStream);
 
     verifyInOrder([
-      mockErrSink.add([1, 2, 3]),
-      mockErrSink.add([4, 5]),
+      () => mockErrSink.add([1, 2, 3]),
+      () => mockErrSink.add([4, 5]),
     ]);
     verifyNoMoreInteractions(mockErrSink);
   });

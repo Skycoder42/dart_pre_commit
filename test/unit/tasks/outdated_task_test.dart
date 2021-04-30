@@ -7,26 +7,23 @@ import 'package:dart_pre_commit/src/tasks/models/outdated/version_info.dart';
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../test_with_data.dart';
-import 'outdated_task_test.mocks.dart';
 
-@GenerateMocks([
-  ProgramRunner,
-], customMocks: [
-  MockSpec<TaskLogger>(returnNullOnMissingStub: true),
-])
+class MockProgramRunner extends Mock implements ProgramRunner {}
+
+class MockTaskLogger extends Mock implements TaskLogger {}
+
 void main() {
   final mockRunner = MockProgramRunner();
   final mockLogger = MockTaskLogger();
 
   void whenRunner([List<PackageInfo> packages = const []]) =>
-      when(mockRunner.stream(any, any)).thenAnswer(
+      when(() => mockRunner.stream(any(), any())).thenAnswer(
         (i) => Stream.fromFuture(
           Future.value(
             OutdatedInfo(
@@ -86,12 +83,12 @@ void main() {
       final res = await sut.call(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockRunner.stream('dart', [
-        'pub',
-        'outdated',
-        '--show-all',
-        '--json',
-      ]));
+      verify(() => mockRunner.stream('dart', [
+            'pub',
+            'outdated',
+            '--show-all',
+            '--json',
+          ]));
     });
 
     testWithData<Tuple2<OutdatedLevel, int>>(
@@ -140,10 +137,10 @@ void main() {
           fixture.item2 == 0 ? TaskResult.accepted : TaskResult.rejected,
         );
         if (fixture.item2 == 0) {
-          verify(mockLogger.debug('No required package updates found'));
+          verify(() => mockLogger.debug('No required package updates found'));
         } else {
           verify(
-            mockLogger.info(
+            () => mockLogger.info(
               'Found ${fixture.item2} outdated package(s) '
               'that have to be updated',
             ),
@@ -174,7 +171,7 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockLogger.warn(any)).called(3);
+      verify(() => mockLogger.warn(any())).called(3);
     });
 
     group('logs correct update result', () {
@@ -191,7 +188,7 @@ void main() {
         final res = await sut(const []);
 
         expect(res, TaskResult.rejected);
-        verify(mockLogger.info('Required:    p: 1.0.0 -> 1.1.0'));
+        verify(() => mockLogger.info('Required:    p: 1.0.0 -> 1.1.0'));
       });
 
       test('recommended', () async {
@@ -207,7 +204,7 @@ void main() {
         final res = await sut(const []);
 
         expect(res, TaskResult.accepted);
-        verify(mockLogger.info('Recommended: p: 1.0.0 -> 1.1.0'));
+        verify(() => mockLogger.info('Recommended: p: 1.0.0 -> 1.1.0'));
       });
 
       test('up to date', () async {
@@ -223,7 +220,7 @@ void main() {
         final res = await sut(const []);
 
         expect(res, TaskResult.accepted);
-        verify(mockLogger.debug('Up to date:  p: 1.0.0'));
+        verify(() => mockLogger.debug('Up to date:  p: 1.0.0'));
       });
     });
   });
@@ -248,13 +245,13 @@ void main() {
       final res = await sut.call(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockRunner.stream('dart', [
-        'pub',
-        'outdated',
-        '--show-all',
-        '--json',
-        '--mode=null-safety',
-      ]));
+      verify(() => mockRunner.stream('dart', [
+            'pub',
+            'outdated',
+            '--show-all',
+            '--json',
+            '--mode=null-safety',
+          ]));
     });
 
     test('Skips invalid packages', () async {
@@ -265,9 +262,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockLogger.warn(
-        'Skipping:    invalid: No Version information available',
-      ));
+      verify(() => mockLogger.warn(
+            'Skipping:    invalid: No Version information available',
+          ));
     });
 
     test('Skips already nullsafe packages', () async {
@@ -284,9 +281,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockLogger.debug(
-        'Up to date:  safe: 1.0.0 is nullsafe',
-      ));
+      verify(() => mockLogger.debug(
+            'Up to date:  safe: 1.0.0 is nullsafe',
+          ));
     });
 
     test('Counts nullsafe resolvable', () async {
@@ -307,9 +304,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.rejected);
-      verify(mockLogger.info(
-        'Upgradeable: resolvable: 1.0.0 -> 1.0.0-nullsafety.0',
-      ));
+      verify(() => mockLogger.info(
+            'Upgradeable: resolvable: 1.0.0 -> 1.0.0-nullsafety.0',
+          ));
     });
 
     test('Informs about non-resolvable nullsafe packages', () async {
@@ -329,9 +326,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockLogger.info(
-        'Available:   latest: 1.0.0 -> 1.0.0-nullsafety.0',
-      ));
+      verify(() => mockLogger.info(
+            'Available:   latest: 1.0.0 -> 1.0.0-nullsafety.0',
+          ));
     });
 
     test('Skips unavailable packages', () async {
@@ -348,9 +345,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(mockLogger.debug(
-        'Skipping:    unavailable: No nullsafe version available',
-      ));
+      verify(() => mockLogger.debug(
+            'Skipping:    unavailable: No nullsafe version available',
+          ));
     });
 
     test('correctly counts packages', () async {
@@ -388,9 +385,9 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.rejected);
-      verify(mockLogger.info(
-        'Found 2 upgradeble null-safe package(s)',
-      ));
+      verify(() => mockLogger.info(
+            'Found 2 upgradeble null-safe package(s)',
+          ));
     });
   });
 }
