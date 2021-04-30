@@ -6,6 +6,9 @@ import 'dart:io';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
+import 'package:tuple/tuple.dart';
+
+import '../test_with_data.dart';
 
 void main() {
   late Directory testDir;
@@ -156,6 +159,56 @@ import '../test_project.dart';
 void main() {}
 ''');
   });
+
+  testWithData<Tuple2<String, String>>(
+    'library imports',
+    const [
+      Tuple2('package:test_project/test_project.dart', 'absolute'),
+      Tuple2('package:test_project/another.dart', 'absolute'),
+      Tuple2('../../test_project.dart', 'relative'),
+      Tuple2('../../another.dart', 'relative'),
+    ],
+    (fixture) async {
+      await _writeFile('lib/src/extra/extra.dart', '');
+      await _writeFile('lib/test_project.dart', '');
+      await _writeFile('lib/another.dart', '');
+      await _writeFile('lib/src/stuff/library_imports.dart', '''
+// this is important
+import '../extra/extra.dart';
+import '${fixture.item1}';
+import 'dart:io';
+import 'package:stuff/test_project.dart';
+
+void main() {}
+''');
+
+      await _git(const ['add', 'lib/src/stuff/library_imports.dart']);
+
+      final lines = <String>[];
+      final code = await _sut(
+        const [
+          '--no-fix-imports',
+          '--library-imports',
+          '--no-format',
+          '--no-analyze',
+          '--detailed-exit-code',
+        ],
+        failOnError: false,
+        onStdout: (stream) => stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen((line) => lines.add(line)),
+      );
+      expect(code, HookResult.rejected.index);
+      expect(
+        lines,
+        contains(
+          '  [INF] Found ${fixture.item2} import of non-src library: '
+          '${fixture.item1}',
+        ),
+      );
+    },
+  );
 
   test('format', () async {
     await _git(const ['add', 'bin/format.dart']);

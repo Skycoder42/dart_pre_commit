@@ -15,6 +15,7 @@
 ///  Option                             | Default    | Description
 /// ------------------------------------|------------|-------------
 /// `-i`, `--[no-]fix-imports`          | on         | Format and sort imports of staged files.
+/// `-t`, `--[no-]library-imports`      | off        | Check if top level libraries are wrongfully imported in src and test files.
 /// `-f`, `--[no-]format`               | on         | Format staged files with dart format.
 /// `-a`, `--[no-]analyze`              | on         | Run dart analyze to find issue for the staged files.
 /// `-o`, `--outdated=<level>`          | `disabled` | Enables the outdated packages check. You can choose one of the levels described below to require certain package updates. If they are not met, the hook will fail. No matter what level, as long as it is not disabled - which will completly disable the hook - it will still print available package updates without failing. Can be any of [OutdatedLevel].
@@ -55,6 +56,12 @@ Future<int> _run(List<String> args) async {
       abbr: 'i',
       defaultsTo: true,
       help: 'Format and sort imports of staged files.',
+    )
+    ..addFlag(
+      'library-imports',
+      abbr: 't',
+      help: 'Check if top level libraries are wrongfully imported in '
+          'src and test files.',
     )
     ..addFlag(
       'format',
@@ -186,6 +193,7 @@ Future<int> _run(List<String> args) async {
     final outdatedLevel = options['outdated'] as String;
     final hooks = await di.read(HooksProvider.hookProvider(HooksConfig(
       fixImports: options['fix-imports'] as bool,
+      libraryImports: options['library-imports'] as bool,
       format: options['format'] as bool,
       analyze: options['analyze'] as bool,
       outdated: outdatedLevel == disabledOutdatedLevel

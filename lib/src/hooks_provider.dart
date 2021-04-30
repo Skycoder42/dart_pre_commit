@@ -1,6 +1,7 @@
 // coverage:ignore-file
 import 'dart:io';
 
+import 'package:dart_pre_commit/src/tasks/library_imports_task.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -26,6 +27,9 @@ class HooksConfig with _$HooksConfig {
   const factory HooksConfig({
     /// Specifies, whether the [FixImportsTask] should be enabled.
     @Default(false) bool fixImports,
+
+    /// Specifies, whether the [LibraryImportsTask] should be enabled.
+    @Default(false) bool libraryImports,
 
     /// Specifies, whether the [FormatTask] should be enabled.
     @Default(false) bool format,
@@ -81,6 +85,8 @@ abstract class HooksProvider {
       tasks: [
         if (param.fixImports)
           await ref.watch(HooksProviderInternal.fixImportsProvider.future),
+        if (param.libraryImports)
+          await ref.watch(HooksProviderInternal.libraryImportsProvider.future),
         if (param.format) ref.watch(HooksProviderInternal.formatProvider),
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
         if (param.outdated != null)
@@ -140,6 +146,16 @@ abstract class HooksProviderInternal {
   static final fixImportsProvider = FutureProvider(
     (ref) => FixImportsTask.current(
       logger: ref.watch(taskLoggerProvider),
+    ),
+  );
+
+  /// A simple provider for [LibraryImportsTask].
+  ///
+  /// Uses [fileResolverProvider] and [taskLoggerProvider].
+  static final libraryImportsProvider = FutureProvider(
+    (ref) => LibraryImportsTask.current(
+      fileResolver: ref.watch(fileResolverProvider),
+      logger: ref.watch(loggerProvider),
     ),
   );
 
