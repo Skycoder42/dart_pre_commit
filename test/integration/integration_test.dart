@@ -178,6 +178,8 @@ import '../extra/extra.dart';
 import '${fixture.item1}';
 import 'dart:io';
 import 'package:stuff/test_project.dart';
+// dart_pre_commit:ignore-library-import
+import 'package:test_project/xxx.dart';
 
 void main() {}
 ''');

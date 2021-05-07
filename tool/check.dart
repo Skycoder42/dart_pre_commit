@@ -25,6 +25,7 @@ Future<void> main() async {
       Directory('coverage'),
       Directory('doc'),
       File('test/unit/tasks/fix_imports_task_test.dart'),
+      File('test/unit/tasks/library_imports_task_test.dart'),
       File('test/integration/integration_test.dart'),
     ];
 

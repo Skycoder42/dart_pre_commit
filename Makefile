@@ -60,13 +60,13 @@ coverage/lcov.info: coverage/.generated
 	dart run coverage:format_coverage --lcov --check-ignore \
 		--in coverage \
 		--out coverage/lcov.info \
-		--packages .packages \
+		--packages .dart_tool/package_config.json \
 		--report-on lib
 
 coverage/lcov_cleaned.info: coverage/lcov.info
 	lcov --remove coverage/lcov.info -output-file coverage/lcov_cleaned.info \
-		'**/*.freezed.dart' \
-		'**/*.g.dart'
+						'**/*.freezed.dart' \
+						'**/*.g.dart'
 
 coverage/html/index.html: coverage/lcov_cleaned.info
 	genhtml --no-function-coverage -o coverage/html coverage/lcov_cleaned.info

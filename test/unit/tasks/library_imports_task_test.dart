@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/repo_entry.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/library_imports_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
@@ -145,6 +146,18 @@ void main() {
         TaskResult.rejected,
         'relative',
       ),
+      Tuple3(
+        '// dart_pre_commit:ignore-library-import\n'
+        'import "package:$packageName/$packageName.dart"',
+        TaskResult.accepted,
+        null,
+      ),
+      Tuple3(
+        '// dart_pre_commit:ignore-library-import\n'
+        'import "../../$packageName.dart"',
+        TaskResult.accepted,
+        null,
+      ),
     ],
     (fixture) async {
       const sutDir = 'lib/src/subdir';
@@ -182,6 +195,8 @@ void main() {
 import 'dart:io';
 import 'package:another/another.dart';
 import 'package:$packageName/$packageName.dart';
+// dart_pre_commit:ignore-library-import  
+import 'package:$packageName/ignored.dart';
 import '../help.dart';
 import '../../$packageName.dart';
 import 'package:$packageName/src/$packageName.dart';
@@ -207,5 +222,16 @@ void main() {}
             '../../$packageName.dart',
           ),
     ]);
+    verifyNever(() => mockLogger.info(any()));
+  });
+
+  test('current returns task with current project data', () async {
+    final sut = await LibraryImportsTask.current(
+      fileResolver: mockFileResolver,
+      logger: mockLogger,
+    );
+    expect(sut.fileResolver, mockFileResolver);
+    expect(sut.logger, mockLogger);
+    expect(sut.packageName, 'dart_pre_commit');
   });
 }

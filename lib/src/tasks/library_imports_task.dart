@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/repo_entry.dart';
-import 'package:dart_pre_commit/src/util/file_resolver.dart';
-import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
+import '../repo_entry.dart';
 import '../task_base.dart';
+import '../util/file_resolver.dart';
+import '../util/logger.dart';
 
 /// A task that scans dart files for imports of top level library files.
 ///
@@ -15,6 +15,14 @@ import '../task_base.dart';
 /// library file. If one is found within the lib/src or test dirs, it is logged
 /// and this task fails with [TaskResult.rejected]. If all imports are ok, the
 /// task returns [TaskResult.accepted].
+///
+/// **Note:** To ignore certain imports, you can place a comment above the
+/// import and the task will ignore it:
+///
+/// ```
+/// // dart_pre_commit:ignore-library-import
+/// import 'package:my_package/my_package.dart';
+/// ```
 ///
 /// {@category tasks}
 class LibraryImportsTask implements FileTask {
@@ -84,7 +92,16 @@ class LibraryImportsTask implements FileTask {
         .transform(const LineSplitter());
 
     var foundImports = false;
+    var skipNext = false;
     await for (final line in lines) {
+      if (_skipNextLine(line)) {
+        skipNext = true;
+        continue;
+      } else if (skipNext) {
+        skipNext = false;
+        continue;
+      }
+
       final absoluteMatch = absoluteImportRegex.firstMatch(line);
       if (absoluteMatch != null) {
         logger.info(
@@ -119,4 +136,7 @@ class LibraryImportsTask implements FileTask {
       return TaskResult.accepted;
     }
   }
+
+  bool _skipNextLine(String line) =>
+      line.trim() == '// dart_pre_commit:ignore-library-import';
 }
