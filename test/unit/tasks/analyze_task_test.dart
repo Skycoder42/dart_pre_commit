@@ -96,17 +96,18 @@ void main() {
           failOnExit: any(named: 'failOnExit'),
         )).thenAnswer(
       (_) => Stream.fromIterable(const [
-        '  A - a1 at a.dart:10:11 - (1)',
-        '  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)',
+        '  A - a.dart:10:11 - a1 - 1',
+        '  A - a-a-a.dart:88:99 - a2 - a2-a2 - 2',
         '  this is an invalid line',
-        '  B - b3 at b/b.dart:30:31 - (3)',
-        '  C - c4 at c/c/c.dart:40:41 - (4)',
-        '  D - d5 at pubspec.yaml:50:51 - (5)',
+        '  B - b/b.dart:30:31 - b3 - 3',
+        '  C - c/c/c.dart:40:41 - c4 - 4',
+        '  D - pubspec.yaml:50:51 - d5 - 5',
       ]),
     );
 
     final result = await sut([
       FakeEntry('a.dart'),
+      FakeEntry('a-a-a.dart'),
       FakeEntry('b/b.dart'),
       FakeEntry('c/c/d.dart'),
       FakeEntry('pubspec.yaml'),
@@ -115,11 +116,10 @@ void main() {
     ]);
     expect(result, TaskResult.rejected);
     verifyInOrder([
-      () => mockLogger.info('  A - a1 at a.dart:10:11 - (1)'),
-      () =>
-          mockLogger.info('  A - a2 at a.dart:88:99 at at a.dart:20:21 - (2)'),
-      () => mockLogger.info('  B - b3 at b/b.dart:30:31 - (3)'),
-      () => mockLogger.info('  D - d5 at pubspec.yaml:50:51 - (5)'),
+      () => mockLogger.info('  A - a.dart:10:11 - a1 - 1'),
+      () => mockLogger.info('  A - a-a-a.dart:88:99 - a2 - a2-a2 - 2'),
+      () => mockLogger.info('  B - b/b.dart:30:31 - b3 - 3'),
+      () => mockLogger.info('  D - pubspec.yaml:50:51 - d5 - 5'),
       () => mockLogger.info('4 issue(s) found.'),
     ]);
     verifyNever(() => mockLogger.info(any()));

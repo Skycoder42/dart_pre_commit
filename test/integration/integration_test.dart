@@ -239,15 +239,15 @@ void main() {
           .transform(const LineSplitter())
           .listen((line) => lines.add(line)),
     );
-    expect(code, HookResult.rejected.index);
     expect(
       lines,
       contains(
-        "  [INF]   info - The value of the local variable 'x' isn't used at "
-        'lib${separator}src${separator}analyze.dart:2:7 - '
-        '(unused_local_variable)',
+        '  [INF]   info - lib${separator}src${separator}analyze.dart:2:7 - '
+        "The value of the local variable 'x' isn't used. Try removing the "
+        'variable or using it. - unused_local_variable',
       ),
     );
+    expect(code, HookResult.rejected.index);
   });
 
   test('check-pull-up', () async {

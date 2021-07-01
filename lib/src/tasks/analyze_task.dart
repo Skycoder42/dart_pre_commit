@@ -24,8 +24,12 @@ class _AnalyzeResult {
   });
 
   @override
-  String toString() =>
-      '  $category - $description at $path:$line:$column - ($type)';
+  String toString() => [
+        '  $category',
+        '$path:$line:$column',
+        description,
+        type,
+      ].join(' - ');
 }
 
 /// A task the runs `dart analyze` to check for problems.
@@ -119,7 +123,7 @@ extension _ResultTransformer on Stream<String> {
     required TaskLogger logger,
   }) async* {
     final regExp = RegExp(
-      r'^\s*(\w+)\s+-\s+([^-]+)\s+at\s+([^-:]+?):(\d+):(\d+)\s+-\s+\((\w+)\)\s*$',
+      r'^\s*(\w+)\s+-\s+([^:]+?):(\d+):(\d+)\s+-\s+(.+?)\s+-\s+(\w+)\s*$',
     );
     await for (final line in this) {
       final match = regExp.firstMatch(line);
@@ -127,10 +131,10 @@ extension _ResultTransformer on Stream<String> {
         final res = _AnalyzeResult(
           category: match[1]!,
           type: match[6]!,
-          path: await fileResolver.resolve(match[3]!),
-          line: int.parse(match[4]!, radix: 10),
-          column: int.parse(match[5]!, radix: 10),
-          description: match[2]!,
+          path: await fileResolver.resolve(match[2]!),
+          line: int.parse(match[3]!, radix: 10),
+          column: int.parse(match[4]!, radix: 10),
+          description: match[5]!,
         );
         yield res;
       } else {

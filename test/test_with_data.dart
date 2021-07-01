@@ -8,8 +8,8 @@ void testWithData<TFixture>(
   dynamic Function(TFixture fixture) body, {
   String? testOn,
   Timeout? timeout,
-  dynamic? skip,
-  dynamic? tags,
+  dynamic skip,
+  dynamic tags,
   Map<String, dynamic>? onPlatform,
   int? retry,
   String Function(TFixture fixture)? fixtureToString,
