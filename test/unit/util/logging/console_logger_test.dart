@@ -134,9 +134,12 @@ void main() {
         fixture.item1(sut);
         expect(
           output.toString(),
-          startsWith(cleanLine(
-            '${beginColor(fixture.item2)}    ${fixture.item3}$endColor$newLine',
-          )),
+          startsWith(
+            cleanLine(
+              '${beginColor(fixture.item2)}    '
+              '${fixture.item3}$endColor$newLine',
+            ),
+          ),
         );
       },
     );

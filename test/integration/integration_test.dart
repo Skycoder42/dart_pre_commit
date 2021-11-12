@@ -97,7 +97,9 @@ void main() {
     await _git(const ['init']);
 
     // create files
-    await _writeFile('pubspec.yaml', '''
+    await _writeFile(
+      'pubspec.yaml',
+      '''
 name: test_project
 version: 0.0.1
 
@@ -112,28 +114,38 @@ dependencies:
 
 dev_dependencies:
   lint: null
-''');
+''',
+    );
 
-    await _writeFile('lib/src/fix_imports.dart', '''
+    await _writeFile(
+      'lib/src/fix_imports.dart',
+      '''
 // this is important
 import 'package:test_project/test_project.dart';
 import 'dart:io';
 import 'package:stuff/stuff.dart';
 
 void main() {}
-''');
-    await _writeFile('bin/format.dart', '''
+''',
+    );
+    await _writeFile(
+      'bin/format.dart',
+      '''
 import 'package:test_project/test_project.dart';
 
 void main() {
   final x = 'this is a very very very very very very very very very very very very very very very very very very very very very very long string';
 }
-''');
-    await _writeFile('lib/src/analyze.dart', '''
+''',
+    );
+    await _writeFile(
+      'lib/src/analyze.dart',
+      '''
 void main() {
   var x = 'constant';
 }
-''');
+''',
+    );
 
     // init dart
     await _pub(const ['get']);
@@ -148,7 +160,9 @@ void main() {
     await _sut(const ['--no-format', '--no-analyze']);
 
     final data = await _readFile('lib/src/fix_imports.dart');
-    expect(data, '''
+    expect(
+      data,
+      '''
 import 'dart:io';
 
 import 'package:stuff/stuff.dart';
@@ -157,7 +171,8 @@ import 'package:stuff/stuff.dart';
 import '../test_project.dart';
 
 void main() {}
-''');
+''',
+    );
   });
 
   testWithData<Tuple2<String, String>>(
@@ -172,7 +187,9 @@ void main() {}
       await _writeFile('lib/src/extra/extra.dart', '');
       await _writeFile('lib/test_project.dart', '');
       await _writeFile('lib/another.dart', '');
-      await _writeFile('lib/src/stuff/library_imports.dart', '''
+      await _writeFile(
+        'lib/src/stuff/library_imports.dart',
+        '''
 // this is important
 import '../extra/extra.dart';
 import '${fixture.item1}';
@@ -182,7 +199,8 @@ import 'package:stuff/test_project.dart';
 import 'package:test_project/xxx.dart';
 
 void main() {}
-''');
+''',
+      );
 
       await _git(const ['add', 'lib/src/stuff/library_imports.dart']);
 
@@ -217,14 +235,17 @@ void main() {}
     await _sut(const ['--no-fix-imports', '--no-analyze']);
 
     final data = await _readFile('bin/format.dart');
-    expect(data, '''
+    expect(
+      data,
+      '''
 import 'package:test_project/test_project.dart';
 
 void main() {
   final x =
       'this is a very very very very very very very very very very very very very very very very very very very very very very long string';
 }
-''');
+''',
+    );
   });
 
   test('analyze', () async {

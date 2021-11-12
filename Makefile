@@ -7,7 +7,7 @@ TEST_FILES = $(UNIT_TEST_FILES) $(INTEGRATION_TEST_FILES)
 
 MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 
-#get 
+#get
 .packages: pubspec.yaml
 	dart pub get
 
@@ -27,10 +27,10 @@ build: .packages
 
 build-clean: upgrade
 	dart run build_runner build --delete-conflicting-outputs
-	
+
 watch: .packages
 	dart run build_runner watch
-	
+
 watch-clean: upgrade
 	dart run build_runner watch --delete-conflicting-outputs
 
@@ -78,7 +78,7 @@ unit-tests-coverage: coverage/lcov.info
 coverage-open: coverage/html/index.html
 	xdg-open coverage/html/index.html || start coverage/html/index.html
 
-#doc 
+#doc
 doc/api/index.html: .packages $(LIB_FILES)
 	@rm -rf doc
 	dartdoc --show-progress
@@ -90,12 +90,10 @@ doc-open: doc
 
 # publish
 pre-publish:
-	rm lib/src/.gitignore
+	git rm lib/src/.gitignore
 
 post-publish:
-	echo '# Generated dart files' > lib/src/.gitignore
-	echo '*.freezed.dart' >> lib/src/.gitignore
-	echo '*.g.dart' >> lib/src/.gitignore
+	git checkout HEAD lib/src/.gitignore
 
 publish-dry: .packages
 	$(MAKE) -f $(MAKEFILE) pre-publish

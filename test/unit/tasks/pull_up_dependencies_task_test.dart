@@ -65,18 +65,22 @@ void main() {
     setUp(() {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
 dev_dependencies:
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
-''');
+''',
+        );
         return res;
       });
     });
@@ -86,10 +90,12 @@ packages:
       final result = await sut([]);
 
       expect(result, TaskResult.accepted);
-      verify(() => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]));
+      verify(
+        () => mockRunner.run('git', const [
+          'check-ignore',
+          'pubspec.lock',
+        ]),
+      );
       verifyInOrder([
         () => mockLogger.debug('pubspec.lock is ignored'),
         () => mockLogger.debug('All dependencies are up to date'),
@@ -103,10 +109,12 @@ packages:
       final result = await sut([FakeEntry('pubspec.lock')]);
 
       expect(result, TaskResult.accepted);
-      verify(() => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]));
+      verify(
+        () => mockRunner.run('git', const [
+          'check-ignore',
+          'pubspec.lock',
+        ]),
+      );
       verifyInOrder([
         () =>
             mockLogger.debug('pubspec.lock is not ignored, checking if staged'),
@@ -121,10 +129,12 @@ packages:
       final result = await sut([]);
 
       expect(result, TaskResult.accepted);
-      verify(() => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]));
+      verify(
+        () => mockRunner.run('git', const [
+          'check-ignore',
+          'pubspec.lock',
+        ]),
+      );
       verifyInOrder([
         () =>
             mockLogger.debug('pubspec.lock is not ignored, checking if staged'),
@@ -142,20 +152,23 @@ packages:
     test('Finds updates of pulled up versions and returns true', () async {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
   a: ^1.0.0
   b: ^1.0.0
 dev_dependencies:
   d: ^1.0.0
   e: ^1.0.0
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
   a:
     version: '1.0.0'
@@ -175,7 +188,8 @@ packages:
   f:
     version: '1.0.1'
     dependency: 'direct'
-''');
+''',
+        );
         return res;
       });
 
@@ -193,20 +207,23 @@ packages:
     test('Prints nothing and returns true if no updates match', () async {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
   a: ^1.0.0
   b: 1.0.0
 dev_dependencies:
   d: 1.0.0
   e: ^1.0.0
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
   a:
     version: '1.0.0'
@@ -226,7 +243,8 @@ packages:
   f:
     version: '1.0.1'
     dependency: 'direct'
-''');
+''',
+        );
         return res;
       });
 
@@ -239,18 +257,22 @@ packages:
     test('Does not crash if pubspec.lock is missing dependency', () async {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
   a: ^1.0.0
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
-''');
+''',
+        );
         return res;
       });
 
@@ -263,21 +285,25 @@ packages:
     test('does not include prerelease versions', () async {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
   a: ^1.0.0
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
   a:
     version: '1.2.0-prelease.1'
     dependency: 'direct'
-''');
+''',
+        );
         return res;
       });
 
@@ -290,21 +316,25 @@ packages:
     test('does include prerelease nullsafe versions', () async {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 dependencies:
   a: ^1.0.0
-''');
+''',
+        );
         return res;
       });
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
-        when(() => res.readAsString()).thenAnswer((i) async => '''
+        when(() => res.readAsString()).thenAnswer(
+          (i) async => '''
 packages:
   a:
     version: '1.2.0-nullsafety.0'
     dependency: 'direct'
-''');
+''',
+        );
         return res;
       });
 

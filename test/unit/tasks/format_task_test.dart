@@ -52,15 +52,17 @@ void main() {
   test('calls dart format with correct arguments', () async {
     final res = await sut(fakeEntry);
     expect(res, TaskResult.accepted);
-    verify(() => mockRunner.run(
-          'dart',
-          const [
-            'format',
-            '--fix',
-            '--set-exit-if-changed',
-            'mock.dart',
-          ],
-        ));
+    verify(
+      () => mockRunner.run(
+        'dart',
+        const [
+          'format',
+          '--fix',
+          '--set-exit-if-changed',
+          'mock.dart',
+        ],
+      ),
+    );
   });
 
   test('returns true if dart format returns 1', () async {

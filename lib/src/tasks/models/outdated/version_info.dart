@@ -8,6 +8,7 @@ part 'version_info.g.dart';
 @internal
 class VersionInfo with _$VersionInfo {
   const factory VersionInfo({
+    // ignore: invalid_annotation_target
     @JsonKey(
       fromJson: VersionInfo._versionFromJson,
       toJson: VersionInfo._versionToJson,

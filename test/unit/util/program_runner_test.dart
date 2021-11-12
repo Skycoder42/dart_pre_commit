@@ -17,7 +17,7 @@ void main() {
   late ProgramRunner sut;
 
   setUpAll(() {
-    registerFallbackValue<Stream<List<int>>>(const Stream.empty());
+    registerFallbackValue(const Stream<List<int>>.empty());
   });
 
   setUp(() {
@@ -56,19 +56,24 @@ void main() {
         'echo a && echo b && false',
       ];
       final stream = _stream(args);
-      expect(() => stream.last, throwsA(predicate((e) {
-        expect(e, isNotNull);
-        expect(e, isA<ProgramExitException>());
-        // ignore: cast_nullable_to_non_nullable
-        final exception = e as ProgramExitException;
-        expect(exception.exitCode, 1);
-        expect(exception.program, Platform.isWindows ? 'cmd' : 'bash');
-        expect(
-          exception.arguments,
-          Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
-        );
-        return true;
-      })));
+      expect(
+        () => stream.last,
+        throwsA(
+          predicate((e) {
+            expect(e, isNotNull);
+            expect(e, isA<ProgramExitException>());
+            // ignore: cast_nullable_to_non_nullable
+            final exception = e as ProgramExitException;
+            expect(exception.exitCode, 1);
+            expect(exception.program, Platform.isWindows ? 'cmd' : 'bash');
+            expect(
+              exception.arguments,
+              Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
+            );
+            return true;
+          }),
+        ),
+      );
     });
   });
 

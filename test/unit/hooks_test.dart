@@ -45,7 +45,7 @@ void main() {
       );
 
   setUpAll(() {
-    registerFallbackValue<RepoEntry>(FakeEntry(''));
+    registerFallbackValue(FakeEntry(''));
   });
 
   setUp(() {
@@ -55,13 +55,15 @@ void main() {
     reset(mockFileTask);
     reset(mockRepoTask);
 
-    when(() => mockLogger.updateStatus(
-          message: any(named: 'message'),
-          status: any(named: 'status'),
-          detail: any(named: 'detail'),
-          clear: any(named: 'clear'),
-          refresh: any(named: 'refresh'),
-        )).thenReturn(null);
+    when(
+      () => mockLogger.updateStatus(
+        message: any(named: 'message'),
+        status: any(named: 'status'),
+        detail: any(named: 'detail'),
+        clear: any(named: 'clear'),
+        refresh: any(named: 'refresh'),
+      ),
+    ).thenReturn(null);
     when(() => mockLogger.completeStatus()).thenReturn(null);
 
     when(() => mockResolver.file(any()))
@@ -93,7 +95,8 @@ void main() {
       verify(() => mockRunner.stream('git', ['rev-parse', '--show-toplevel']));
       verify(() => mockRunner.stream('git', ['diff', '--name-only']));
       verify(
-          () => mockRunner.stream('git', ['diff', '--name-only', '--cached']));
+        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
+      );
     });
 
     test('processes staged files', () async {
@@ -110,38 +113,50 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning a.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning path${separator}b.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning c.g.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning any().txt...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verifyNever(() => mockLogger.updateStatus(
-            message: any(named: 'message'),
-            status: any(named: 'status'),
-            refresh: any(named: 'refresh'),
-          ));
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning a.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning path${separator}b.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning c.g.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning any().txt...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verifyNever(
+        () => mockLogger.updateStatus(
+          message: any(named: 'message'),
+          status: any(named: 'status'),
+          refresh: any(named: 'refresh'),
+        ),
+      );
     });
 
     test('only processes existing files', () async {
-      when(() => mockResolver.file(any())).thenAnswer((i) => FakeFile(
-            i.positionalArguments.first as String,
-            exists: false,
-          ));
+      when(() => mockResolver.file(any())).thenAnswer(
+        (i) => FakeFile(
+          i.positionalArguments.first as String,
+          exists: false,
+        ),
+      );
       when(() => mockResolver.file('b.dart')).thenReturn(FakeFile('b.dart'));
       when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
@@ -155,25 +170,31 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning b.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verifyNever(() => mockLogger.updateStatus(
-            message: any(named: 'message'),
-            status: any(named: 'status'),
-            refresh: any(named: 'refresh'),
-          ));
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning b.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verifyNever(
+        () => mockLogger.updateStatus(
+          message: any(named: 'message'),
+          status: any(named: 'status'),
+          refresh: any(named: 'refresh'),
+        ),
+      );
     });
 
     test('only processes files in the subdir if pwd is not the root dir',
         () async {
       final dirName = basename(Directory.current.path);
-      when(() => mockRunner.stream('git', [
-            'rev-parse',
-            '--show-toplevel',
-          ])).thenAnswer(
+      when(
+        () => mockRunner.stream('git', [
+          'rev-parse',
+          '--show-toplevel',
+        ]),
+      ).thenAnswer(
         (_) => Stream.fromIterable([
           Directory.current.parent.path,
         ]),
@@ -191,21 +212,27 @@ void main() {
 
       final result = await sut();
       expect(result, HookResult.clean);
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning a.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verify(() => mockLogger.updateStatus(
-            message: 'Scanning subdir${separator}b.dart...',
-            status: TaskStatus.scanning,
-            refresh: any(named: 'refresh'),
-          ));
-      verifyNever(() => mockLogger.updateStatus(
-            message: any(named: 'message'),
-            status: any(named: 'status'),
-            refresh: any(named: 'refresh'),
-          ));
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning a.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning subdir${separator}b.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verifyNever(
+        () => mockLogger.updateStatus(
+          message: any(named: 'message'),
+          status: any(named: 'status'),
+          refresh: any(named: 'refresh'),
+        ),
+      );
     });
   });
 
@@ -391,9 +418,9 @@ void main() {
       Tuple3(null, true, 2),
     ], (fixture) async {
       if (fixture.item1 != null) {
-        when(() =>
-                mockRunner.stream('git', ['diff', '--name-only', '--cached']))
-            .thenAnswer(
+        when(
+          () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
+        ).thenAnswer(
           (_) => Stream.fromIterable(fixture.item1!),
         );
       }

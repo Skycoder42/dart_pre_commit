@@ -191,18 +191,22 @@ Future<int> _run(List<String> args) async {
     }
 
     final outdatedLevel = options['outdated'] as String;
-    final hooks = await di.read(HooksProvider.hookProvider(HooksConfig(
-      fixImports: options['fix-imports'] as bool,
-      libraryImports: options['library-imports'] as bool,
-      format: options['format'] as bool,
-      analyze: options['analyze'] as bool,
-      outdated: outdatedLevel == disabledOutdatedLevel
-          ? null
-          : OutdatedLevelX.parse(outdatedLevel),
-      nullsafe: options['nullsafe'] as bool,
-      pullUpDependencies: options['check-pull-up'] as bool,
-      continueOnRejected: options['continue-on-rejected'] as bool,
-    )).future);
+    final hooks = await di.read(
+      HooksProvider.hookProvider(
+        HooksConfig(
+          fixImports: options['fix-imports'] as bool,
+          libraryImports: options['library-imports'] as bool,
+          format: options['format'] as bool,
+          analyze: options['analyze'] as bool,
+          outdated: outdatedLevel == disabledOutdatedLevel
+              ? null
+              : OutdatedLevelX.parse(outdatedLevel),
+          nullsafe: options['nullsafe'] as bool,
+          pullUpDependencies: options['check-pull-up'] as bool,
+          continueOnRejected: options['continue-on-rejected'] as bool,
+        ),
+      ).future,
+    );
     hooks.logger.logLevel = LogLevelX.parse(options['log-level'] as String);
 
     final result = await hooks();

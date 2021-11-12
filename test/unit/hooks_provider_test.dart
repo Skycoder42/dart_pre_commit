@@ -37,19 +37,21 @@ void main() {
   final mockAnalayze = MockAnalyzeTask();
   final mockPullUp = MockPullUpDependenciesTask();
 
-  ProviderContainer ioc() => ProviderContainer(overrides: [
-        HooksProviderInternal.loggerProvider.overrideWithValue(mockLogger),
-        HooksProviderInternal.fileResolverProvider
-            .overrideWithValue(mockResolver),
-        HooksProviderInternal.programRunnerProvider
-            .overrideWithValue(mockRunner),
-        HooksProviderInternal.fixImportsProvider
-            .overrideWithValue(AsyncValue.data(mockFixImports)),
-        HooksProviderInternal.formatProvider.overrideWithValue(mockFormat),
-        HooksProviderInternal.analyzeProvider.overrideWithValue(mockAnalayze),
-        HooksProviderInternal.pullUpDependenciesProvider
-            .overrideWithValue(mockPullUp),
-      ]);
+  ProviderContainer ioc() => ProviderContainer(
+        overrides: [
+          HooksProviderInternal.loggerProvider.overrideWithValue(mockLogger),
+          HooksProviderInternal.fileResolverProvider
+              .overrideWithValue(mockResolver),
+          HooksProviderInternal.programRunnerProvider
+              .overrideWithValue(mockRunner),
+          HooksProviderInternal.fixImportsProvider
+              .overrideWithValue(AsyncValue.data(mockFixImports)),
+          HooksProviderInternal.formatProvider.overrideWithValue(mockFormat),
+          HooksProviderInternal.analyzeProvider.overrideWithValue(mockAnalayze),
+          HooksProviderInternal.pullUpDependenciesProvider
+              .overrideWithValue(mockPullUp),
+        ],
+      );
 
   setUp(() {
     reset(mockFormat);

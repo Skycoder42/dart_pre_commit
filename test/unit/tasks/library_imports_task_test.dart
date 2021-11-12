@@ -166,10 +166,12 @@ void main() {
         (i) => Stream.value(fixture.item1).transform(utf8.encoder),
       );
 
-      final result = await sut(RepoEntry(
-        file: mockFile,
-        partiallyStaged: false,
-      ));
+      final result = await sut(
+        RepoEntry(
+          file: mockFile,
+          partiallyStaged: false,
+        ),
+      );
 
       expect(result, fixture.item2);
 
@@ -191,24 +193,28 @@ void main() {
     const sutDir = 'lib/src/subdir';
     when(() => mockFile.parent).thenReturn(Directory(sutDir));
     when(() => mockFile.openRead()).thenAnswer(
-      (i) => Stream.value('''
+      (i) => Stream.value(
+        '''
 import 'dart:io';
 import 'package:another/another.dart';
 import 'package:$packageName/$packageName.dart';
-// dart_pre_commit:ignore-library-import  
+// dart_pre_commit:ignore-library-import
 import 'package:$packageName/ignored.dart';
 import '../help.dart';
 import '../../$packageName.dart';
 import 'package:$packageName/src/$packageName.dart';
 
 void main() {}
-''').transform(utf8.encoder),
+''',
+      ).transform(utf8.encoder),
     );
 
-    final result = await sut(RepoEntry(
-      file: mockFile,
-      partiallyStaged: false,
-    ));
+    final result = await sut(
+      RepoEntry(
+        file: mockFile,
+        partiallyStaged: false,
+      ),
+    );
 
     expect(result, TaskResult.rejected);
 

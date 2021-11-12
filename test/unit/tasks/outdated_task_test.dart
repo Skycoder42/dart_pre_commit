@@ -83,12 +83,14 @@ void main() {
       final res = await sut.call(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockRunner.stream('dart', [
-            'pub',
-            'outdated',
-            '--show-all',
-            '--json',
-          ]));
+      verify(
+        () => mockRunner.stream('dart', [
+          'pub',
+          'outdated',
+          '--show-all',
+          '--json',
+        ]),
+      );
     });
 
     testWithData<Tuple2<OutdatedLevel, int>>(
@@ -245,13 +247,15 @@ void main() {
       final res = await sut.call(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockRunner.stream('dart', [
-            'pub',
-            'outdated',
-            '--show-all',
-            '--json',
-            '--mode=null-safety',
-          ]));
+      verify(
+        () => mockRunner.stream('dart', [
+          'pub',
+          'outdated',
+          '--show-all',
+          '--json',
+          '--mode=null-safety',
+        ]),
+      );
     });
 
     test('Skips invalid packages', () async {
@@ -262,9 +266,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockLogger.warn(
-            'Skipping:    invalid: No Version information available',
-          ));
+      verify(
+        () => mockLogger.warn(
+          'Skipping:    invalid: No Version information available',
+        ),
+      );
     });
 
     test('Skips already nullsafe packages', () async {
@@ -281,9 +287,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockLogger.debug(
-            'Up to date:  safe: 1.0.0 is nullsafe',
-          ));
+      verify(
+        () => mockLogger.debug(
+          'Up to date:  safe: 1.0.0 is nullsafe',
+        ),
+      );
     });
 
     test('Counts nullsafe resolvable', () async {
@@ -304,9 +312,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.rejected);
-      verify(() => mockLogger.info(
-            'Upgradeable: resolvable: 1.0.0 -> 1.0.0-nullsafety.0',
-          ));
+      verify(
+        () => mockLogger.info(
+          'Upgradeable: resolvable: 1.0.0 -> 1.0.0-nullsafety.0',
+        ),
+      );
     });
 
     test('Informs about non-resolvable nullsafe packages', () async {
@@ -326,9 +336,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockLogger.info(
-            'Available:   latest: 1.0.0 -> 1.0.0-nullsafety.0',
-          ));
+      verify(
+        () => mockLogger.info(
+          'Available:   latest: 1.0.0 -> 1.0.0-nullsafety.0',
+        ),
+      );
     });
 
     test('Skips unavailable packages', () async {
@@ -345,9 +357,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
-      verify(() => mockLogger.debug(
-            'Skipping:    unavailable: No nullsafe version available',
-          ));
+      verify(
+        () => mockLogger.debug(
+          'Skipping:    unavailable: No nullsafe version available',
+        ),
+      );
     });
 
     test('correctly counts packages', () async {
@@ -385,9 +399,11 @@ void main() {
       final res = await sut(const []);
 
       expect(res, TaskResult.rejected);
-      verify(() => mockLogger.info(
-            'Found 2 upgradeble null-safe package(s)',
-          ));
+      verify(
+        () => mockLogger.info(
+          'Found 2 upgradeble null-safe package(s)',
+        ),
+      );
     });
   });
 }

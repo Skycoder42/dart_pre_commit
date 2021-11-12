@@ -28,16 +28,20 @@ void main() {
     reset(mockRunner);
     reset(mockResolver);
 
-    when(() => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        )).thenAnswer((_) => Stream.fromIterable(const []));
+    when(
+      () => mockRunner.stream(
+        any(),
+        any(),
+        failOnExit: any(named: 'failOnExit'),
+      ),
+    ).thenAnswer((_) => Stream.fromIterable(const []));
 
     when(() => mockResolver.resolve(any()))
         .thenAnswer((i) async => i.positionalArguments.first as String);
-    when(() => mockResolver.resolveAll(any())).thenAnswer((i) =>
-        Stream.fromIterable(i.positionalArguments.first as Iterable<String>));
+    when(() => mockResolver.resolveAll(any())).thenAnswer(
+      (i) =>
+          Stream.fromIterable(i.positionalArguments.first as Iterable<String>),
+    );
 
     sut = AnalyzeTask(
       logger: mockLogger,
@@ -79,22 +83,26 @@ void main() {
     ]);
 
     expect(result, TaskResult.accepted);
-    verify(() => mockRunner.stream(
-          'dart',
-          const [
-            'analyze',
-            '--fatal-infos',
-          ],
-          failOnExit: false,
-        ));
+    verify(
+      () => mockRunner.stream(
+        'dart',
+        const [
+          'analyze',
+          '--fatal-infos',
+        ],
+        failOnExit: false,
+      ),
+    );
   });
 
   test('Collects lints for specified files', () async {
-    when(() => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        )).thenAnswer(
+    when(
+      () => mockRunner.stream(
+        any(),
+        any(),
+        failOnExit: any(named: 'failOnExit'),
+      ),
+    ).thenAnswer(
       (_) => Stream.fromIterable(const [
         '  A - a.dart:10:11 - a1 - 1',
         '  A - a-a-a.dart:88:99 - a2 - a2-a2 - 2',
@@ -126,11 +134,13 @@ void main() {
   });
 
   test('Succeeds if only lints of not specified files are found', () async {
-    when(() => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        )).thenAnswer(
+    when(
+      () => mockRunner.stream(
+        any(),
+        any(),
+        failOnExit: any(named: 'failOnExit'),
+      ),
+    ).thenAnswer(
       (_) => Stream.fromIterable([
         '  B - b3 at b/b.dart:30:31 - (3)',
       ]),
