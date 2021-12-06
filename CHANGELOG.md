@@ -4,16 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.3] - 2021-07-01
+### Changed
+- Dependency updates
+
+
 ## [2.3.2] - 2021-07-01
 ### Fixed
-- The `analyze` task was not working anymore, as the output format of 
+- The `analyze` task was not working anymore, as the output format of
 `dart analyze` has changed. The task was now adjusted to handle the new format
 only
 
 ## [2.3.1] - 2021-05-07
 ### Fixed
-- The `library-imports` can now be properly ignored by adding 
-`// dart_pre_commit:ignore-library-import` before the line where the import 
+- The `library-imports` can now be properly ignored by adding
+`// dart_pre_commit:ignore-library-import` before the line where the import
 happens
 
 ## [2.3.0] - 2021-04-30
@@ -39,13 +44,13 @@ happens
 - Migrated package to nullsafety
 - Refactored Hooks API to allow custom hooks
 - Generalized HookResult to be independent of specific tasks
-  - error has been removed, instead a Exceptions are thrown in case of fatal 
+  - error has been removed, instead a Exceptions are thrown in case of fatal
   errors
   - linter, pullUp have been replaced by the more generic rejected state
 - refactor logger (#3)
   - there is a pretty and a simple logger now
   - the correct one is auto-detected based on the availability of a tty
-  - provides a useful status message so other logs/exceptions can be easily 
+  - provides a useful status message so other logs/exceptions can be easily
   associated with the task
   - debug-logging has been added to all tasks
   - log-levels can be configured to show certain log messages
@@ -60,7 +65,7 @@ happens
 - pull-up-dependencies now works in subdirs (#8)
 - pull-up-dependencies now correctly handles nullsafety releases
 - fix-imports can now handle multiline imports correctly (#9)
-  - this includes comments before, after or between the import and the 
+  - this includes comments before, after or between the import and the
   semicolon, as well as `as/show/hide` statements, that fall into a new line
 
 ## [1.1.4] - 2020-12-10
@@ -74,7 +79,7 @@ happens
 
 ## [1.1.2] - 2020-12-04
 ### Fixed
-- Fixed problem with repositories where the dart project folder beeing scanned 
+- Fixed problem with repositories where the dart project folder beeing scanned
 is not the the git root folder
 
 ## [1.1.1] - 2020-10-22
