@@ -32,6 +32,7 @@ void main() {
     test(message, () async {
       when(() => mockFile.readAsString()).thenAnswer((_) async => inData);
       if (setUp != null) {
+        // ignore: avoid_dynamic_calls
         setUp();
       }
 
