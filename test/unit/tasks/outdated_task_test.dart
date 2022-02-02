@@ -52,13 +52,13 @@ void main() {
       ],
       (fixture) {
         expect(fixture.item1.name, fixture.item2);
-        expect(OutdatedLevelX.parse(fixture.item2), fixture.item1);
+        expect(OutdatedLevel.values.byName(fixture.item2), fixture.item1);
       },
     );
 
     test('throws if parse is called with invalid data', () {
       expect(
-        () => OutdatedLevelX.parse('invalid'),
+        () => OutdatedLevel.values.byName('invalid'),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -224,186 +224,6 @@ void main() {
         expect(res, TaskResult.accepted);
         verify(() => mockLogger.debug('Up to date:  p: 1.0.0'));
       });
-    });
-  });
-
-  group('nullsafe', () {
-    late NullsafeTask sut;
-
-    setUp(() {
-      sut = NullsafeTask(
-        logger: mockLogger,
-        programRunner: mockRunner,
-      );
-    });
-
-    test('task metadata is correct', () {
-      expect(sut.taskName, 'nullsafe');
-      expect(sut.callForEmptyEntries, true);
-      expect(sut.filePattern, '');
-    });
-
-    test('Runs dart with correct arguments', () async {
-      final res = await sut.call(const []);
-
-      expect(res, TaskResult.accepted);
-      verify(
-        () => mockRunner.stream('dart', [
-          'pub',
-          'outdated',
-          '--show-all',
-          '--json',
-          '--mode=null-safety',
-        ]),
-      );
-    });
-
-    test('Skips invalid packages', () async {
-      whenRunner(const [
-        PackageInfo(package: 'invalid'),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.accepted);
-      verify(
-        () => mockLogger.warn(
-          'Skipping:    invalid: No Version information available',
-        ),
-      );
-    });
-
-    test('Skips already nullsafe packages', () async {
-      whenRunner([
-        PackageInfo(
-          package: 'safe',
-          current: VersionInfo(
-            version: Version(1, 0, 0),
-            nullSafety: true,
-          ),
-        ),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.accepted);
-      verify(
-        () => mockLogger.debug(
-          'Up to date:  safe: 1.0.0 is nullsafe',
-        ),
-      );
-    });
-
-    test('Counts nullsafe resolvable', () async {
-      whenRunner([
-        PackageInfo(
-          package: 'resolvable',
-          current: VersionInfo(
-            version: Version(1, 0, 0),
-            nullSafety: false,
-          ),
-          resolvable: VersionInfo(
-            version: Version(1, 0, 0, pre: 'nullsafety.0'),
-            nullSafety: true,
-          ),
-        ),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.rejected);
-      verify(
-        () => mockLogger.info(
-          'Upgradeable: resolvable: 1.0.0 -> 1.0.0-nullsafety.0',
-        ),
-      );
-    });
-
-    test('Informs about non-resolvable nullsafe packages', () async {
-      whenRunner([
-        PackageInfo(
-          package: 'latest',
-          current: VersionInfo(
-            version: Version(1, 0, 0),
-          ),
-          latest: VersionInfo(
-            version: Version(1, 0, 0, pre: 'nullsafety.0'),
-            nullSafety: true,
-          ),
-        ),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.accepted);
-      verify(
-        () => mockLogger.info(
-          'Available:   latest: 1.0.0 -> 1.0.0-nullsafety.0',
-        ),
-      );
-    });
-
-    test('Skips unavailable packages', () async {
-      whenRunner([
-        PackageInfo(
-          package: 'unavailable',
-          current: VersionInfo(
-            version: Version(1, 0, 0),
-            nullSafety: false,
-          ),
-        ),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.accepted);
-      verify(
-        () => mockLogger.debug(
-          'Skipping:    unavailable: No nullsafe version available',
-        ),
-      );
-    });
-
-    test('correctly counts packages', () async {
-      whenRunner([
-        PackageInfo(
-          package: 'p1',
-          current: VersionInfo(version: Version(1, 0, 0)),
-        ),
-        PackageInfo(
-          package: 'p2',
-          current: VersionInfo(version: Version(1, 0, 0)),
-          resolvable: VersionInfo(
-            version: Version(1, 0, 0, pre: 'nullsafety.0'),
-            nullSafety: true,
-          ),
-        ),
-        PackageInfo(
-          package: 'p3',
-          current: VersionInfo(version: Version(1, 0, 0)),
-        ),
-        PackageInfo(
-          package: 'p4',
-          current: VersionInfo(version: Version(1, 0, 0)),
-          resolvable: VersionInfo(
-            version: Version(1, 0, 0, pre: 'nullsafety.0'),
-            nullSafety: true,
-          ),
-        ),
-        PackageInfo(
-          package: 'p4',
-          current: VersionInfo(version: Version(1, 0, 0)),
-        ),
-      ]);
-
-      final res = await sut(const []);
-
-      expect(res, TaskResult.rejected);
-      verify(
-        () => mockLogger.info(
-          'Found 2 upgradeble null-safe package(s)',
-        ),
-      );
     });
   });
 }

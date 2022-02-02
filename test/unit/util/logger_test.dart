@@ -18,12 +18,15 @@ void main() {
       ],
       (fixture) {
         expect(fixture.item1.name, fixture.item2);
-        expect(LogLevelX.parse(fixture.item2), fixture.item1);
+        expect(LogLevel.values.byName(fixture.item2), fixture.item1);
       },
     );
 
     test('throws if parse is called with invalid data', () {
-      expect(() => LogLevelX.parse('invalid'), throwsA(isA<ArgumentError>()));
+      expect(
+        () => LogLevel.values.byName('invalid'),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 }

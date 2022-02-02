@@ -14,7 +14,6 @@ Future<void> main(List<String> arguments) async {
   final hook = await container.read(
     HooksProvider.hookProvider(
       const HooksConfig(
-        fixImports: true,
         // ignore: avoid_redundant_argument_values
         analyze: false,
       ),

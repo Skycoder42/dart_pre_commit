@@ -41,20 +41,6 @@ enum LogLevel {
   nothing,
 }
 
-/// Extensions on [LogLevel], that add additional logic to the enum.
-extension LogLevelX on LogLevel {
-  /// The short name of the value, without the enum class name.
-  String get name => toString().split('.').last;
-
-  /// Static method to create a [LogLevel] from the [message].
-  ///
-  /// The [message] must a a valid log level, see [name].
-  static LogLevel parse(String message) => LogLevel.values.firstWhere(
-        (e) => e.name == message,
-        orElse: () => throw ArgumentError.value(message, 'message'),
-      );
-}
-
 /// The interface for the logger as [TaskBase] classes expect it.
 ///
 /// This can be used to log messages in a task context, without the extended

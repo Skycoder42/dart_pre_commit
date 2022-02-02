@@ -7,9 +7,7 @@ import 'package:riverpod/riverpod.dart';
 import 'hooks.dart';
 import 'task_base.dart';
 import 'tasks/analyze_task.dart';
-import 'tasks/fix_imports_task.dart';
 import 'tasks/format_task.dart';
-import 'tasks/library_imports_task.dart';
 import 'tasks/outdated_task.dart';
 import 'tasks/pull_up_dependencies_task.dart';
 import 'util/file_resolver.dart';
@@ -25,12 +23,6 @@ part 'hooks_provider.freezed.dart';
 class HooksConfig with _$HooksConfig {
   /// Default constructor.
   const factory HooksConfig({
-    /// Specifies, whether the [FixImportsTask] should be enabled.
-    @Default(false) bool fixImports,
-
-    /// Specifies, whether the [LibraryImportsTask] should be enabled.
-    @Default(false) bool libraryImports,
-
     /// Specifies, whether the [FormatTask] should be enabled.
     @Default(false) bool format,
 
@@ -41,10 +33,6 @@ class HooksConfig with _$HooksConfig {
     ///
     /// The [outdated] value is used to initialize the task with that value.
     OutdatedLevel? outdated,
-
-    /// Specifies, whether the [OutdatedTask] in nullsafety mode should be
-    /// enabled.
-    @Default(false) bool nullsafe,
 
     /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
     @Default(false) bool pullUpDependencies,
@@ -83,15 +71,10 @@ abstract class HooksProvider {
       programRunner: ref.watch(HooksProviderInternal.programRunnerProvider),
       continueOnRejected: param.continueOnRejected,
       tasks: [
-        if (param.fixImports)
-          await ref.watch(HooksProviderInternal.fixImportsProvider.future),
-        if (param.libraryImports)
-          await ref.watch(HooksProviderInternal.libraryImportsProvider.future),
         if (param.format) ref.watch(HooksProviderInternal.formatProvider),
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
         if (param.outdated != null)
           ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
-        if (param.nullsafe) ref.watch(HooksProviderInternal.nullsafeProvider),
         if (param.pullUpDependencies)
           ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
         if (param.extraTasks != null) ...param.extraTasks!,
@@ -140,25 +123,6 @@ abstract class HooksProviderInternal {
     ),
   );
 
-  /// A simple provider for [FixImportsTask].
-  ///
-  /// Uses [taskLoggerProvider].
-  static final fixImportsProvider = FutureProvider(
-    (ref) => FixImportsTask.current(
-      logger: ref.watch(taskLoggerProvider),
-    ),
-  );
-
-  /// A simple provider for [LibraryImportsTask].
-  ///
-  /// Uses [fileResolverProvider] and [taskLoggerProvider].
-  static final libraryImportsProvider = FutureProvider(
-    (ref) => LibraryImportsTask.current(
-      fileResolver: ref.watch(fileResolverProvider),
-      logger: ref.watch(loggerProvider),
-    ),
-  );
-
   /// A simple provider for [FormatTask].
   ///
   /// Uses [programRunnerProvider].
@@ -200,16 +164,6 @@ abstract class HooksProviderInternal {
       programRunner: ref.watch(programRunnerProvider),
       logger: ref.watch(taskLoggerProvider),
       outdatedLevel: level,
-    ),
-  );
-
-  /// A simple provider for [NullsafeTask].
-  ///
-  /// Uses [programRunnerProvider] and [taskLoggerProvider].
-  static final nullsafeProvider = Provider(
-    (ref) => NullsafeTask(
-      programRunner: ref.watch(programRunnerProvider),
-      logger: ref.watch(taskLoggerProvider),
     ),
   );
 }

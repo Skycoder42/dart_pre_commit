@@ -1,6 +1,5 @@
 import 'package:dart_pre_commit/src/hooks_provider.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
-import 'package:dart_pre_commit/src/tasks/fix_imports_task.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
@@ -19,8 +18,6 @@ class MockFileResolver extends Mock implements FileResolver {}
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
-class MockFixImportsTask extends Mock implements FixImportsTask {}
-
 class MockFormatTask extends Mock implements FormatTask {}
 
 class MockAnalyzeTask extends Mock implements AnalyzeTask {}
@@ -32,7 +29,6 @@ void main() {
   final mockLogger = MockLogger();
   final mockResolver = MockFileResolver();
   final mockRunner = MockProgramRunner();
-  final mockFixImports = MockFixImportsTask();
   final mockFormat = MockFormatTask();
   final mockAnalayze = MockAnalyzeTask();
   final mockPullUp = MockPullUpDependenciesTask();
@@ -44,8 +40,6 @@ void main() {
               .overrideWithValue(mockResolver),
           HooksProviderInternal.programRunnerProvider
               .overrideWithValue(mockRunner),
-          HooksProviderInternal.fixImportsProvider
-              .overrideWithValue(AsyncValue.data(mockFixImports)),
           HooksProviderInternal.formatProvider.overrideWithValue(mockFormat),
           HooksProviderInternal.analyzeProvider.overrideWithValue(mockAnalayze),
           HooksProviderInternal.pullUpDependenciesProvider
@@ -55,12 +49,10 @@ void main() {
 
   setUp(() {
     reset(mockFormat);
-    reset(mockFixImports);
     reset(mockAnalayze);
     reset(mockPullUp);
 
     when(() => mockFormat.taskName).thenReturn('mockFormat');
-    when(() => mockFixImports.taskName).thenReturn('mockFixImports');
     when(() => mockAnalayze.taskName).thenReturn('mockAnalayze');
     when(() => mockPullUp.taskName).thenReturn('mockPullUp');
   });
@@ -70,20 +62,17 @@ void main() {
     const [
       Tuple3(HooksConfig(), [], false),
       Tuple3(HooksConfig(format: true), ['mockFormat'], false),
-      Tuple3(HooksConfig(fixImports: true), ['mockFixImports'], false),
       Tuple3(HooksConfig(analyze: true), ['mockAnalayze'], false),
       Tuple3(HooksConfig(pullUpDependencies: true), ['mockPullUp'], false),
       Tuple3(HooksConfig(continueOnRejected: true), [], true),
       Tuple3(
         HooksConfig(
-          fixImports: true,
           format: true,
           analyze: true,
           pullUpDependencies: true,
           continueOnRejected: true,
         ),
         [
-          'mockFixImports',
           'mockFormat',
           'mockAnalayze',
           'mockPullUp',

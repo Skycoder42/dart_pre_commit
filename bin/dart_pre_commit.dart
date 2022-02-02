@@ -52,18 +52,6 @@ Future<int> _run(List<String> args) async {
   final parser = ArgParser()
     ..addSeparator('Task selection:')
     ..addFlag(
-      'fix-imports',
-      abbr: 'i',
-      defaultsTo: true,
-      help: 'Format and sort imports of staged files.',
-    )
-    ..addFlag(
-      'library-imports',
-      abbr: 't',
-      help: 'Check if top level libraries are wrongfully imported in '
-          'src and test files.',
-    )
-    ..addFlag(
       'format',
       abbr: 'f',
       defaultsTo: true,
@@ -100,13 +88,6 @@ Future<int> _run(List<String> args) async {
             'Only require patch updates, e.g. 1.0.0-X to 1.0.1-0.',
         OutdatedLevel.any.name: 'Require all updates that are available.',
       },
-    )
-    ..addFlag(
-      'nullsafe',
-      abbr: 'n',
-      help: 'Activates null-safety checks. Will check all installed '
-          'dependencies for null-safety updates and fail if any can be '
-          'installed without problems.',
     )
     ..addFlag(
       'check-pull-up',
@@ -194,20 +175,19 @@ Future<int> _run(List<String> args) async {
     final hooks = await di.read(
       HooksProvider.hookProvider(
         HooksConfig(
-          fixImports: options['fix-imports'] as bool,
-          libraryImports: options['library-imports'] as bool,
           format: options['format'] as bool,
           analyze: options['analyze'] as bool,
           outdated: outdatedLevel == disabledOutdatedLevel
               ? null
-              : OutdatedLevelX.parse(outdatedLevel),
-          nullsafe: options['nullsafe'] as bool,
+              : OutdatedLevel.values.byName(outdatedLevel),
           pullUpDependencies: options['check-pull-up'] as bool,
           continueOnRejected: options['continue-on-rejected'] as bool,
         ),
       ).future,
     );
-    hooks.logger.logLevel = LogLevelX.parse(options['log-level'] as String);
+    hooks.logger.logLevel = LogLevel.values.byName(
+      options['log-level'] as String,
+    );
 
     final result = await hooks();
     if (options['detailed-exit-code'] as bool) {

@@ -54,7 +54,6 @@ extension _TaskStreamX on Stream<RepoEntry> {
   Stream<RepoEntry> runFileTasks(ProviderContainer di) async* {
     final logger = di.read(HooksProviderInternal.loggerProvider);
     final tasks = [
-      await di.read(HooksProviderInternal.fixImportsProvider.future),
       di.read(HooksProviderInternal.formatProvider),
     ];
 
@@ -81,7 +80,6 @@ extension _TaskStreamX on Stream<RepoEntry> {
     final tasks = [
       di.read(HooksProviderInternal.analyzeProvider),
       di.read(HooksProviderInternal.outdatedProvider(OutdatedLevel.any)),
-      di.read(HooksProviderInternal.nullsafeProvider),
       di.read(HooksProviderInternal.pullUpDependenciesProvider),
     ];
 
