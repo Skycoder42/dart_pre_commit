@@ -6,9 +6,6 @@ import 'dart:io';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
-
-import '../test_with_data.dart';
 
 void main() {
   late Directory testDir;

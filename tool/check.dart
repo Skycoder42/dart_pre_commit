@@ -77,7 +77,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
 
   Future<void> runRepoTasks(ProviderContainer di) async {
     final logger = di.read(HooksProviderInternal.loggerProvider);
-    final tasks = [
+    final tasks = <RepoTask>[
       di.read(HooksProviderInternal.analyzeProvider),
       di.read(HooksProviderInternal.outdatedProvider(OutdatedLevel.any)),
       di.read(HooksProviderInternal.pullUpDependenciesProvider),

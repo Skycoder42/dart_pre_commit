@@ -36,7 +36,7 @@ enum OutdatedLevel {
 /// more details on which versions each level includes.
 ///
 /// {@category tasks}
-class OutdatedTask implements RepoTask {
+class OutdatedTask with PatternTaskMixin implements RepoTask {
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 

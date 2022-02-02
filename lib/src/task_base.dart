@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'repo_entry.dart';
 
 /// The possible result states of a generic task.
@@ -45,16 +47,11 @@ abstract class TaskBase {
   /// Returns the user-visible name of the task.
   String get taskName;
 
-  /// Returns a pattern to check if a [RepoEntry] can be processed by this task.
+  /// Checks if a [RepoEntry] can be processed by this task.
   ///
-  /// The returned pattern is matched against the path of every staged or
-  /// partially staged file. The paths are always relative to the current
-  /// directory, not the repository root.
-  ///
-  /// Typically, either a [String] or a [RegExp] is used as pattern.
-  ///
-  /// See [TaskBaseX] for useful helper methods.
-  Pattern get filePattern;
+  /// The method is called with every staged or partially staged file. The paths
+  /// are always relative to the current directory, not the repository root.
+  bool canProcess(RepoEntry entry);
 }
 
 /// A task that is run multiple times, once for every matching file.
@@ -137,13 +134,11 @@ abstract class RepoTask extends TaskBase {
   Future<TaskResult> call(Iterable<RepoEntry> entries);
 }
 
-/// Helper methods that decorate [TaskBase].
-extension TaskBaseX on TaskBase {
-  /// Check if this task can process the given [entry].
-  ///
-  /// Shortcut that uses [TaskBase.filePattern] to check if the [entry]s path
-  /// matches the pattern and thus can be passed to the corresponding call
-  /// method.
+mixin PatternTaskMixin implements TaskBase {
+  Pattern get filePattern;
+
+  @override
+  @nonVirtual
   bool canProcess(RepoEntry entry) =>
       filePattern.matchAsPrefix(entry.file.path) != null;
 }

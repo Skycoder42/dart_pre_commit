@@ -39,7 +39,7 @@ import '../util/program_runner.dart';
 /// in the lockfile is higher then the minimal allowed version in the project.
 ///
 /// {@category tasks}
-class PullUpDependenciesTask implements RepoTask {
+class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 

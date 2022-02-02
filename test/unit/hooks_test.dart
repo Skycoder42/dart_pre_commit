@@ -20,9 +20,9 @@ class MockFileResolver extends Mock implements FileResolver {}
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
-class MockFileTask extends Mock implements FileTask {}
+class MockFileTask extends Mock with PatternTaskMixin implements FileTask {}
 
-class MockRepoTask extends Mock implements RepoTask {}
+class MockRepoTask extends Mock with PatternTaskMixin implements RepoTask {}
 
 void main() {
   final mockLogger = MockLogger();

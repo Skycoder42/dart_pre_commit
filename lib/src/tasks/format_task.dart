@@ -9,7 +9,7 @@ import '../util/program_runner.dart';
 /// be fixed. In that case, [TaskResult.modified] is returned.
 ///
 /// {@category tasks}
-class FormatTask implements FileTask {
+class FormatTask with PatternTaskMixin implements FileTask {
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 

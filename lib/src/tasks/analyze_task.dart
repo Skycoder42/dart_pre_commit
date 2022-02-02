@@ -40,7 +40,7 @@ class _AnalyzeResult {
 /// exit with [TaskResult.rejected].
 ///
 /// {@category tasks}
-class AnalyzeTask implements RepoTask {
+class AnalyzeTask with PatternTaskMixin implements RepoTask {
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
