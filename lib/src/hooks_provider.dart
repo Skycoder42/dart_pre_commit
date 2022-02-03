@@ -1,6 +1,8 @@
 // coverage:ignore-file
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
+import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -10,9 +12,11 @@ import 'tasks/analyze_task.dart';
 import 'tasks/format_task.dart';
 import 'tasks/outdated_task.dart';
 import 'tasks/pull_up_dependencies_task.dart';
+import 'tasks/test_import_task.dart';
 import 'util/file_resolver.dart';
 import 'util/logger.dart';
 import 'util/logging/console_logger.dart';
+import 'util/logging/logging_wrapper.dart';
 import 'util/logging/simple_logger.dart';
 import 'util/program_runner.dart';
 
@@ -28,6 +32,7 @@ class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [AnalyzeTask] should be enabled.
     @Default(false) bool analyze,
+    @Default(false) bool testImports,
 
     /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
     ///
@@ -73,6 +78,8 @@ abstract class HooksProvider {
       tasks: [
         if (param.format) ref.watch(HooksProviderInternal.formatProvider),
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
+        if (param.testImports)
+          ref.watch(HooksProviderInternal.testImportProvider),
         if (param.outdated != null)
           ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
         if (param.pullUpDependencies)
@@ -164,6 +171,30 @@ abstract class HooksProviderInternal {
       programRunner: ref.watch(programRunnerProvider),
       logger: ref.watch(taskLoggerProvider),
       outdatedLevel: level,
+    ),
+  );
+
+  static final analysisContextCollectionProvider = Provider.family(
+    (ref, String contextRoot) => AnalysisContextCollection(
+      includedPaths: [contextRoot],
+    ),
+  );
+
+  static final loggingWrapperProvider = Provider(
+    (ref) => LoggingWrapper(ref.watch(loggerProvider)),
+  );
+
+  static final testImportLinterProvider = Provider(
+    (ref) => TestImportLinter(ref.watch(loggingWrapperProvider)),
+  );
+
+  static final testImportProvider = Provider(
+    (ref) => TestImportTask(
+      analysisContextCollectionProvider: (entry) => ref.read(
+        analysisContextCollectionProvider(entry.gitRoot.absolute.path),
+      ),
+      logger: ref.watch(loggerProvider),
+      linter: ref.watch(testImportLinterProvider),
     ),
   );
 }

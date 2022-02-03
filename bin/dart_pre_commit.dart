@@ -63,6 +63,12 @@ Future<int> _run(List<String> args) async {
       defaultsTo: true,
       help: 'Run dart analyze to find issue for the staged files.',
     )
+    ..addFlag(
+      'test-imports',
+      abbr: 't',
+      defaultsTo: true,
+      help: 'Runs dart_test_tools TestImportLinter on all staged files.',
+    )
     ..addOption(
       'outdated',
       abbr: 'o',
@@ -177,6 +183,7 @@ Future<int> _run(List<String> args) async {
         HooksConfig(
           format: options['format'] as bool,
           analyze: options['analyze'] as bool,
+          testImports: options['test-imports'] as bool,
           outdated: outdatedLevel == disabledOutdatedLevel
               ? null
               : OutdatedLevel.values.byName(outdatedLevel),

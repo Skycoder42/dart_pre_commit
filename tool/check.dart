@@ -61,6 +61,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
     final logger = di.read(HooksProviderInternal.loggerProvider);
     final tasks = [
       di.read(HooksProviderInternal.formatProvider),
+      di.read(HooksProviderInternal.testImportProvider),
     ];
 
     await for (final repoEntry in this) {
