@@ -40,7 +40,13 @@ Future<void> main() async {
                 equals(exclude.path, entry.path),
           ),
         )
-        .map((entry) => RepoEntry(file: entry, partiallyStaged: false))
+        .map(
+          (entry) => RepoEntry(
+            file: entry,
+            partiallyStaged: false,
+            gitRoot: Directory.current,
+          ),
+        )
         .runFileTasks(di)
         .runRepoTasks(di);
   } catch (e, s) {

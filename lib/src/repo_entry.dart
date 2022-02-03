@@ -14,5 +14,8 @@ class RepoEntry with _$RepoEntry {
 
     /// Specifies, whether the file is partially or fully staged.
     required bool partiallyStaged,
+
+    /// The root folder of the git repository
+    required Directory gitRoot,
   }) = _RepoEntry;
 }

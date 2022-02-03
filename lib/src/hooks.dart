@@ -327,6 +327,7 @@ class Hooks {
       yield RepoEntry(
         file: file,
         partiallyStaged: indexChanges.contains(path),
+        gitRoot: Directory(gitRoot),
       );
     }
   }
