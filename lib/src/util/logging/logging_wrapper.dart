@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logging/logging.dart' as logging;
 
 import '../../../dart_pre_commit.dart';
 
+@internal
 class LoggingWrapperException implements Exception {
   final String message;
 
@@ -13,6 +15,7 @@ class LoggingWrapperException implements Exception {
   String toString() => message;
 }
 
+@internal
 class LoggingWrapper implements logging.Logger {
   final TaskLogger taskLogger;
 

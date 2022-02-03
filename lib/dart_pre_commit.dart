@@ -6,6 +6,7 @@ export 'src/tasks/analyze_task.dart';
 export 'src/tasks/format_task.dart';
 export 'src/tasks/outdated_task.dart';
 export 'src/tasks/pull_up_dependencies_task.dart';
+export 'src/tasks/test_import_task.dart';
 export 'src/util/file_resolver.dart';
 export 'src/util/logger.dart';
 export 'src/util/logging/console_logger.dart';
