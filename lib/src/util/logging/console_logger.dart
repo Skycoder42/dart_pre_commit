@@ -65,16 +65,16 @@ class ConsoleLogger implements Logger {
   }
 
   @override
-  void debug(String message) => _log(LogLevel.debug, message, Color.LIGHT_GRAY);
+  void debug(String message) => _log(LogLevel.debug, message, Color.GREEN);
 
   @override
-  void info(String message) => _log(LogLevel.info, message, Color.BLUE);
+  void info(String message) => _log(LogLevel.info, message, Color.DARK_BLUE);
 
   @override
   void warn(String message) => _log(LogLevel.warn, message, Color.GOLD);
 
   @override
-  void error(String message) => _log(LogLevel.error, message, Color.RED);
+  void error(String message) => _log(LogLevel.error, message, Color.DARK_RED);
 
   @override
   void except(Exception exception, [StackTrace? stackTrace]) => _log(

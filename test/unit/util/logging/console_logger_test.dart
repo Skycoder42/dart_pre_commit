@@ -119,7 +119,7 @@ void main() {
     testWithData<Tuple3<void Function(ConsoleLogger), int, String>>(
       'prints log message',
       [
-        Tuple3((l) => l.debug('debug'), 37, 'debug'),
+        Tuple3((l) => l.debug('debug'), 32, 'debug'),
         Tuple3((l) => l.info('info'), 34, 'info'),
         Tuple3((l) => l.warn('warn'), 33, 'warn'),
         Tuple3((l) => l.error('error'), 31, 'error'),
@@ -150,7 +150,7 @@ void main() {
       sut.debug('debug');
       expect(
         output.toString(),
-        '\n${beginColor(37)}    debug$endColor$newLine${cleanLine('status')}',
+        '\n${beginColor(32)}    debug$endColor$newLine${cleanLine('status')}',
       );
     });
 
