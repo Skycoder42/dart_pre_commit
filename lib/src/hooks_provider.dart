@@ -94,6 +94,10 @@ abstract class HooksProvider {
 abstract class HooksProviderInternal {
   const HooksProviderInternal._();
 
+  /// Defines if ansi color codes are supported.
+  ///
+  /// Is auto-detected by default, but can be overwritten to explicitly enable
+  /// or disable support.
   static bool ansiSupported = stdout.hasTerminal && stdout.supportsAnsiEscapes;
 
   /// A simple provider for [ConsoleLogger] as [Logger]
@@ -106,6 +110,8 @@ abstract class HooksProviderInternal {
     (ref) => SimpleLogger(),
   );
 
+  /// Provides either the [consoleLoggerProvider] or [simpleLoggerProvider],
+  /// depending on what [ansiSupported] returns.
   static Provider<Logger> get loggerProvider =>
       ansiSupported ? consoleLoggerProvider : simpleLoggerProvider;
 
@@ -174,20 +180,27 @@ abstract class HooksProviderInternal {
     ),
   );
 
+  /// A simple provider for [AnalysisContextCollection]s, based on a root path.
   static final analysisContextCollectionProvider = Provider.family(
     (ref, String contextRoot) => AnalysisContextCollection(
       includedPaths: [contextRoot],
     ),
   );
 
+  @internal
   static final loggingWrapperProvider = Provider(
     (ref) => LoggingWrapper(ref.watch(loggerProvider)),
   );
 
+  /// A simple provider for [TestImportLinter].
   static final testImportLinterProvider = Provider(
     (ref) => TestImportLinter(ref.watch(loggingWrapperProvider)),
   );
 
+  /// A simple provider for [TestImportTask].
+  ///
+  /// Uses [analysisContextCollectionProvider], [loggerProvider] and
+  /// [testImportLinterProvider].
   static final testImportProvider = Provider(
     (ref) => TestImportTask(
       analysisContextCollectionProvider: (entry) => ref.read(

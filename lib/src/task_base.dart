@@ -134,7 +134,10 @@ abstract class RepoTask extends TaskBase {
   Future<TaskResult> call(Iterable<RepoEntry> entries);
 }
 
+/// A mixin for [TaskBase] that implements [TaskBase.canProcess] based on a
+/// [filePattern].
 mixin PatternTaskMixin implements TaskBase {
+  /// The pattern that the [RepoEntry.file] is matched against.
   Pattern get filePattern;
 
   @override

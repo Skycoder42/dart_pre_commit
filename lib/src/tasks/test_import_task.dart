@@ -4,18 +4,30 @@ import 'package:path/path.dart';
 
 import '../../dart_pre_commit.dart';
 
+/// A callback the retreives a [AnalysisContextCollection] for a [RepoEntry].
 typedef AnalysisContextCollectionProviderFn = AnalysisContextCollection
     Function(RepoEntry entry);
 
+/// An exception that gets thrown to wrap [FileResult.failure] linter results.
 class TestImportException implements Exception {
+  /// The `error` message of [FileResult.failure].
   final String message;
 
+  /// Default constructor.
   TestImportException(this.message);
 
   @override
   String toString() => message;
 }
 
+/// A task that uses a [TestImportLinter] to check for invalid imports in test
+/// files.
+///
+/// This task analyzes a single file in the `test` directory with the test
+/// import linter. In case an invalid import is found, the task will be
+/// [TaskResult.rejected].
+///
+/// {@category tasks}
 class TestImportTask implements FileTask {
   /// The [AnalysisContextCollectionProviderFn] used by this task.
   final AnalysisContextCollectionProviderFn analysisContextCollectionProvider;
@@ -29,6 +41,7 @@ class TestImportTask implements FileTask {
   @override
   String get taskName => 'test-imports';
 
+  /// Default Constructor.
   const TestImportTask({
     required this.analysisContextCollectionProvider,
     required this.logger,
