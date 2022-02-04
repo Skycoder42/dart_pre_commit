@@ -75,7 +75,7 @@ Future<int> _run(List<String> args) async {
       allowed: OutdatedLevel.values
           .map((e) => e.name)
           .followedBy([disabledOutdatedLevel]),
-      defaultsTo: disabledOutdatedLevel,
+      defaultsTo: OutdatedLevel.any.name,
       help: 'Enables the outdated packages check. You can choose one of the '
           'levels described below to require certain package updates. If they '
           'are not met, the hook will fail. No matter what level, as long as '
@@ -98,6 +98,7 @@ Future<int> _run(List<String> args) async {
     ..addFlag(
       'check-pull-up',
       abbr: 'p',
+      defaultsTo: true,
       help: 'Check if direct dependencies in the pubspec.lock have '
           'higher versions then specified in pubspec.yaml and warn if '
           'that´s the case.',
@@ -171,7 +172,6 @@ Future<int> _run(List<String> args) async {
     }
 
     HooksProviderInternal.ansiSupported = options['ansi'] as bool;
-
     final dir = options['directory'] as String?;
     if (dir != null) {
       Directory.current = dir;

@@ -72,21 +72,35 @@ void main() {
       );
 
   Future<int> _sut(
-    List<String> arguments, {
+    String mode, {
+    List<String>? arguments,
     bool failOnError = true,
-    Function(Stream<List<int>>)? onStdout,
-  }) =>
-      _pub(
-        [
-          'run',
-          '--no-sound-null-safety',
-          'dart_pre_commit',
-          '--no-ansi',
-          ...arguments,
-        ],
-        failOnError: failOnError,
-        onStdout: onStdout,
-      );
+    Function(String)? onStdout,
+  }) {
+    final disableArgs = [
+      '--no-format',
+      '--no-analyze',
+      '--no-test-imports',
+      '--outdated=disabled',
+      '--no-check-pull-up',
+    ];
+    return _pub(
+      [
+        'run',
+        'dart_pre_commit',
+        '--no-ansi',
+        ...disableArgs.where((arg) => !arg.contains(mode)),
+        ...?arguments,
+      ],
+      failOnError: failOnError,
+      onStdout: onStdout != null
+          ? (s) => s
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(onStdout)
+          : null,
+    );
+  }
 
   setUp(() async {
     // create git repo
@@ -115,17 +129,6 @@ dev_dependencies:
     );
 
     await _writeFile(
-      'lib/src/fix_imports.dart',
-      '''
-// this is important
-import 'package:test_project/test_project.dart';
-import 'dart:io';
-import 'package:stuff/stuff.dart';
-
-void main() {}
-''',
-    );
-    await _writeFile(
       'bin/format.dart',
       '''
 import 'package:test_project/test_project.dart';
@@ -143,6 +146,11 @@ void main() {
 }
 ''',
     );
+    await _writeFile('lib/test_project.dart', '');
+    await _writeFile(
+      'test/test.dart',
+      'import "package:test_project/test_project.dart";',
+    );
 
     // init dart
     await _pub(const ['get']);
@@ -154,7 +162,7 @@ void main() {
 
   test('format', () async {
     await _git(const ['add', 'bin/format.dart']);
-    await _sut(const ['--no-analyze']);
+    await _sut('format');
 
     final data = await _readFile('bin/format.dart');
     expect(
@@ -175,12 +183,10 @@ void main() {
 
     final lines = <String>[];
     final code = await _sut(
-      const ['--no-format', '--detailed-exit-code'],
+      'analyze',
+      arguments: const ['--detailed-exit-code'],
       failOnError: false,
-      onStdout: (stream) => stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) => lines.add(line)),
+      onStdout: lines.add,
     );
     expect(
       lines,
@@ -198,17 +204,10 @@ void main() {
 
     final lines = <String>[];
     final code = await _sut(
-      const [
-        '--no-format',
-        '--no-analyze',
-        '--check-pull-up',
-        '--detailed-exit-code',
-      ],
+      'check-pull-up',
+      arguments: const ['--detailed-exit-code'],
       failOnError: false,
-      onStdout: (stream) => stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) => lines.add(line)),
+      onStdout: lines.add,
     );
     expect(code, HookResult.rejected.index);
     expect(lines, contains(startsWith('  [INF]   meta: 1.2.0 -> 1.')));
@@ -217,23 +216,34 @@ void main() {
   test('outdated', () async {
     final lines = <String>[];
     final code = await _sut(
-      const [
-        '--no-format',
-        '--no-analyze',
-        '--outdated=any',
-        '--detailed-exit-code',
-      ],
+      'outdated',
+      arguments: const ['--detailed-exit-code'],
       failOnError: false,
-      onStdout: (stream) => stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((line) => lines.add(line)),
+      onStdout: lines.add,
     );
     expect(code, HookResult.rejected.index);
     expect(
       lines,
       contains(
         startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
+      ),
+    );
+  });
+
+  test('test-imports', () async {
+    final lines = <String>[];
+    await _git(const ['add', 'test/test.dart']);
+    final code = await _sut(
+      'test-imports',
+      arguments: const ['--detailed-exit-code', '-ldebug'],
+      failOnError: false,
+      onStdout: lines.add,
+    );
+    expect(code, HookResult.rejected.index);
+    expect(
+      lines,
+      contains(
+        startsWith('  [ERR] Found self import that is not from src: import '),
       ),
     );
   });
