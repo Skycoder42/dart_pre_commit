@@ -17,6 +17,9 @@ jobs:
       buildRunner: true
       publishExclude: '["lib/src/.gitignore"]'
       unitTestPaths: test/unit
+      coverageExclude: >-
+        "**/*.g.dart"
+        "**/*.freezed.dart"
       integrationTestPaths: test/integration
 
   cd:
