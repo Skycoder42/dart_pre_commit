@@ -53,20 +53,23 @@ class TestImportTask implements FileTask {
     return result.when(
       accepted: (_) => TaskResult.accepted,
       rejected: (reason, resultLocation) {
-        logger.error(reason);
+        logger.error(resultLocation.formatMessage(reason));
         return TaskResult.rejected;
       },
-      skipped: (reason, _) {
-        logger.info(reason);
+      skipped: (reason, resultLocation) {
+        logger.info(resultLocation.formatMessage(reason));
         return TaskResult.accepted;
       },
-      failure: (error, stackTrace, _) {
-        logger.except(TestImportException(error), stackTrace);
+      failure: (error, stackTrace, resultLocation) {
+        logger.except(
+          TestImportException(resultLocation.formatMessage(error)),
+          stackTrace,
+        );
         return TaskResult.rejected;
       },
     );
   }
 
   String _normalizedAbsolutePath(RepoEntry entry) =>
-      normalize(entry.file.absolute.path);
+      normalize(entry.file.absolute.resolveSymbolicLinksSync());
 }

@@ -17,7 +17,10 @@ import '../global_mocks.dart';
 class FakeAnalysisContextCollection extends Fake
     implements AnalysisContextCollection {}
 
-class FakeResultLocation extends Fake implements ResultLocation {}
+class FakeResultLocation extends Fake implements ResultLocation {
+  @override
+  String formatMessage(String message) => message;
+}
 
 abstract class IAnalysisContextCollectionProviderFn {
   AnalysisContextCollection call(RepoEntry repoEntry);
@@ -78,7 +81,7 @@ void main() {
           expect(
             sut.canProcess(
               RepoEntry(
-                file: File(fixture.item1),
+                file: FakeFile(fixture.item1),
                 partiallyStaged: false,
                 gitRoot: Directory.systemTemp,
               ),

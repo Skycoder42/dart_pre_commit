@@ -56,6 +56,7 @@ Future<void> main(List<String> args) async {
         .runRepoTasks(di);
   } catch (e, s) {
     di.read(HooksProviderInternal.loggerProvider).except(e as Exception, s);
+    exitCode = 1;
   } finally {
     di.dispose();
   }
