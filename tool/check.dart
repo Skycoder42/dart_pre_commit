@@ -16,7 +16,12 @@ class TaskRejectedException implements Exception {
       : 'Task ${task.taskName} rejected the repository';
 }
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  if (args.isNotEmpty && args.first == '--hook') {
+    await _setupHook();
+    return;
+  }
+
   final di = ProviderContainer();
   try {
     final excludeEntries = [
@@ -53,6 +58,24 @@ Future<void> main() async {
     di.read(HooksProviderInternal.loggerProvider).except(e as Exception, s);
   } finally {
     di.dispose();
+  }
+}
+
+Future<void> _setupHook() async {
+  final preCommitHook = File('.git/hooks/pre-commit');
+  await preCommitHook.parent.create(recursive: true);
+  await preCommitHook.writeAsString(
+    '''
+#!/bin/bash
+exec dart run tool/check.dart
+''',
+  );
+
+  if (!Platform.isWindows) {
+    final result = await Process.run('chmod', ['a+x', preCommitHook.path]);
+    stdout.write(result.stdout);
+    stderr.write(result.stderr);
+    exitCode = result.exitCode;
   }
 }
 
