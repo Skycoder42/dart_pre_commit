@@ -57,19 +57,25 @@ class ProgramRunner {
   /// This will start [program] with [arguments] and run the process in the
   /// background. The standard output of the process is decoded using the
   /// [utf8.decoder] and streamed line by line. The standard error is forwarded
-  /// to the [logger].
+  /// to the [logger]. If [workingDirectory] is set, the process will be
+  /// launched in that directory. Otherwise it will run in [Directory.current].
   ///
   /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
   /// the program exists with anything but 0.
   Stream<String> stream(
     String program,
     List<String> arguments, {
+    String? workingDirectory,
     bool failOnExit = true,
   }) async* {
     Future<void>? errLog;
     try {
       logger.debug('Streaming: $program ${arguments.join(' ')}');
-      final process = await Process.start(program, arguments);
+      final process = await Process.start(
+        program,
+        arguments,
+        workingDirectory: workingDirectory,
+      );
       errLog = logger.pipeStderr(process.stderr);
       yield* process.stdout
           .transform(utf8.decoder)
@@ -90,18 +96,38 @@ class ProgramRunner {
   ///
   /// This will start [program] with [arguments] and run the process in the
   /// background. The standard output of the process is discarded, as only the
-  /// exit code is needed.The standard error is forwarded to the [logger].
+  /// exit code is needed.The standard error is forwarded to the [logger]. If
+  /// [workingDirectory] is set, the process will be launched in that directory.
+  /// Otherwise it will run in [Directory.current].
+  ///
+  /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
+  /// the program exists with anything but 0.
   Future<int> run(
     String program,
-    List<String> arguments,
-  ) async {
+    List<String> arguments, {
+    String? workingDirectory,
+    bool failOnExit = false,
+  }) async {
     Future<void>? errLog;
     try {
       logger.debug('Running: $program ${arguments.join(' ')}');
-      final process = await Process.start(program, arguments);
+      final process = await Process.start(
+        program,
+        arguments,
+        workingDirectory: workingDirectory,
+      );
       errLog = logger.pipeStderr(process.stderr);
       await process.stdout.drain<void>();
-      return await process.exitCode;
+
+      final exitCode = await process.exitCode;
+      if (failOnExit) {
+        if (exitCode != 0) {
+          throw ProgramExitException(exitCode, program, arguments);
+        }
+        logger.debug('$program finished with exit code: $exitCode');
+      }
+
+      return exitCode;
     } finally {
       await errLog;
     }

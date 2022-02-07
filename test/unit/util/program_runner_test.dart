@@ -16,6 +16,27 @@ void main() {
 
   late ProgramRunner sut;
 
+  TypeMatcher<ProgramExitException> isAProgramException(
+    List<String> args,
+    int exitCode,
+  ) =>
+      isA<ProgramExitException>()
+          .having(
+            (e) => e.exitCode,
+            'exitCode',
+            exitCode,
+          )
+          .having(
+            (e) => e.program,
+            'program',
+            Platform.isWindows ? 'cmd' : 'bash',
+          )
+          .having(
+            (e) => e.arguments,
+            'arguments',
+            Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
+          );
+
   setUpAll(() {
     registerFallbackValue(const Stream<List<int>>.empty());
   });
@@ -30,25 +51,81 @@ void main() {
     );
   });
 
-  Future<int> _run(List<String> args) => Platform.isWindows
-      ? sut.run('cmd', ['/c', ...args])
-      : sut.run('bash', ['-c', ...args]);
+  Future<int> _run(
+    List<String> args, {
+    bool failOnExit = false,
+    String? workingDirectory,
+  }) =>
+      Platform.isWindows
+          ? sut.run(
+              'cmd',
+              ['/c', ...args],
+              failOnExit: failOnExit,
+              workingDirectory: workingDirectory,
+            )
+          : sut.run(
+              'bash',
+              ['-c', ...args],
+              failOnExit: failOnExit,
+              workingDirectory: workingDirectory,
+            );
 
-  Stream<String> _stream(List<String> args) => Platform.isWindows
-      ? sut.stream('cmd', ['/c', ...args])
-      : sut.stream('bash', ['-c', ...args]);
+  Stream<String> _stream(
+    List<String> args, {
+    bool failOnExit = true,
+    String? workingDirectory,
+  }) =>
+      Platform.isWindows
+          ? sut.stream(
+              'cmd',
+              ['/c', ...args],
+              failOnExit: failOnExit,
+              workingDirectory: workingDirectory,
+            )
+          : sut.stream(
+              'bash',
+              ['-c', ...args],
+              failOnExit: failOnExit,
+              workingDirectory: workingDirectory,
+            );
 
-  test('run forwards exit code', () async {
-    final exitCode = await _run(const ['exit 42']);
-    expect(exitCode, 42);
+  group('run', () {
+    test('forwards exit code', () async {
+      final exitCode = await _run(const ['exit 42']);
+      expect(exitCode, 42);
+    });
+
+    test('throws on unexpected exit code if enabled', () async {
+      const args = ['exit 42'];
+      expect(
+        () => _run(args, failOnExit: true),
+        throwsA(isAProgramException(args, 42)),
+      );
+    });
+
+    test('runs in working directory', () async {
+      final exitCode = await _run(
+        Platform.isWindows ? const ['cd'] : const ['pwd'],
+        workingDirectory: Directory.systemTemp.path,
+      );
+      expect(exitCode, 0);
+    });
   });
 
   group('stream', () {
     test('forwards output', () async {
-      final res = await _stream(const [
+      final res = _stream(const [
         'echo a && echo b && echo c',
-      ]).map((e) => e.trim()).toList();
-      expect(res, const ['a', 'b', 'c']);
+      ]);
+      expect(
+        res,
+        emitsInOrder(<dynamic>[
+          startsWith('a'),
+          startsWith('b'),
+          startsWith('c'),
+          emitsDone,
+        ]),
+      );
     });
 
     test('throws error if exit code indicates so', () async {
@@ -57,22 +134,43 @@ void main() {
       ];
       final stream = _stream(args);
       expect(
-        () => stream.last,
-        throwsA(
-          predicate((e) {
-            expect(e, isNotNull);
-            expect(e, isA<ProgramExitException>());
-            // ignore: cast_nullable_to_non_nullable
-            final exception = e as ProgramExitException;
-            expect(exception.exitCode, 1);
-            expect(exception.program, Platform.isWindows ? 'cmd' : 'bash');
-            expect(
-              exception.arguments,
-              Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
-            );
-            return true;
-          }),
-        ),
+        stream,
+        emitsInOrder(<dynamic>[
+          startsWith('a'),
+          startsWith('b'),
+          emitsError(isAProgramException(args, 1)),
+          emitsDone,
+        ]),
+      );
+    });
+
+    test('Does not throw if failOnExit is false', () async {
+      const args = [
+        'echo a && echo b && false',
+      ];
+      final stream = _stream(args, failOnExit: false);
+      expect(
+        stream,
+        emitsInOrder(<dynamic>[
+          startsWith('a'),
+          startsWith('b'),
+          emitsDone,
+        ]),
+      );
+    });
+
+    test('runs in working directory', () {
+      final stream = _stream(
+        Platform.isWindows ? const ['cd'] : const ['pwd'],
+        workingDirectory: Directory.systemTemp.path,
+      );
+
+      expect(
+        stream,
+        emitsInOrder(<dynamic>[
+          Directory.systemTemp.path,
+          emitsDone,
+        ]),
       );
     });
   });
