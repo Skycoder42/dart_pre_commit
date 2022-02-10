@@ -32,6 +32,8 @@ class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [AnalyzeTask] should be enabled.
     @Default(false) bool analyze,
+
+    /// Specifies, whether the [TestImportTask] should be enabled.
     @Default(false) bool testImports,
 
     /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
