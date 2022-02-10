@@ -3,6 +3,7 @@ export 'src/hooks_provider.dart';
 export 'src/repo_entry.dart';
 export 'src/task_base.dart';
 export 'src/tasks/analyze_task.dart';
+export 'src/tasks/flutter_compat_task.dart';
 export 'src/tasks/format_task.dart';
 export 'src/tasks/outdated_task.dart';
 export 'src/tasks/pull_up_dependencies_task.dart';
