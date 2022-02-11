@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:riverpod/riverpod.dart';
 
 const disabledOutdatedLevel = 'disabled';
@@ -32,6 +33,14 @@ Future<int> _run(List<String> args) async {
       abbr: 't',
       defaultsTo: true,
       help: 'Runs dart_test_tools TestImportLinter on all staged files.',
+    )
+    ..addFlag(
+      'flutter-compat',
+      abbr: 'u',
+      defaultsTo: null,
+      help: 'Check if the package can be added to a flutter project without '
+          'breaking the flutter dependency constraints. This task is run by '
+          'default only if the current package is not a flutter package.',
     )
     ..addOption(
       'outdated',
@@ -131,7 +140,7 @@ Future<int> _run(List<String> args) async {
   try {
     final options = parser.parse(args);
     if (options['help'] as bool) {
-      stdout.write(parser.usage);
+      stdout.writeln(parser.usage);
       return 0;
     }
 
@@ -142,7 +151,7 @@ Future<int> _run(List<String> args) async {
     }
 
     final outdatedLevel = options['outdated'] as String;
-    final hooks = await di.read(
+    final hooks = di.read(
       HooksProvider.hookProvider(
         HooksConfig(
           format: options['format'] as bool,
@@ -152,9 +161,11 @@ Future<int> _run(List<String> args) async {
               ? null
               : OutdatedLevel.values.byName(outdatedLevel),
           pullUpDependencies: options['check-pull-up'] as bool,
+          flutterCompat:
+              options['flutter-compat'] as bool? ?? !(await _isFlutter(di)),
           continueOnRejected: options['continue-on-rejected'] as bool,
         ),
-      ).future,
+      ),
     );
     hooks.logger.logLevel = LogLevel.values.byName(
       options['log-level'] as String,
@@ -177,4 +188,19 @@ Future<int> _run(List<String> args) async {
   } finally {
     di.dispose();
   }
+}
+
+Future<bool> _isFlutter(ProviderContainer di) async {
+  final pubspecFile = File('pubspec.yaml');
+  if (!await pubspecFile.exists()) {
+    di
+        .read(HooksProviderInternal.loggerProvider)
+        .warn('No pubspec.yaml file in ${Directory.current.path}');
+    return false;
+  }
+
+  final pubspecString = await pubspecFile.readAsString();
+  final pubspec = Pubspec.parse(pubspecString, sourceUrl: pubspecFile.uri);
+
+  return pubspec.dependencies.containsKey('flutter');
 }

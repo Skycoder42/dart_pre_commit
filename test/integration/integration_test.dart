@@ -81,6 +81,7 @@ void main() {
       '--no-format',
       '--no-analyze',
       '--no-test-imports',
+      '--no-flutter-compat',
       '--outdated=disabled',
       '--no-check-pull-up',
     ];
@@ -197,6 +198,23 @@ void main() {
       ),
     );
     expect(code, HookResult.rejected.index);
+  });
+
+  test('flutter-compat', () async {
+    await _git(const ['add', 'pubspec.yaml']);
+
+    final lines = <String>[];
+    final code = await _sut(
+      'flutter-compat',
+      onStdout: lines.add,
+    );
+    expect(code, HookResult.clean.index);
+    expect(
+      lines,
+      contains(
+        startsWith('  [INF] Package test_project is flutter compatible'),
+      ),
+    );
   });
 
   test('check-pull-up', () async {

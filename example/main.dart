@@ -11,13 +11,12 @@ Future<void> main(List<String> arguments) async {
   final container = ProviderContainer();
 
   // obtain the hooks instance from the IoC with your custom config
-  final hook = await container.read(
+  final hook = container.read(
     HooksProvider.hookProvider(
       const HooksConfig(
-        // ignore: avoid_redundant_argument_values
         analyze: false,
       ),
-    ).future,
+    ),
   );
 
   // alternatively, you can instanciate Hooks directly:

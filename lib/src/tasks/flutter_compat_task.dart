@@ -4,10 +4,6 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../../dart_pre_commit.dart';
 
-/// A factory method that can create a [Pubspec] from a source [yaml] string.
-/// Optionally, a [sourceUrl] can be provided for better error messages.
-typedef PubspecParseFactory = Pubspec Function(String yaml, {Uri? sourceUrl});
-
 /// A task that checks if the package can be added to a flutter project.
 ///
 /// Flutter hardcodes certain package versions in their SDK, making any package
@@ -25,16 +21,10 @@ class FlutterCompatTask implements RepoTask {
   /// The [TaskLogger] instance used by this task.
   final TaskLogger taskLogger;
 
-  /// The [PubspecParseFactory] instance used by this task.
-  ///
-  /// Typically, this is just [Pubspec.parse].
-  final PubspecParseFactory pubspecParseFactory;
-
   /// Default Constructor.
   const FlutterCompatTask({
     required this.programRunner,
     required this.taskLogger,
-    required this.pubspecParseFactory,
   });
 
   @override
@@ -50,7 +40,7 @@ class FlutterCompatTask implements RepoTask {
     }
 
     // only run if not already a flutter project
-    final pubspec = pubspecParseFactory(
+    final pubspec = Pubspec.parse(
       entry.file.readAsStringSync(),
       sourceUrl: entry.file.uri,
     );
@@ -60,7 +50,7 @@ class FlutterCompatTask implements RepoTask {
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     for (final entry in entries) {
-      final pubspec = pubspecParseFactory(
+      final pubspec = Pubspec.parse(
         await entry.file.readAsString(),
         sourceUrl: entry.file.uri,
       );
@@ -80,7 +70,7 @@ class FlutterCompatTask implements RepoTask {
             'add',
             pubspec.name,
             '--path',
-            entry.file.parent.path,
+            entry.file.parent.absolute.path,
           ],
           workingDirectory: tmpDir.path,
         );
@@ -92,6 +82,8 @@ class FlutterCompatTask implements RepoTask {
           );
           return TaskResult.rejected;
         }
+
+        taskLogger.info('Package ${pubspec.name} is flutter compatible');
       } finally {
         await tmpDir.delete(recursive: true);
       }

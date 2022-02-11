@@ -45,9 +45,13 @@ Future<void> main(List<String> args) async {
                 equals(exclude.path, entry.path),
           ),
         )
-        .map(
-          (entry) => RepoEntry(
-            file: entry,
+        .asyncMap(
+          (entry) async => RepoEntry(
+            file: File(
+              await di
+                  .read(HooksProviderInternal.fileResolverProvider)
+                  .resolve(entry.path, Directory.current),
+            ),
             partiallyStaged: false,
             gitRoot: Directory.current,
           ),
@@ -110,6 +114,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
     final logger = di.read(HooksProviderInternal.loggerProvider);
     final tasks = <RepoTask>[
       di.read(HooksProviderInternal.analyzeProvider),
+      di.read(HooksProviderInternal.flutterCompatProvider),
       di.read(HooksProviderInternal.outdatedProvider(OutdatedLevel.any)),
       di.read(HooksProviderInternal.pullUpDependenciesProvider),
     ];

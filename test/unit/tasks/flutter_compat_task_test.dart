@@ -7,7 +7,6 @@ import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
@@ -24,22 +23,18 @@ class FakeDirectory extends Fake implements Directory {
   @override
   final String path;
 
+  @override
+  Directory get absolute => FakeDirectory(path);
+
   FakeDirectory(this.path);
 }
 
 class MockRepoEntry extends Mock implements RepoEntry {}
 
-abstract class IPubspecParseFactory {
-  Pubspec call(String yaml, {Uri? sourceUrl, bool lenient});
-}
-
-class MockPubspecParseFactory extends Mock implements IPubspecParseFactory {}
-
 void main() {
   group('FlutterCompatTask', () {
     final mockProgramRunner = MockProgramRunner();
     final mockTaskLogger = MockTaskLogger();
-    final mockPubspecParseFactory = MockPubspecParseFactory();
     final mockFile = MockFile();
     final mockRepoEntry = MockRepoEntry();
 
@@ -48,7 +43,6 @@ void main() {
     setUp(() {
       reset(mockProgramRunner);
       reset(mockTaskLogger);
-      reset(mockPubspecParseFactory);
       reset(mockFile);
       reset(mockRepoEntry);
 
@@ -57,7 +51,6 @@ void main() {
       sut = FlutterCompatTask(
         programRunner: mockProgramRunner,
         taskLogger: mockTaskLogger,
-        pubspecParseFactory: mockPubspecParseFactory,
       );
     });
 
@@ -84,20 +77,12 @@ void main() {
         (fixture) {
           when(() => mockFile.path).thenReturn('pubspec.yaml');
           when(() => mockFile.uri).thenReturn(Uri.file('pubspec.yaml'));
-          when(() => mockFile.readAsStringSync()).thenReturn('pubspec-yaml');
-          when(
-            () => mockPubspecParseFactory.call(
-              any(),
-              sourceUrl: any(named: 'sourceUrl'),
-              lenient: any(named: 'lenient'),
-            ),
-          ).thenReturn(
-            Pubspec(
-              'name',
-              dependencies: {
-                fixture.item1: HostedDependency(),
-              },
-            ),
+          when(() => mockFile.readAsStringSync()).thenReturn(
+            '''
+name: name
+dependencies:
+  ${fixture.item1}: null
+''',
           );
 
           expect(sut.canProcess(mockRepoEntry), fixture.item2);
@@ -106,10 +91,6 @@ void main() {
             () => mockFile.path,
             () => mockFile.readAsStringSync(),
             () => mockFile.uri,
-            () => mockPubspecParseFactory.call(
-                  'pubspec-yaml',
-                  sourceUrl: Uri.file('pubspec.yaml'),
-                ),
           ]);
         },
       );
@@ -117,8 +98,8 @@ void main() {
 
     group('call', () {
       final testUri = Uri.file('pubspec.yaml');
-      const testContent = 'pubspec-yaml';
       const dependencyName = 'test_project';
+      const testContent = 'name: $dependencyName\n';
       const dependencyPath = '/path/to/project';
 
       Matcher isSystemTempDir() =>
@@ -128,12 +109,6 @@ void main() {
         when(() => mockFile.uri).thenReturn(testUri);
         when(() => mockFile.readAsString())
             .thenAnswer((i) async => testContent);
-        when(
-          () => mockPubspecParseFactory.call(
-            any(),
-            sourceUrl: any(named: 'sourceUrl'),
-          ),
-        ).thenReturn(Pubspec(dependencyName));
         when(() => mockFile.parent).thenReturn(FakeDirectory(dependencyPath));
         when(
           () => mockProgramRunner.run(

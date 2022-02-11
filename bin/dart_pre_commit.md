@@ -15,6 +15,7 @@ available options, organized into the same groups as shown when running
 `-f`, `--[no-]format`               | on         | Format staged files with dart format.
 `-t`, `--[no-]test-imports`         | on         | Runs dart_test_tools TestImportLinter on all staged files.
 `-a`, `--[no-]analyze`              | on         | Run dart analyze to find issue for the staged files.
+`-u`, `--[no-]flutter-compat`       | on         | Check if the package can be added to a flutter project without breaking the flutter dependency constraints. This task is run by default only if the current package is not a flutter package.
 `-o`, `--outdated=<level>`          | `any`      | Enables the outdated packages check. You can choose one of the levels described below to require certain package updates. If they are not met, the hook will fail. No matter what level, as long as it is not disabled - which will completly disable the hook - it will still print available package updates without failing. Can be any of [OutdatedLevel].
 `-p`, `--[no-]check-pull-up`        | on         | Check if direct dependencies in the pubspec.lock have higher versions then specified in pubspec.yaml and warn if that's the case.
 `-c`, `--[no-]continue-on-rejected` | off        | Continue checks even if a task rejects a certain file. The whole hook will still exit with rejected, but only after all files have been processed.

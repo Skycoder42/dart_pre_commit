@@ -9,6 +9,7 @@ import 'package:riverpod/riverpod.dart';
 import 'hooks.dart';
 import 'task_base.dart';
 import 'tasks/analyze_task.dart';
+import 'tasks/flutter_compat_task.dart';
 import 'tasks/format_task.dart';
 import 'tasks/outdated_task.dart';
 import 'tasks/pull_up_dependencies_task.dart';
@@ -35,6 +36,9 @@ class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [TestImportTask] should be enabled.
     @Default(false) bool testImports,
+
+    /// Specifies, whether the [FlutterCompatTask] should be enabled.
+    @Default(false) bool flutterCompat,
 
     /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
     ///
@@ -71,8 +75,8 @@ abstract class HooksProvider {
   ///
   /// Makes use of [HooksProviderInternal] to get all the required parameters
   /// and tasks for the hooks instance.
-  static final hookProvider = FutureProvider.family(
-    (ref, HooksConfig param) async => Hooks(
+  static final hookProvider = Provider.family(
+    (ref, HooksConfig param) => Hooks(
       logger: ref.watch(HooksProviderInternal.loggerProvider),
       fileResolver: ref.watch(HooksProviderInternal.fileResolverProvider),
       programRunner: ref.watch(HooksProviderInternal.programRunnerProvider),
@@ -82,6 +86,8 @@ abstract class HooksProvider {
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
         if (param.testImports)
           ref.watch(HooksProviderInternal.testImportProvider),
+        if (param.flutterCompat)
+          ref.watch(HooksProviderInternal.flutterCompatProvider),
         if (param.outdated != null)
           ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
         if (param.pullUpDependencies)
@@ -191,7 +197,7 @@ abstract class HooksProviderInternal {
 
   @internal
   static final loggingWrapperProvider = Provider(
-    (ref) => LoggingWrapper(ref.watch(loggerProvider)),
+    (ref) => LoggingWrapper(ref.watch(taskLoggerProvider)),
   );
 
   /// A simple provider for [TestImportLinter].
@@ -201,15 +207,26 @@ abstract class HooksProviderInternal {
 
   /// A simple provider for [TestImportTask].
   ///
-  /// Uses [analysisContextCollectionProvider], [loggerProvider] and
+  /// Uses [analysisContextCollectionProvider], [taskLoggerProvider] and
   /// [testImportLinterProvider].
   static final testImportProvider = Provider(
     (ref) => TestImportTask(
       analysisContextCollectionProvider: (entry) => ref.read(
         analysisContextCollectionProvider(entry.gitRoot.absolute.path),
       ),
-      logger: ref.watch(loggerProvider),
+      logger: ref.watch(taskLoggerProvider),
       linter: ref.watch(testImportLinterProvider),
+    ),
+  );
+
+  /// A simple provider for [FlutterCompatTask].
+  ///
+  /// Uses [programRunnerProvider], [taskLoggerProvider] and
+  /// [pubspecParseFactoryProvider].
+  static final flutterCompatProvider = Provider(
+    (ref) => FlutterCompatTask(
+      programRunner: ref.watch(programRunnerProvider),
+      taskLogger: ref.watch(taskLoggerProvider),
     ),
   );
 }
