@@ -159,7 +159,7 @@ void main() {
       );
     });
 
-    test('runs in working directory', () {
+    test('runs in working directory', () async {
       final stream = _stream(
         Platform.isWindows ? const ['cd'] : const ['pwd'],
         workingDirectory: Directory.systemTemp.path,
@@ -168,7 +168,7 @@ void main() {
       expect(
         stream,
         emitsInOrder(<dynamic>[
-          Directory.systemTemp.path,
+          await Directory.systemTemp.resolveSymbolicLinks(),
           emitsDone,
         ]),
       );
