@@ -221,8 +221,7 @@ abstract class HooksProviderInternal {
 
   /// A simple provider for [FlutterCompatTask].
   ///
-  /// Uses [programRunnerProvider], [taskLoggerProvider] and
-  /// [pubspecParseFactoryProvider].
+  /// Uses [programRunnerProvider], [taskLoggerProvider].
   static final flutterCompatProvider = Provider(
     (ref) => FlutterCompatTask(
       programRunner: ref.watch(programRunnerProvider),

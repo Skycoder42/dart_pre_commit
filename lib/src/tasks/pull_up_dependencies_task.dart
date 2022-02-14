@@ -1,11 +1,13 @@
+import 'package:checked_yaml/checked_yaml.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:yaml/yaml.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
+import 'models/pull_up_dependencies/pubspec_lock.dart';
 
 /// This task scans the lockfile to check if dependencies should be pulled up.
 ///
@@ -73,27 +75,35 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
     }
 
     final lockFile = fileResolver.file('pubspec.lock');
-    final pubspecLock = loadYaml(await lockFile.readAsString()) as YamlMap?;
+    final pubspecLock = checkedYamlDecode(
+      await lockFile.readAsString(),
+      (yaml) => PubspecLock.fromJson(Map<String, dynamic>.from(yaml!)),
+      sourceUrl: lockFile.uri,
+      allowNull: false,
+    );
     final resolvedVersions = _resolveLockVersions(pubspecLock);
 
     final pubspecFile = fileResolver.file('pubspec.yaml');
-    final pubspecYaml = loadYaml(await pubspecFile.readAsString()) as YamlMap?;
+    final pubspec = Pubspec.parse(
+      await pubspecFile.readAsString(),
+      sourceUrl: pubspecFile.uri,
+    );
     var updateCnt = _pullUpVersions(
-      pubspecYaml?['dependencies'] as YamlMap?,
+      pubspec.dependencies,
       resolvedVersions,
     );
     updateCnt += _pullUpVersions(
-      pubspecYaml?['dev_dependencies'] as YamlMap?,
+      pubspec.devDependencies,
       resolvedVersions,
     );
 
     if (updateCnt > 0) {
       logger.info(
-        '$updateCnt dependencies can be pulled up to newer versions!',
+        '=> $updateCnt dependencies can be pulled up to newer versions!',
       );
       return TaskResult.rejected;
     } else {
-      logger.debug('All dependencies are up to date');
+      logger.debug('=> All dependencies are up to date');
       return TaskResult.accepted;
     }
   }
@@ -115,53 +125,41 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
     }
   }
 
-  Map<String, Version> _resolveLockVersions(YamlMap? pubspecLock) {
+  Map<String, Version> _resolveLockVersions(PubspecLock pubspecLock) {
     final result = <String, Version>{};
 
-    final packages = pubspecLock?['packages'] as YamlMap?;
-    if (packages == null) {
-      return {};
-    }
-
-    for (final package in packages.entries) {
-      final name = package.key as String;
-      final dependency = package.value as YamlMap?;
-      final type = dependency?['dependency'] as String?;
-      final version = dependency?['version'] as String?;
-      if (version != null && type != null && type != 'transitive') {
-        result[name] = Version.parse(version);
+    for (final package in pubspecLock.packages.entries) {
+      if (package.value.dependency != 'transitive') {
+        result[package.key] = package.value.version;
       }
     }
 
     return result;
   }
 
-  int _pullUpVersions(YamlMap? node, Map<String, Version> resolvedVersions) {
-    if (node == null) {
-      return 0;
-    }
-
+  int _pullUpVersions(
+    Map<String, Dependency> node,
+    Map<String, Version> resolvedVersions,
+  ) {
     var updateCtr = 0;
     for (final entry in node.entries) {
-      if (entry.value is String) {
-        final versionString = entry.value as String?;
-        if (versionString?.startsWith('^') ?? false) {
-          final currentVersion = Version.parse(versionString!.substring(1));
+      final dependency = entry.value;
+      if (dependency is HostedDependency) {
+        final versionConstraint = dependency.version;
+        if (versionConstraint is VersionRange) {
           final resolvedVersion = resolvedVersions[entry.key];
+          final minVersion = versionConstraint.min;
           if (_checkValidRelease(resolvedVersion) &&
-              resolvedVersion! > currentVersion) {
+              minVersion != null &&
+              resolvedVersion! > minVersion) {
             ++updateCtr;
-            logger.info('  ${entry.key}: $currentVersion -> $resolvedVersion');
+            logger.info('${entry.key}: $versionConstraint -> $resolvedVersion');
           } else {
-            logger.debug(
-              '  ${entry.key}: $currentVersion OK',
-            );
+            logger.debug('${entry.key}: $versionConstraint OK');
           }
-        } else {
-          logger.debug(
-            '  ${entry.key}: $versionString skipped',
-          );
         }
+      } else {
+        logger.debug('${entry.key}: Skipping non hosted package');
       }
     }
     return updateCtr;

@@ -12,7 +12,10 @@ import 'package:tuple/tuple.dart';
 import '../../test_with_data.dart';
 import '../global_mocks.dart';
 
-class MockFile extends Mock implements File {}
+class MockFile extends Mock implements File {
+  @override
+  Uri get uri => Uri();
+}
 
 class MockTaskLogger extends Mock implements TaskLogger {}
 
@@ -67,8 +70,7 @@ void main() {
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
-dependencies:
-dev_dependencies:
+name: pull_up
 ''',
         );
         return res;
@@ -98,7 +100,7 @@ packages:
       );
       verifyInOrder([
         () => mockLogger.debug('pubspec.lock is ignored'),
-        () => mockLogger.debug('All dependencies are up to date'),
+        () => mockLogger.debug('=> All dependencies are up to date'),
       ]);
       verifyNever(() => mockLogger.info(any()));
     });
@@ -118,7 +120,7 @@ packages:
       verifyInOrder([
         () =>
             mockLogger.debug('pubspec.lock is not ignored, checking if staged'),
-        () => mockLogger.debug('All dependencies are up to date')
+        () => mockLogger.debug('=> All dependencies are up to date')
       ]);
       verifyNever(() => mockLogger.info(any()));
     });
@@ -154,6 +156,7 @@ packages:
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
+name: pull_up
 dependencies:
   a: ^1.0.0
   b: ^1.0.0
@@ -196,10 +199,10 @@ packages:
       final result = await sut([]);
       expect(result, TaskResult.rejected);
       verifyInOrder([
-        () => mockLogger.info('  b: 1.0.0 -> 1.0.1'),
-        () => mockLogger.info('  d: 1.0.0 -> 1.1.0'),
+        () => mockLogger.info('b: ^1.0.0 -> 1.0.1'),
+        () => mockLogger.info('d: ^1.0.0 -> 1.1.0'),
         () => mockLogger
-            .info('2 dependencies can be pulled up to newer versions!'),
+            .info('=> 2 dependencies can be pulled up to newer versions!'),
       ]);
       verifyNever(() => mockLogger.info(any()));
     });
@@ -209,6 +212,7 @@ packages:
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
+name: pull_up
 dependencies:
   a: ^1.0.0
   b: 1.0.0
@@ -229,13 +233,13 @@ packages:
     version: '1.0.0'
     dependency: 'direct'
   b:
-    version: '1.0.1'
+    version: '1.0.0'
     dependency: 'direct'
   c:
     version: '1.1.0'
     dependency: 'direct'
   d:
-    version: '1.1.0'
+    version: '1.0.0'
     dependency: 'direct'
   e:
     version: '1.0.0'
@@ -250,7 +254,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(() => mockLogger.debug('All dependencies are up to date'));
+      verify(() => mockLogger.debug('=> All dependencies are up to date'));
       verifyNever(() => mockLogger.info(any()));
     });
 
@@ -259,6 +263,7 @@ packages:
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
+name: pull_up
 dependencies:
   a: ^1.0.0
 ''',
@@ -278,7 +283,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(() => mockLogger.debug('All dependencies are up to date'));
+      verify(() => mockLogger.debug('=> All dependencies are up to date'));
       verifyNever(() => mockLogger.info(any()));
     });
 
@@ -287,6 +292,7 @@ packages:
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
+name: pull_up
 dependencies:
   a: ^1.0.0
 ''',
@@ -309,7 +315,7 @@ packages:
 
       final result = await sut([]);
       expect(result, TaskResult.accepted);
-      verify(() => mockLogger.debug('All dependencies are up to date'));
+      verify(() => mockLogger.debug('=> All dependencies are up to date'));
       verifyNever(() => mockLogger.info(any()));
     });
 
@@ -318,6 +324,7 @@ packages:
         final res = MockFile();
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
+name: pull_up
 dependencies:
   a: ^1.0.0
 ''',
@@ -341,9 +348,9 @@ packages:
       final result = await sut([]);
       expect(result, TaskResult.rejected);
       verifyInOrder([
-        () => mockLogger.info('  a: 1.0.0 -> 1.2.0-nullsafety.0'),
+        () => mockLogger.info('a: ^1.0.0 -> 1.2.0-nullsafety.0'),
         () => mockLogger
-            .info('1 dependencies can be pulled up to newer versions!'),
+            .info('=> 1 dependencies can be pulled up to newer versions!'),
       ]);
       verifyNever(() => mockLogger.info(any()));
     });

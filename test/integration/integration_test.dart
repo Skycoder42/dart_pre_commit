@@ -228,7 +228,7 @@ void main() {
       onStdout: lines.add,
     );
     expect(code, HookResult.rejected.index);
-    expect(lines, contains(startsWith('  [INF]   meta: 1.2.0 -> 1.')));
+    expect(lines, contains(startsWith('  [INF] meta: ^1.2.0 -> 1.')));
   });
 
   test('outdated', () async {
