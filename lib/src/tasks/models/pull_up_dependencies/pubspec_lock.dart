@@ -5,6 +5,7 @@ import 'package.dart';
 part 'pubspec_lock.freezed.dart';
 part 'pubspec_lock.g.dart';
 
+@internal
 @freezed
 class PubspecLock with _$PubspecLock {
   // ignore: invalid_annotation_target

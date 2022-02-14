@@ -4,6 +4,7 @@ import 'package:pub_semver/pub_semver.dart';
 part 'package.freezed.dart';
 part 'package.g.dart';
 
+@internal
 @freezed
 class Package with _$Package {
   // ignore: invalid_annotation_target
