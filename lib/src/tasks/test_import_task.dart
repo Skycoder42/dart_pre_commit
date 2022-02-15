@@ -16,8 +16,10 @@ class TestImportException implements Exception {
   /// Default constructor.
   TestImportException(this.message);
 
+  // coverage:ignore-start
   @override
   String toString() => message;
+  // coverage:ignore-end
 }
 
 /// A task that uses a [TestImportLinter] to check for invalid imports in test

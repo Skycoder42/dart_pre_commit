@@ -11,8 +11,10 @@ class LoggingWrapperException implements Exception {
 
   LoggingWrapperException(this.message);
 
+  // coverage:ignore-start
   @override
   String toString() => message;
+  // coverage:ignore-end
 }
 
 @internal

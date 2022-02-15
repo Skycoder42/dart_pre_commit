@@ -159,20 +159,26 @@ void main() {
       );
     });
 
-    test('runs in working directory', () async {
-      final stream = _stream(
-        Platform.isWindows ? const ['cd'] : const ['pwd'],
-        workingDirectory: Directory.systemTemp.path,
-      );
+    test(
+      'runs in working directory',
+      () async {
+        final stream = _stream(
+          Platform.isWindows ? const ['cd'] : const ['pwd'],
+          workingDirectory: Directory.systemTemp.path,
+        );
 
-      expect(
-        stream,
-        emitsInOrder(<dynamic>[
-          await Directory.systemTemp.resolveSymbolicLinks(),
-          emitsDone,
-        ]),
-      );
-    });
+        expect(
+          stream,
+          emitsInOrder(<dynamic>[
+            if (Platform.isMacOS)
+              await Directory.systemTemp.resolveSymbolicLinks()
+            else
+              Directory.systemTemp,
+            emitsDone,
+          ]),
+        );
+      },
+    );
   });
 
   testWithData<Tuple2<ProgramExitException, String>>(
