@@ -35,3 +35,7 @@ dev_dependencies:
 
 executables:
   dart_pre_commit: dart_pre_commit
+
+dart_pre_commit:
+  allow_outdated:
+    - path

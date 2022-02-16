@@ -2,5 +2,5 @@ include: package:dart_test_tools/analysis_options_package.yaml
 
 analyzer:
   exclude:
-    - "**/*.g.dart"
-    - "**/*.freezed.dart"
+    - "**.freezed.dart"
+    - "**.g.dart"
