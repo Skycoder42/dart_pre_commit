@@ -5,10 +5,13 @@ import 'package:logging/logging.dart' as logging;
 
 import '../../../dart_pre_commit.dart';
 
+/// @nodoc
 @internal
 class LoggingWrapperException implements Exception {
+  /// @nodoc
   final String message;
 
+  /// @nodoc
   LoggingWrapperException(this.message);
 
   // coverage:ignore-start
@@ -17,10 +20,13 @@ class LoggingWrapperException implements Exception {
   // coverage:ignore-end
 }
 
+/// @nodoc
 @internal
 class LoggingWrapper implements logging.Logger {
+  /// @nodoc
   final TaskLogger taskLogger;
 
+  /// @nodoc
   const LoggingWrapper(this.taskLogger);
 
   @override

@@ -4,9 +4,11 @@ import 'package:pub_semver/pub_semver.dart';
 part 'package.freezed.dart';
 part 'package.g.dart';
 
+/// @nodoc
 @internal
 @freezed
 class Package with _$Package {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -23,6 +25,7 @@ class Package with _$Package {
         required Version version,
   }) = _Package;
 
+  /// @nodoc
   factory Package.fromJson(Map<String, dynamic> json) =>
       _$PackageFromJson(json);
 

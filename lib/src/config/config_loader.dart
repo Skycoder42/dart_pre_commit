@@ -6,13 +6,19 @@ import '../util/file_resolver.dart';
 import 'config.dart';
 import 'pubspec_stub.dart';
 
+/// A helper class that extracts the [Config] for the pre commit hooks from
+/// the pubspec.yaml or any other yaml file.
 class ConfigLoader {
+  /// The [FileResolver] instance used by the loader.
   final FileResolver fileResolver;
 
+  /// Default constructor
   const ConfigLoader({
     required this.fileResolver,
   });
 
+  /// Loads the [Config] from the given [pubspecFile]. If none is specified,
+  /// the default `pubspec.yaml` in the current directory is used.
   Future<Config> loadConfig([File? pubspecFile]) async {
     final configFile = pubspecFile ?? fileResolver.file('pubspec.yaml');
     final configYaml = await configFile.readAsString();

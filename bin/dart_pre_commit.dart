@@ -91,6 +91,13 @@ Future<int> _run(List<String> args) async {
           'in the current working directory.',
       valueHelp: 'dir',
     )
+    ..addOption(
+      'config-path',
+      abbr: 'n',
+      help: 'Use the specified config for configuring the tool instead of '
+          'loading the config from the pubspec.yaml.',
+      valueHelp: 'path',
+    )
     ..addFlag(
       'detailed-exit-code',
       abbr: 'e',
@@ -117,7 +124,7 @@ Future<int> _run(List<String> args) async {
     )
     ..addFlag(
       'ansi',
-      defaultsTo: HooksProviderInternal.ansiSupported,
+      defaultsTo: di.read(HooksProviderInternal.ansiSupportedProvider),
       help: 'When enabled, a rich, ANSI-backed output is used. If disabled, '
           'a simple logger is used, which is optimized for logging to files. '
           'The mode is auto-detected, but might not detect all terminals '
@@ -144,11 +151,17 @@ Future<int> _run(List<String> args) async {
       return 0;
     }
 
-    HooksProviderInternal.ansiSupported = options['ansi'] as bool;
     final dir = options['directory'] as String?;
     if (dir != null) {
       Directory.current = dir;
     }
+
+    di.read(HooksProviderInternal.ansiSupportedProvider.notifier).state =
+        options['ansi'] as bool;
+    di.read(HooksProviderInternal.configFilePathProvider.notifier).state =
+        options.options.contains('config-path')
+            ? File(options['config-path'] as String)
+            : null;
 
     final outdatedLevel = options['outdated'] as String;
     final hooks = di.read(

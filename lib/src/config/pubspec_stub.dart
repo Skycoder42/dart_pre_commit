@@ -5,9 +5,11 @@ import 'config.dart';
 part 'pubspec_stub.freezed.dart';
 part 'pubspec_stub.g.dart';
 
+/// @nodoc
 @freezed
 @internal
 class PubspecStub with _$PubspecStub {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -19,6 +21,7 @@ class PubspecStub with _$PubspecStub {
     @JsonKey(name: 'dart_pre_commit') @Default(Config()) Config dartPreCommit,
   }) = _PubspecStub;
 
+  /// @nodoc
   factory PubspecStub.fromJson(Map<String, dynamic> json) =>
       _$PubspecStubFromJson(json);
 }

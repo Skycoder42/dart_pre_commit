@@ -4,3 +4,7 @@ analyzer:
   exclude:
     - "**.freezed.dart"
     - "**.g.dart"
+
+linter:
+  rules:
+    - public_member_api_docs

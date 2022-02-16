@@ -24,6 +24,7 @@ available options, organized into the same groups as shown when running
  Option                           | Default             | Description
 ----------------------------------|---------------------|-------------
 `-d`, `--directory=<dir>`         | `Directory.current` | Set the directory to run this command in. By default, it will run in the current working directory.
+`-n`, `--config-path=<path>`      | *unset*             | Use the specified config for configuring the tool instead of loading the config from the pubspec.yaml.
 `-e`, `--[no-]detailed-exit-code` | off                 | Instead of simply 0/1 as exit code for 'commit ok' or 'commit needs user intervention', output exit codes according to the full hook result (See [HookResult]).
 `-l`, `--log-level=<level>`       | `info`              | Specify the logging level for task logs. This only affects log details of tasks, not the status update message. Can be any of [LogLevel].
 `--[no-]ansi`                     | auto-detected       | When enabled, a rich, ANSI-backed output is used. If disabled, a simple logger is used, which is optimized for logging to files. The mode is auto-detected, but might not detect all terminals correctly. In this case, you can use this option to set it exlicitly.

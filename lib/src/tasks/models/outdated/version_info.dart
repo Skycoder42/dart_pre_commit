@@ -4,9 +4,11 @@ import 'package:pub_semver/pub_semver.dart';
 part 'version_info.freezed.dart';
 part 'version_info.g.dart';
 
+/// @nodoc
 @freezed
 @internal
 class VersionInfo with _$VersionInfo {
+  /// @nodoc
   const factory VersionInfo({
     // ignore: invalid_annotation_target
     @JsonKey(
@@ -17,6 +19,7 @@ class VersionInfo with _$VersionInfo {
     bool? nullSafety,
   }) = _VersionInfo;
 
+  /// @nodoc
   factory VersionInfo.fromJson(Map<String, dynamic> json) =>
       _$VersionInfoFromJson(json);
 

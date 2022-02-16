@@ -6,6 +6,8 @@ import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 
+import 'config/config.dart';
+import 'config/config_loader.dart';
 import 'hooks.dart';
 import 'task_base.dart';
 import 'tasks/analyze_task.dart';
@@ -106,7 +108,16 @@ abstract class HooksProviderInternal {
   ///
   /// Is auto-detected by default, but can be overwritten to explicitly enable
   /// or disable support.
-  static bool ansiSupported = stdout.hasTerminal && stdout.supportsAnsiEscapes;
+  static final ansiSupportedProvider = StateProvider(
+    (ref) => stdout.hasTerminal && stdout.supportsAnsiEscapes,
+  );
+
+  /// The path to the configuration file that use used to load a [Config].
+  ///
+  /// This path is used by the [configLoaderProvider] to resolve the
+  /// configuration. By default it is `null`, so the standard `pubspec.yaml`
+  /// will be used. However, it can be set to a custom path.
+  static final configFilePathProvider = StateProvider<File?>((ref) => null);
 
   /// A simple provider for [ConsoleLogger] as [Logger]
   static final consoleLoggerProvider = Provider<Logger>(
@@ -119,9 +130,12 @@ abstract class HooksProviderInternal {
   );
 
   /// Provides either the [consoleLoggerProvider] or [simpleLoggerProvider],
-  /// depending on what [ansiSupported] returns.
-  static Provider<Logger> get loggerProvider =>
-      ansiSupported ? consoleLoggerProvider : simpleLoggerProvider;
+  /// depending on what [ansiSupportedProvider] returns.
+  static final loggerProvider = Provider(
+    (ref) => ref.watch(ansiSupportedProvider)
+        ? ref.watch(consoleLoggerProvider)
+        : ref.watch(simpleLoggerProvider),
+  );
 
   /// A simple provider for [TaskLogger]
   ///
@@ -177,6 +191,25 @@ abstract class HooksProviderInternal {
     ),
   );
 
+  /// A simple provider for [ConfigLoader]
+  ///
+  /// Uses [fileResolverProvider].
+  static final configLoaderProvider = Provider(
+    (ref) => ConfigLoader(
+      fileResolver: ref.watch(fileResolverProvider),
+    ),
+  );
+
+  /// A future provider for a loaded [Config]
+  ///
+  /// Uses [configLoaderProvider] to call [ConfigLoader.loadConfig] with the
+  /// path returned by [configFilePathProvider].
+  static final configProvider = FutureProvider<Config>(
+    (ref) => ref
+        .watch(configLoaderProvider)
+        .loadConfig(ref.watch(configFilePathProvider)),
+  );
+
   /// A simple provider for [OutdatedTask].
   ///
   /// Uses [programRunnerProvider] and [taskLoggerProvider].
@@ -195,6 +228,7 @@ abstract class HooksProviderInternal {
     ),
   );
 
+  /// @nodoc
   @internal
   static final loggingWrapperProvider = Provider(
     (ref) => LoggingWrapper(ref.watch(taskLoggerProvider)),
