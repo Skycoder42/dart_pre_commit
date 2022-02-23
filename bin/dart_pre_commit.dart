@@ -52,7 +52,7 @@ Future<int> _run(List<String> args) async {
       help: 'Enables the outdated packages check. You can choose one of the '
           'levels described below to require certain package updates. If they '
           'are not met, the hook will fail. No matter what level, as long as '
-          'it is not disabled - which will completly disable the hook - it '
+          'it is not disabled - which will completely disable the hook - it '
           'will still print available package updates without failing.',
       valueHelp: 'level',
       allowedHelp: {
@@ -129,7 +129,7 @@ Future<int> _run(List<String> args) async {
           'a simple logger is used, which is optimized for logging to files. '
           'The mode is auto-detected, but might not detect all terminals '
           'correctly. In this case, you can use this option to set it '
-          'exlicitly.',
+          'explicitly.',
     )
     ..addFlag(
       'version',
@@ -164,7 +164,7 @@ Future<int> _run(List<String> args) async {
             : null;
 
     final outdatedLevel = options['outdated'] as String;
-    final hooks = di.read(
+    final hooks = await di.read(
       HooksProvider.hookProvider(
         HooksConfig(
           format: options['format'] as bool,
@@ -178,7 +178,7 @@ Future<int> _run(List<String> args) async {
               options['flutter-compat'] as bool? ?? !(await _isFlutter(di)),
           continueOnRejected: options['continue-on-rejected'] as bool,
         ),
-      ),
+      ).future,
     );
     hooks.logger.logLevel = LogLevel.values.byName(
       options['log-level'] as String,

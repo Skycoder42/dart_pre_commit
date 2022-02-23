@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../config/config.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
@@ -43,13 +44,17 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
-  /// The level of outdateness that will cause the task to reject the commit.
+  /// The loaded [Config] for the hooks
+  final Config config;
+
+  /// The level of outdatedness that will cause the task to reject the commit.
   final OutdatedLevel outdatedLevel;
 
   /// Default Constructor.
   const OutdatedTask({
     required this.programRunner,
     required this.logger,
+    required this.config,
     required this.outdatedLevel,
   });
 
@@ -64,8 +69,8 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    logger.debug('Checking for outdated packags...');
-    final outdated = await _collectOutdated(nullSafety: false);
+    logger.debug('Checking for outdated packages...');
+    final outdated = await _collectOutdated();
 
     var outdatedCnt = 0;
     for (final package in outdated.packages) {
@@ -79,11 +84,12 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
       }
 
       var updated = false;
+      final hasUpdate = resolvable > current;
       switch (outdatedLevel) {
         case OutdatedLevel.none:
           break;
         case OutdatedLevel.any:
-          updated = resolvable > current;
+          updated = hasUpdate;
           break;
         case OutdatedLevel.patch:
           updated = updated || resolvable.patch > current.patch;
@@ -98,10 +104,12 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
           break;
       }
 
-      if (updated) {
+      if (hasUpdate && config.allowOutdated.contains(package.package)) {
+        logger.warn('Ignored:     ${package.package}: $current -> $resolvable');
+      } else if (updated) {
         ++outdatedCnt;
         logger.info('Required:    ${package.package}: $current -> $resolvable');
-      } else if (resolvable > current) {
+      } else if (hasUpdate) {
         logger.info('Recommended: ${package.package}: $current -> $resolvable');
       } else {
         logger.debug('Up to date:  ${package.package}: $current');
@@ -119,17 +127,15 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
     }
   }
 
-  Future<OutdatedInfo> _collectOutdated({required bool nullSafety}) =>
-      programRunner
-          .stream('dart', [
-            'pub',
-            'outdated',
-            '--show-all',
-            '--json',
-            if (nullSafety) '--mode=null-safety',
-          ])
-          .transform(json.decoder)
-          .cast<Map<String, dynamic>>()
-          .map((json) => OutdatedInfo.fromJson(json))
-          .single;
+  Future<OutdatedInfo> _collectOutdated() => programRunner
+      .stream('dart', [
+        'pub',
+        'outdated',
+        '--show-all',
+        '--json',
+      ])
+      .transform(json.decoder)
+      .cast<Map<String, dynamic>>()
+      .map((json) => OutdatedInfo.fromJson(json))
+      .single;
 }

@@ -60,7 +60,7 @@ void main() {
           HooksProviderInternal.testImportProvider
               .overrideWithValue(mockTestImports),
           HooksProviderInternal.outdatedProvider.overrideWithProvider(
-            Provider.family(
+            FutureProvider.family(
               (ref, OutdatedLevel level) =>
                   // ignore: unnecessary_cast
                   (mockOutdated..outdatedLevel = level) as OutdatedTask,
@@ -126,9 +126,11 @@ void main() {
         true,
       ),
     ],
-    (fixture) {
+    (fixture) async {
       final _ioc = ioc();
-      final hooks = _ioc.read(HooksProvider.hookProvider(fixture.item1));
+      final hooks = await _ioc.read(
+        HooksProvider.hookProvider(fixture.item1).future,
+      );
       expect(hooks.tasks, fixture.item2);
       expect(hooks.continueOnRejected, fixture.item3);
     },

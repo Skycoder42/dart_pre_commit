@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_pre_commit/src/config/config.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/models/outdated/outdated_info.dart';
 import 'package:dart_pre_commit/src/tasks/models/outdated/package_info.dart';
@@ -21,6 +22,7 @@ class MockTaskLogger extends Mock implements TaskLogger {}
 void main() {
   final mockRunner = MockProgramRunner();
   final mockLogger = MockTaskLogger();
+  const ignoredTestPackage = 'package-ignored';
 
   void whenRunner([List<PackageInfo> packages = const []]) =>
       when(() => mockRunner.stream(any(), any())).thenAnswer(
@@ -68,6 +70,9 @@ void main() {
     OutdatedTask _sut(OutdatedLevel level) => OutdatedTask(
           programRunner: mockRunner,
           logger: mockLogger,
+          config: const Config(
+            allowOutdated: [ignoredTestPackage],
+          ),
           outdatedLevel: level,
         );
 
@@ -163,7 +168,7 @@ void main() {
           resolvable: VersionInfo(version: Version(1, 0, 0)),
         ),
         PackageInfo(
-          package: 'p2',
+          package: 'p4',
           current: VersionInfo(version: Version(1, 0, 0)),
           resolvable: VersionInfo(version: Version(1, 0, 0)),
         ),
@@ -223,6 +228,64 @@ void main() {
 
         expect(res, TaskResult.accepted);
         verify(() => mockLogger.debug('Up to date:  p: 1.0.0'));
+      });
+
+      group('ignored and', () {
+        test('required', () async {
+          whenRunner([
+            PackageInfo(
+              package: ignoredTestPackage,
+              current: VersionInfo(version: Version(1, 0, 0)),
+              resolvable: VersionInfo(version: Version(1, 1, 0)),
+            ),
+          ]);
+
+          final sut = _sut(OutdatedLevel.any);
+          final res = await sut(const []);
+
+          expect(res, TaskResult.accepted);
+          verify(
+            () => mockLogger
+                .warn('Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0'),
+          );
+        });
+
+        test('recommended', () async {
+          whenRunner([
+            PackageInfo(
+              package: ignoredTestPackage,
+              current: VersionInfo(version: Version(1, 0, 0)),
+              resolvable: VersionInfo(version: Version(1, 1, 0)),
+            ),
+          ]);
+
+          final sut = _sut(OutdatedLevel.major);
+          final res = await sut(const []);
+
+          expect(res, TaskResult.accepted);
+          verify(
+            () => mockLogger
+                .warn('Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0'),
+          );
+        });
+
+        test('up to date', () async {
+          whenRunner([
+            PackageInfo(
+              package: ignoredTestPackage,
+              current: VersionInfo(version: Version(1, 0, 0)),
+              resolvable: VersionInfo(version: Version(1, 0, 0)),
+            ),
+          ]);
+
+          final sut = _sut(OutdatedLevel.any);
+          final res = await sut(const []);
+
+          expect(res, TaskResult.accepted);
+          verify(
+            () => mockLogger.debug('Up to date:  $ignoredTestPackage: 1.0.0'),
+          );
+        });
       });
     });
   });

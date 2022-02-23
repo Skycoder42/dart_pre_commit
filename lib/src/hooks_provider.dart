@@ -57,7 +57,7 @@ class HooksConfig with _$HooksConfig {
     ///
     /// These are added in addition to the four primary tasks. They are always
     /// added last to the hook, so they will also run last. If you need more
-    /// control over the order, instanciate the primary tasks by hand, using
+    /// control over the order, instantiate the primary tasks by hand, using
     /// [HooksProviderInternal]
     List<TaskBase>? extraTasks,
   }) = _HooksConfig;
@@ -77,8 +77,8 @@ abstract class HooksProvider {
   ///
   /// Makes use of [HooksProviderInternal] to get all the required parameters
   /// and tasks for the hooks instance.
-  static final hookProvider = Provider.family(
-    (ref, HooksConfig param) => Hooks(
+  static final hookProvider = FutureProvider.family(
+    (ref, HooksConfig param) async => Hooks(
       logger: ref.watch(HooksProviderInternal.loggerProvider),
       fileResolver: ref.watch(HooksProviderInternal.fileResolverProvider),
       programRunner: ref.watch(HooksProviderInternal.programRunnerProvider),
@@ -91,7 +91,9 @@ abstract class HooksProvider {
         if (param.flutterCompat)
           ref.watch(HooksProviderInternal.flutterCompatProvider),
         if (param.outdated != null)
-          ref.watch(HooksProviderInternal.outdatedProvider(param.outdated!)),
+          await ref.watch(
+            HooksProviderInternal.outdatedProvider(param.outdated!).future,
+          ),
         if (param.pullUpDependencies)
           ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
         if (param.extraTasks != null) ...param.extraTasks!,
@@ -213,10 +215,11 @@ abstract class HooksProviderInternal {
   /// A simple provider for [OutdatedTask].
   ///
   /// Uses [programRunnerProvider] and [taskLoggerProvider].
-  static final outdatedProvider = Provider.family(
-    (ref, OutdatedLevel level) => OutdatedTask(
+  static final outdatedProvider = FutureProvider.family(
+    (ref, OutdatedLevel level) async => OutdatedTask(
       programRunner: ref.watch(programRunnerProvider),
       logger: ref.watch(taskLoggerProvider),
+      config: await ref.watch(configProvider.future),
       outdatedLevel: level,
     ),
   );

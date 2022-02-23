@@ -121,11 +121,16 @@ environment:
 dependencies:
   meta: ^1.2.0
   mobx: 1.1.0
+  rxdart: 0.27.0
   dart_pre_commit:
     path: ${Directory.current.path}
 
 dev_dependencies:
   lint: null
+
+dart_pre_commit:
+  allow_outdated:
+    - rxdart
 ''',
     );
 
@@ -242,9 +247,14 @@ void main() {
     expect(code, HookResult.rejected.index);
     expect(
       lines,
-      contains(
-        startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
-      ),
+      allOf([
+        contains(
+          startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
+        ),
+        contains(
+          startsWith('  [WRN] Ignored:     rxdart: 0.27.0 -> '),
+        ),
+      ]),
     );
   });
 
