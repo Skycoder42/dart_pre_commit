@@ -118,7 +118,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
       await di.read(
         HooksProviderInternal.outdatedProvider(OutdatedLevel.any).future,
       ),
-      di.read(HooksProviderInternal.pullUpDependenciesProvider),
+      await di.read(HooksProviderInternal.pullUpDependenciesProvider.future),
     ];
 
     final repoEntries = await toList();

@@ -2,6 +2,7 @@ import 'package:checked_yaml/checked_yaml.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
+import '../config/config.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
@@ -48,6 +49,9 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   /// The [FileResolver] instance used by this task.
   final FileResolver fileResolver;
 
+  /// The loaded [Config] for the hooks
+  final Config config;
+
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
@@ -55,6 +59,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   const PullUpDependenciesTask({
     required this.programRunner,
     required this.fileResolver,
+    required this.config,
     required this.logger,
   });
 
@@ -152,8 +157,15 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
           if (_checkValidRelease(resolvedVersion) &&
               minVersion != null &&
               resolvedVersion! > minVersion) {
-            ++updateCtr;
-            logger.info('${entry.key}: $versionConstraint -> $resolvedVersion');
+            if (config.allowOutdated.contains(entry.key)) {
+              logger.warn(
+                '${entry.key}: Ignoring $versionConstraint -> $resolvedVersion',
+              );
+            } else {
+              ++updateCtr;
+              logger
+                  .info('${entry.key}: $versionConstraint -> $resolvedVersion');
+            }
           } else {
             logger.debug('${entry.key}: $versionConstraint OK');
           }

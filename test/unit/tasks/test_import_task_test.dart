@@ -11,7 +11,6 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
 import '../global_mocks.dart';
 
 class FakeAnalysisContextCollection extends Fake
@@ -69,7 +68,7 @@ void main() {
     });
 
     group('canProcess', () {
-      testWithData<Tuple2<String, bool>>(
+      testData<Tuple2<String, bool>>(
         'matches only files accepted by the linter',
         const [
           Tuple2('test1.dart', false),
@@ -120,7 +119,7 @@ void main() {
         ]);
       });
 
-      testWithData<Tuple3<FileResult, TaskResult, void Function()?>>(
+      testData<Tuple3<FileResult, TaskResult, void Function()?>>(
         'correctly maps linter result to task result',
         [
           Tuple3(

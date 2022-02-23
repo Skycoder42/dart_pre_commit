@@ -3,11 +3,10 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../test_with_data.dart';
 
 class MockTaskLogger extends Mock implements TaskLogger {}
 
@@ -181,7 +180,7 @@ void main() {
     );
   });
 
-  testWithData<Tuple2<ProgramExitException, String>>(
+  testData<Tuple2<ProgramExitException, String>>(
     'ProgramExitException shows correct error message',
     const [
       Tuple2(ProgramExitException(42), 'A subprocess failed with exit code 42'),

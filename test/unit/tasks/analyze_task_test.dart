@@ -3,11 +3,11 @@ import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
 import '../global_mocks.dart';
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
@@ -55,7 +55,7 @@ void main() {
     expect(sut.callForEmptyEntries, false);
   });
 
-  testWithData<Tuple2<String, bool>>(
+  testData<Tuple2<String, bool>>(
     'matches only dart/pubspec.yaml files',
     const [
       Tuple2('test1.dart', true),
@@ -77,7 +77,7 @@ void main() {
     },
   );
 
-  test('Run dartanalyzer with correct arguments', () async {
+  test('Run dart analyze with correct arguments', () async {
     final result = await sut([
       FakeEntry('test.dart'),
     ]);

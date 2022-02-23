@@ -1,11 +1,10 @@
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/logging_wrapper.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../../test_with_data.dart';
 
 class MockTaskLogger extends Mock implements TaskLogger {}
 
@@ -38,7 +37,7 @@ void main() {
       expect(sut.children, isEmpty);
     });
 
-    testWithData<Tuple2<String, void Function(String)>>(
+    testData<Tuple2<String, void Function(String)>>(
       'logs debug messages',
       [
         Tuple2('CONFIG', (m) => sut.config(m)),
@@ -61,7 +60,7 @@ void main() {
       verify(() => mockTaskLogger.info('INFO'));
     });
 
-    testWithData<Level>(
+    testData<Level>(
       'isLoggable should always return true',
       Level.LEVELS,
       (level) {
@@ -69,7 +68,7 @@ void main() {
       },
     );
 
-    testWithData<Tuple2<Level, void Function(String)>>(
+    testData<Tuple2<Level, void Function(String)>>(
       'log should log according to level',
       [
         Tuple2(Level.ALL, mockTaskLogger.debug),

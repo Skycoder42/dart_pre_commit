@@ -6,12 +6,12 @@ import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../test_with_data.dart';
 import 'global_mocks.dart';
 
 class MockLogger extends Mock implements Logger {}
@@ -287,7 +287,7 @@ void main() {
       verifyNever(() => mockRunner.stream('git', ['add', 'a.dart']));
     });
 
-    testWithData<Tuple2<bool, int>>('returns rejected on task rejected', const [
+    testData<Tuple2<bool, int>>('returns rejected on task rejected', const [
       Tuple2(false, 1),
       Tuple2(true, 2),
     ], (fixture) async {
@@ -410,7 +410,7 @@ void main() {
       verifyNever(() => mockRunner.stream('git', ['add', 'a.dart']));
     });
 
-    testWithData<Tuple3<Iterable<String>?, bool, int>>(
+    testData<Tuple3<Iterable<String>?, bool, int>>(
         'returns rejected on task rejected', const [
       Tuple3(['a.dart'], false, 1),
       Tuple3(['a.dart'], true, 2),
@@ -437,7 +437,7 @@ void main() {
     });
   });
 
-  testWithData<Tuple3<TaskResult, TaskResult, HookResult>>(
+  testData<Tuple3<TaskResult, TaskResult, HookResult>>(
     'mixed tasks report correct result',
     const [
       Tuple3(TaskResult.accepted, TaskResult.accepted, HookResult.clean),
@@ -460,7 +460,7 @@ void main() {
     },
   );
 
-  testWithData<Tuple2<HookResult, bool>>(
+  testData<Tuple2<HookResult, bool>>(
       'HookResult returns correct success status', const [
     Tuple2(HookResult.clean, true),
     Tuple2(HookResult.hasChanges, true),

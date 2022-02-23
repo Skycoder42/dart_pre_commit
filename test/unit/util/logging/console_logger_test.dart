@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:console/console.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../../test_with_data.dart';
 
 const eraseLine = '\r\x1B[2K';
 const newLine = '\n';
@@ -38,7 +37,7 @@ void main() {
       expect(output.toString(), cleanLine('test'));
     });
 
-    testWithData<Tuple2<TaskStatus, String>>('prints status', const [
+    testData<Tuple2<TaskStatus, String>>('prints status', const [
       Tuple2(TaskStatus.scanning, '🔎 '),
       Tuple2(TaskStatus.clean, '✔️ '),
       Tuple2(TaskStatus.hasChanges, '✏️ '),
@@ -62,7 +61,7 @@ void main() {
       expect(output.toString(), cleanLine('test${italic(' test')}'));
     });
 
-    testWithData<Tuple5<String?, TaskStatus?, String?, bool, String>>(
+    testData<Tuple5<String?, TaskStatus?, String?, bool, String>>(
         'update and clear use old state correctly', [
       Tuple5('msg', null, null, false, '🔎 msg${italic(' test2')}'),
       Tuple5(
@@ -116,7 +115,7 @@ void main() {
   });
 
   group('task logging', () {
-    testWithData<Tuple3<void Function(ConsoleLogger), int, String>>(
+    testData<Tuple3<void Function(ConsoleLogger), int, String>>(
       'prints log message',
       [
         Tuple3((l) => l.debug('debug'), 32, 'debug'),
@@ -168,7 +167,7 @@ void main() {
       );
     });
 
-    testWithData<
+    testData<
         Tuple3<LogLevel, void Function(ConsoleLogger)?,
             void Function(ConsoleLogger)?>>(
       'honors log level',

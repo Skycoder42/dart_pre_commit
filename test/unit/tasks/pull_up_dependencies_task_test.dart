@@ -1,15 +1,16 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/src/config/config.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
 import '../global_mocks.dart';
 
 class MockFile extends Mock implements File {
@@ -39,6 +40,7 @@ void main() {
       logger: mockLogger,
       programRunner: mockRunner,
       fileResolver: mockResolver,
+      config: const Config(),
     );
   });
 
@@ -47,7 +49,7 @@ void main() {
     expect(sut.callForEmptyEntries, true);
   });
 
-  testWithData<Tuple2<String, bool>>(
+  testData<Tuple2<String, bool>>(
     'matches only dart/pubspec.yaml files',
     const [
       Tuple2('pubspec.yaml', false),

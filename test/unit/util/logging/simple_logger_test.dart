@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/simple_logger.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../../test_with_data.dart';
 
 class MockIOSink extends Mock implements IOSink {}
 
@@ -37,7 +36,7 @@ void main() {
       verifyNoMoreInteractions(mockOutSink);
     });
 
-    testWithData<Tuple2<TaskStatus, String>>('prints status', const [
+    testData<Tuple2<TaskStatus, String>>('prints status', const [
       Tuple2(TaskStatus.scanning, '[S] '),
       Tuple2(TaskStatus.clean, '[C] '),
       Tuple2(TaskStatus.hasChanges, '[M] '),
@@ -76,7 +75,7 @@ void main() {
       verifyNoMoreInteractions(mockOutSink);
     });
 
-    testWithData<Tuple5<String?, TaskStatus?, String?, bool, Iterable<String>>>(
+    testData<Tuple5<String?, TaskStatus?, String?, bool, Iterable<String>>>(
       'update and clear use old state correctly',
       const [
         Tuple5('msg', null, null, false, ['[S] ', 'msg', ' test2']),
@@ -132,7 +131,7 @@ void main() {
   });
 
   group('task logging', () {
-    testWithData<Tuple2<void Function(SimpleLogger), String>>(
+    testData<Tuple2<void Function(SimpleLogger), String>>(
       'prints log',
       [
         Tuple2((l) => l.debug('debug'), '  [DBG] debug'),
@@ -152,10 +151,10 @@ void main() {
       },
     );
 
-    testWithData<
+    testData<
         Tuple3<LogLevel, void Function(SimpleLogger)?,
             void Function(SimpleLogger)?>>(
-      'honors logevel',
+      'honors logLevel',
       [
         Tuple3(LogLevel.debug, null, (l) => l.debug('')),
         Tuple3(LogLevel.info, (l) => l.debug(''), (l) => l.info('')),

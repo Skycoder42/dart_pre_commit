@@ -5,12 +5,12 @@ import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
 import '../global_mocks.dart';
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
@@ -60,7 +60,7 @@ void main() {
     });
 
     group('canProcess', () {
-      testWithData<String>(
+      testData<String>(
         'does not match non pubspec files',
         const ['pubspec.yarml', 'pubspec.lock'],
         (fixture) {
@@ -68,7 +68,7 @@ void main() {
         },
       );
 
-      testWithData<Tuple2<String, bool>>(
+      testData<Tuple2<String, bool>>(
         'Does only match non flutter pubspec',
         const [
           Tuple2('not_flutter', true),

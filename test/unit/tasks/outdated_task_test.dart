@@ -8,12 +8,11 @@ import 'package:dart_pre_commit/src/tasks/models/outdated/version_info.dart';
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../test_with_data.dart';
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
@@ -43,7 +42,7 @@ void main() {
   });
 
   group('OutdatedLevel', () {
-    testWithData<Tuple2<OutdatedLevel, String>>(
+    testData<Tuple2<OutdatedLevel, String>>(
       'correctly generates and parses name',
       const [
         Tuple2(OutdatedLevel.none, 'none'),
@@ -98,7 +97,7 @@ void main() {
       );
     });
 
-    testWithData<Tuple2<OutdatedLevel, int>>(
+    testData<Tuple2<OutdatedLevel, int>>(
       'correctly uses level to detect outdatedness',
       const [
         Tuple2(OutdatedLevel.none, 0),

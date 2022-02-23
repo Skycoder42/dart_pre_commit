@@ -95,7 +95,8 @@ abstract class HooksProvider {
             HooksProviderInternal.outdatedProvider(param.outdated!).future,
           ),
         if (param.pullUpDependencies)
-          ref.watch(HooksProviderInternal.pullUpDependenciesProvider),
+          await ref
+              .watch(HooksProviderInternal.pullUpDependenciesProvider.future),
         if (param.extraTasks != null) ...param.extraTasks!,
       ],
     ),
@@ -185,10 +186,11 @@ abstract class HooksProviderInternal {
   ///
   /// Uses [fileResolverProvider], [programRunnerProvider] and
   /// [taskLoggerProvider].
-  static final pullUpDependenciesProvider = Provider(
-    (ref) => PullUpDependenciesTask(
+  static final pullUpDependenciesProvider = FutureProvider(
+    (ref) async => PullUpDependenciesTask(
       fileResolver: ref.watch(fileResolverProvider),
       programRunner: ref.watch(programRunnerProvider),
+      config: await ref.watch(configProvider.future),
       logger: ref.watch(taskLoggerProvider),
     ),
   );

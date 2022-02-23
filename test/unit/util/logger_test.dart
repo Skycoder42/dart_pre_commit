@@ -1,12 +1,11 @@
 import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../test_with_data.dart';
-
 void main() {
   group('LogLevel', () {
-    testWithData<Tuple2<LogLevel, String>>(
+    testData<Tuple2<LogLevel, String>>(
       'correctly generates and parses name',
       const [
         Tuple2(LogLevel.debug, 'debug'),

@@ -8,12 +8,11 @@ import 'package:dart_pre_commit/src/tasks/test_import_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
-
-import '../test_with_data.dart';
 
 class MockLogger extends Mock implements Logger {}
 
@@ -67,7 +66,7 @@ void main() {
             ),
           ),
           HooksProviderInternal.pullUpDependenciesProvider
-              .overrideWithValue(mockPullUp),
+              .overrideWithValue(AsyncValue.data(mockPullUp)),
           HooksProviderInternal.flutterCompatProvider
               .overrideWithValue(mockFlutterCompat),
         ],
@@ -87,7 +86,7 @@ void main() {
     when(() => mockFlutterCompat.taskName).thenReturn('flutterCompat');
   });
 
-  testWithData<Tuple3<HooksConfig, Iterable<String>, bool>>(
+  testData<Tuple3<HooksConfig, Iterable<String>, bool>>(
     'config loads correct hooks',
     [
       const Tuple3(HooksConfig(), [], false),
