@@ -172,7 +172,7 @@ void main() {
             if (Platform.isMacOS)
               await Directory.systemTemp.resolveSymbolicLinks()
             else
-              Directory.systemTemp,
+              Directory.systemTemp.path,
             emitsDone,
           ]),
         );

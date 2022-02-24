@@ -1,4 +1,4 @@
-name: Continous Integration
+name: Continuos Integration
 
 on:
   push:
@@ -21,6 +21,12 @@ jobs:
         "**/*.g.dart"
         "**/*.freezed.dart"
       integrationTestPaths: test/integration
+      integrationTestSetup: >-
+        {
+          "linux": "dart run tools/ci_install_flutter.dart",
+          "windows": "dart run tools/ci_install_flutter.dart",
+          "macos": "dart run tools/ci_install_flutter.dart"
+        }
 
   cd:
     name: CD
