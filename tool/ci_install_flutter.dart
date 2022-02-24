@@ -26,13 +26,13 @@ Future<void> main(List<String> args) async {
     ]);
     await _exec('$toolPath/bin/flutter', const ['doctor', '-v']);
 
-    final githubPathFile = File(Platform.environment['GITHUB_PATH']!);
-    await githubPathFile.writeAsString(
-      '${Platform.executable}\n$toolPath/bin\n',
-      mode: FileMode.append,
-      flush: true,
-      encoding: systemEncoding,
-    );
+    final flutterBinPath =
+        await Directory.fromUri(Directory.current.uri.resolve('$toolPath/bin'))
+            .resolveSymbolicLinks();
+
+    await _addToPath(Platform.executable);
+    await _addToPath(flutterBinPath);
+    await _addToPath(Platform.executable);
   } on ExitCodeException catch (e) {
     print(e);
     exitCode = e.exitCode;
@@ -50,4 +50,15 @@ Future<void> _exec(String program, List<String> args) async {
   if (exitCode != 0) {
     throw ExitCodeException(program, exitCode);
   }
+}
+
+Future<void> _addToPath(String path) async {
+  print('::debug::Adding path: $path');
+  final githubPathFile = File(Platform.environment['GITHUB_PATH']!);
+  await githubPathFile.writeAsString(
+    '$path\n',
+    mode: FileMode.append,
+    flush: true,
+    encoding: systemEncoding,
+  );
 }
