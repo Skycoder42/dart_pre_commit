@@ -1,4 +1,6 @@
 // ignore_for_file: avoid_print
+@Timeout(Duration(minutes: 1))
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -205,24 +207,28 @@ void main() {
     expect(code, HookResult.rejected.index);
   });
 
-  test('flutter-compat', () async {
-    printOnFailure('Using PATH: ${Platform.environment['PATH']}');
+  test(
+    'flutter-compat',
+    () async {
+      printOnFailure('Using PATH: ${Platform.environment['PATH']}');
 
-    await _git(const ['add', 'pubspec.yaml']);
+      await _git(const ['add', 'pubspec.yaml']);
 
-    final lines = <String>[];
-    final code = await _sut(
-      'flutter-compat',
-      onStdout: lines.add,
-    );
-    expect(code, HookResult.clean.index);
-    expect(
-      lines,
-      contains(
-        startsWith('  [INF] Package test_project is flutter compatible'),
-      ),
-    );
-  });
+      final lines = <String>[];
+      final code = await _sut(
+        'flutter-compat',
+        onStdout: lines.add,
+      );
+      expect(code, HookResult.clean.index);
+      expect(
+        lines,
+        contains(
+          startsWith('  [INF] Package test_project is flutter compatible'),
+        ),
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 
   test('check-pull-up', () async {
     await _git(const ['add', 'pubspec.lock']);
