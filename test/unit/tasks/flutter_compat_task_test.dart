@@ -116,6 +116,7 @@ dependencies:
             any(),
             workingDirectory: any(named: 'workingDirectory'),
             failOnExit: any(named: 'failOnExit'),
+            runInShell: any(named: 'runInShell'),
           ),
         ).thenAnswer((i) async => 0);
       });
@@ -138,6 +139,7 @@ dependencies:
                     that: isSystemTempDir(),
                   ),
                   failOnExit: true,
+                  runInShell: Platform.isWindows,
                 ),
             () => mockFile.parent,
             () => mockProgramRunner.run(
@@ -153,6 +155,7 @@ dependencies:
                     named: 'workingDirectory',
                     that: isSystemTempDir(),
                   ),
+                  runInShell: Platform.isWindows,
                 ),
           ]);
         },
@@ -170,6 +173,7 @@ dependencies:
             any(),
             any(),
             workingDirectory: any(named: 'workingDirectory'),
+            runInShell: any(named: 'runInShell'),
           ),
         ).thenAnswer((i) async => exitCode);
 
@@ -197,6 +201,7 @@ dependencies:
             any(),
             workingDirectory: any(named: 'workingDirectory'),
             failOnExit: true,
+            runInShell: any(named: 'runInShell'),
           ),
         ).thenThrow(Exception('FAILURE'));
 

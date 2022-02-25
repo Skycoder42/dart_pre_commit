@@ -62,6 +62,7 @@ class FlutterCompatTask implements RepoTask {
           const ['create', '--project-name', 't', '.'],
           workingDirectory: tmpDir.path,
           failOnExit: true,
+          runInShell: Platform.isWindows,
         );
         final exitCode = await programRunner.run(
           'flutter',
@@ -73,6 +74,7 @@ class FlutterCompatTask implements RepoTask {
             entry.file.parent.absolute.path,
           ],
           workingDirectory: tmpDir.path,
+          runInShell: Platform.isWindows,
         );
 
         if (exitCode != 0) {

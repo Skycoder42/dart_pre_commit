@@ -59,6 +59,7 @@ class ProgramRunner {
   /// [utf8.decoder] and streamed line by line. The standard error is forwarded
   /// to the [logger]. If [workingDirectory] is set, the process will be
   /// launched in that directory. Otherwise it will run in [Directory.current].
+  /// The [runInShell] parameter is simply passed to [Process.start] as is.
   ///
   /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
   /// the program exists with anything but 0.
@@ -67,6 +68,7 @@ class ProgramRunner {
     List<String> arguments, {
     String? workingDirectory,
     bool failOnExit = true,
+    bool runInShell = false,
   }) async* {
     Future<void>? errLog;
     try {
@@ -75,6 +77,7 @@ class ProgramRunner {
         program,
         arguments,
         workingDirectory: workingDirectory,
+        runInShell: runInShell,
       );
       errLog = logger.pipeStderr(process.stderr);
       yield* process.stdout
@@ -98,7 +101,8 @@ class ProgramRunner {
   /// background. The standard output of the process is discarded, as only the
   /// exit code is needed.The standard error is forwarded to the [logger]. If
   /// [workingDirectory] is set, the process will be launched in that directory.
-  /// Otherwise it will run in [Directory.current].
+  /// Otherwise it will run in [Directory.current]. The [runInShell] parameter
+  /// is simply passed to [Process.start] as is.
   ///
   /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
   /// the program exists with anything but 0.
@@ -107,6 +111,7 @@ class ProgramRunner {
     List<String> arguments, {
     String? workingDirectory,
     bool failOnExit = false,
+    bool runInShell = false,
   }) async {
     Future<void>? errLog;
     try {
@@ -115,6 +120,7 @@ class ProgramRunner {
         program,
         arguments,
         workingDirectory: workingDirectory,
+        runInShell: runInShell,
       );
       errLog = logger.pipeStderr(process.stderr);
       await process.stdout.drain<void>();
