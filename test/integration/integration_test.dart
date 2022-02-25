@@ -206,6 +206,8 @@ void main() {
   });
 
   test('flutter-compat', () async {
+    printOnFailure('Using PATH: ${Platform.environment['PATH']}');
+
     await _git(const ['add', 'pubspec.yaml']);
 
     final lines = <String>[];
