@@ -9,7 +9,7 @@ class ExitCodeException implements Exception {
   ExitCodeException(this.program, this.exitCode);
 
   @override
-  String toString() => '$program failed with exit code: $exitCode';
+  String toString() => '::error::$program failed with exit code: $exitCode';
 }
 
 Future<void> main(List<String> args) async {
@@ -20,18 +20,23 @@ Future<void> main(List<String> args) async {
     await _exec('git', [
       'clone',
       'https://github.com/flutter/flutter.git',
+      '--depth',
+      '1',
       '-b',
       branch,
       toolPath
     ]);
-    await _exec('$toolPath/bin/flutter', const ['doctor', '-v']);
+    final flutterBin = File(
+      '$toolPath/bin/flutter${Platform.isWindows ? '.bat' : ''}',
+    );
+    if (!await flutterBin.exists()) {
+      throw Exception('Flutter binary ${flutterBin.path} does not exist');
+    }
 
-    final flutterBinPath =
-        await Directory.fromUri(Directory.current.uri.resolve('$toolPath/bin'))
-            .resolveSymbolicLinks();
+    await _exec(flutterBin.path, const ['doctor', '-v']);
 
     await _addToPath(Platform.executable);
-    await _addToPath(flutterBinPath);
+    await _addToPath(await flutterBin.parent.resolveSymbolicLinks());
     await _addToPath(Platform.executable);
   } on ExitCodeException catch (e) {
     print(e);
