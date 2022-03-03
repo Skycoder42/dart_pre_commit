@@ -3,24 +3,11 @@ import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:path/path.dart';
 
 import '../../dart_pre_commit.dart';
+import '../util/linter_exception.dart';
 
-/// A callback the retreives a [AnalysisContextCollection] for a [RepoEntry].
-typedef AnalysisContextCollectionProviderFn = AnalysisContextCollection
+/// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
+typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection
     Function(RepoEntry entry);
-
-/// An exception that gets thrown to wrap [FileResult.failure] linter results.
-class TestImportException implements Exception {
-  /// The `error` message of [FileResult.failure].
-  final String message;
-
-  /// Default constructor.
-  TestImportException(this.message);
-
-  // coverage:ignore-start
-  @override
-  String toString() => message;
-  // coverage:ignore-end
-}
 
 /// A task that uses a [TestImportLinter] to check for invalid imports in test
 /// files.
@@ -31,8 +18,9 @@ class TestImportException implements Exception {
 ///
 /// {@category tasks}
 class TestImportTask implements FileTask {
-  /// The [AnalysisContextCollectionProviderFn] used by this task.
-  final AnalysisContextCollectionProviderFn analysisContextCollectionProvider;
+  /// The [AnalysisContextCollectionEntryProviderFn] used by this task.
+  final AnalysisContextCollectionEntryProviderFn
+      analysisContextCollectionProvider;
 
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
@@ -77,7 +65,7 @@ class TestImportTask implements FileTask {
       },
       failure: (error, stackTrace, resultLocation) {
         logger.except(
-          TestImportException(resultLocation.formatMessage(error)),
+          LinterException(resultLocation.formatMessage(error)),
           stackTrace,
         );
         return TaskResult.rejected;

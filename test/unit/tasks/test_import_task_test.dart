@@ -4,6 +4,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/test_import_task.dart';
+import 'package:dart_pre_commit/src/util/linter_exception.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
@@ -152,7 +153,7 @@ void main() {
             TaskResult.rejected,
             () => mockLogger.except(
               any(
-                that: isA<TestImportException>().having(
+                that: isA<LinterException>().having(
                   (e) => e.message,
                   'message',
                   'FAILURE',

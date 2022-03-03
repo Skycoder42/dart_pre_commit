@@ -24,6 +24,14 @@ Future<void> main(List<String> args) async {
 
   final di = ProviderContainer();
   try {
+    final logger = di.read(HooksProviderInternal.loggerProvider);
+    logger.logLevel = LogLevel.values.byName(
+      args.firstWhere(
+        (_) => true,
+        orElse: () => logger.logLevel.name,
+      ),
+    );
+
     final excludeEntries = [
       Directory('.git'),
       Directory('.dart_tool'),
