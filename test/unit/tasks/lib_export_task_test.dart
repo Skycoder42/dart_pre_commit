@@ -1,6 +1,9 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/repo_entry.dart';
+import 'package:dart_pre_commit/src/task_base.dart';
+import 'package:dart_pre_commit/src/tasks/lib_export_task.dart';
 import 'package:dart_pre_commit/src/util/linter_exception.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
