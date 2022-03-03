@@ -115,6 +115,7 @@ void main() {
         await sut.call(fakeEntry);
 
         verifyInOrder([
+          () => mockAccProvider.call(fakeEntry),
           () => mockLinter.contextCollection = fakeContext,
           () => mockLinter.analyzeFile(normalize(absolute(fakePath)))
         ]);
