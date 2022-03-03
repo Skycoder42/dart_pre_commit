@@ -26,7 +26,7 @@ import 'models/pull_up_dependencies/pubspec_lock.dart';
 /// commit to find dependencies.
 ///
 /// Example:
-/// ```.yaml
+/// ```yaml
 /// # pubspec.yaml
 /// dependencies:
 ///   dep_a: ^1.0.0

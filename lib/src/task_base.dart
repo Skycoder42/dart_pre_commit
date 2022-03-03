@@ -31,7 +31,7 @@ extension TaskResultX on TaskResult {
   /// - [TaskResult.accepted]
   ///
   /// So, if for example, you would call:
-  /// ```.dart
+  /// ```dart
   /// TaskResult.modified.raiseTo(TaskResult.rejected)
   /// ```
   /// if would return [TaskResult.rejected].
@@ -76,7 +76,7 @@ abstract class FileTask extends TaskBase {
   /// following two examples should yield the exact same results, no matter
   /// what entries are passed to them:
   ///
-  /// ```.dart
+  /// ```dart
   /// // example 1
   /// final task = MyFileTask();
   /// await task(entry1);

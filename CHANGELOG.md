@@ -4,16 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased - MAJOR] - 20XX-XX-XX
+## [3.0.0] - 2022-03-03
 ### Added
+- `FlutterCompatTask`: Checks if a dart project can be added to a newly created flutter project. Useful to ensure that
+no package versions are required that are then what flutter currently supports
+- `TestImportTask`: Checks if any test files import library exports instead of sources
+- `LibExportTask`: Checks if all src files that contain package public definitions are exported somewhere in lib
 ### Changed
-### Deprecated
+- Use dart_test_tools for CI/CD, code analysis and testing
+- Enable all checks by default
+- Add support for a configuration part in the pubspec.yaml
+  - For now, dependencies can be whitelisted for the outdated/pull-up tasks
+- Updated dependencies
 ### Removed
 - fix imports task
 - library imports task
 - nullsafety task
-### Fixed
-### Security
 
 ## [2.3.3] - 2021-07-01
 ### Changed
