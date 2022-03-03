@@ -13,6 +13,7 @@ import 'task_base.dart';
 import 'tasks/analyze_task.dart';
 import 'tasks/flutter_compat_task.dart';
 import 'tasks/format_task.dart';
+import 'tasks/lib_export_task.dart';
 import 'tasks/outdated_task.dart';
 import 'tasks/pull_up_dependencies_task.dart';
 import 'tasks/test_import_task.dart';
@@ -38,6 +39,9 @@ class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [TestImportTask] should be enabled.
     @Default(false) bool testImports,
+
+    /// Specifies, whether the [LibExportTask] should be enabled.
+    @Default(false) bool libExports,
 
     /// Specifies, whether the [FlutterCompatTask] should be enabled.
     @Default(false) bool flutterCompat,
@@ -88,6 +92,8 @@ abstract class HooksProvider {
         if (param.analyze) ref.watch(HooksProviderInternal.analyzeProvider),
         if (param.testImports)
           ref.watch(HooksProviderInternal.testImportProvider),
+        if (param.libExports)
+          ref.watch(HooksProviderInternal.libExportProvider),
         if (param.flutterCompat)
           ref.watch(HooksProviderInternal.flutterCompatProvider),
         if (param.outdated != null)
@@ -227,7 +233,7 @@ abstract class HooksProviderInternal {
   );
 
   /// A simple provider for [AnalysisContextCollection]s, based on a root path.
-  static final analysisContextCollectionProvider = Provider.family(
+  static final analysisContextCollectionEntryProvider = Provider.family(
     (ref, String contextRoot) => AnalysisContextCollection(
       includedPaths: [contextRoot],
     ),
@@ -240,21 +246,54 @@ abstract class HooksProviderInternal {
   );
 
   /// A simple provider for [TestImportLinter].
+  ///
+  /// Uses [loggingWrapperProvider].
   static final testImportLinterProvider = Provider(
     (ref) => TestImportLinter(ref.watch(loggingWrapperProvider)),
   );
 
   /// A simple provider for [TestImportTask].
   ///
-  /// Uses [analysisContextCollectionProvider], [taskLoggerProvider] and
+  /// Uses [analysisContextCollectionEntryProvider], [taskLoggerProvider] and
   /// [testImportLinterProvider].
   static final testImportProvider = Provider(
     (ref) => TestImportTask(
       analysisContextCollectionProvider: (entry) => ref.read(
-        analysisContextCollectionProvider(entry.gitRoot.absolute.path),
+        analysisContextCollectionEntryProvider(entry.gitRoot.absolute.path),
       ),
       logger: ref.watch(taskLoggerProvider),
       linter: ref.watch(testImportLinterProvider),
+    ),
+  );
+
+  /// A simple provider for [AnalysisContextCollection]s, based on a collection
+  /// of paths.
+  static final analysisContextCollectionRepoProvider = Provider.family(
+    (ref, List<String> paths) => AnalysisContextCollection(
+      includedPaths: paths,
+    ),
+  );
+
+  /// A simple provider for [TestImportLinter].
+  ///
+  /// Uses [loggingWrapperProvider].
+  static final libExportLinterProvider = Provider(
+    (ref) => LibExportLinter(ref.watch(loggingWrapperProvider)),
+  );
+
+  /// A simple provider for [LibExportTask].
+  ///
+  /// Uses [analysisContextCollectionRepoProvider], [taskLoggerProvider] and
+  /// [libExportLinterProvider].
+  static final libExportProvider = Provider(
+    (ref) => LibExportTask(
+      analysisContextCollectionProvider: (entries) => ref.read(
+        analysisContextCollectionRepoProvider(
+          entries.map((e) => e.file.absolute.path).toList(),
+        ),
+      ),
+      logger: ref.watch(taskLoggerProvider),
+      linter: ref.watch(libExportLinterProvider),
     ),
   );
 

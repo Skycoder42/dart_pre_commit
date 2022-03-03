@@ -2,6 +2,7 @@ import 'package:dart_pre_commit/src/hooks_provider.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
+import 'package:dart_pre_commit/src/tasks/lib_export_task.dart';
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/tasks/test_import_task.dart';
@@ -24,7 +25,9 @@ class MockFormatTask extends Mock implements FormatTask {}
 
 class MockAnalyzeTask extends Mock implements AnalyzeTask {}
 
-class MockTestImportsTask extends Mock implements TestImportTask {}
+class MockTestImportTask extends Mock implements TestImportTask {}
+
+class MockLibExportTask extends Mock implements LibExportTask {}
 
 class MockOutdatedTask extends Mock implements OutdatedTask {
   @override
@@ -42,7 +45,8 @@ void main() {
   final mockRunner = MockProgramRunner();
   final mockFormat = MockFormatTask();
   final mockAnalyze = MockAnalyzeTask();
-  final mockTestImports = MockTestImportsTask();
+  final mockTestImport = MockTestImportTask();
+  final mockLibExport = MockLibExportTask();
   final mockOutdated = MockOutdatedTask();
   final mockPullUp = MockPullUpDependenciesTask();
   final mockFlutterCompat = MockFlutterCompatTask();
@@ -57,7 +61,9 @@ void main() {
           HooksProviderInternal.formatProvider.overrideWithValue(mockFormat),
           HooksProviderInternal.analyzeProvider.overrideWithValue(mockAnalyze),
           HooksProviderInternal.testImportProvider
-              .overrideWithValue(mockTestImports),
+              .overrideWithValue(mockTestImport),
+          HooksProviderInternal.libExportProvider
+              .overrideWithValue(mockLibExport),
           HooksProviderInternal.outdatedProvider.overrideWithProvider(
             FutureProvider.family(
               (ref, OutdatedLevel level) =>
@@ -79,7 +85,8 @@ void main() {
 
     when(() => mockFormat.taskName).thenReturn('format');
     when(() => mockAnalyze.taskName).thenReturn('analyze');
-    when(() => mockTestImports.taskName).thenReturn('testImports');
+    when(() => mockTestImport.taskName).thenReturn('testImports');
+    when(() => mockLibExport.taskName).thenReturn('libExports');
     when(() => mockOutdated.taskName)
         .thenAnswer((i) => 'outdated:${mockOutdated.outdatedLevel.name}');
     when(() => mockPullUp.taskName).thenReturn('pullUpDependencies');
@@ -93,6 +100,7 @@ void main() {
       const Tuple3(HooksConfig(format: true), ['format'], false),
       const Tuple3(HooksConfig(analyze: true), ['analyze'], false),
       const Tuple3(HooksConfig(testImports: true), ['testImports'], false),
+      const Tuple3(HooksConfig(libExports: true), ['libExports'], false),
       const Tuple3(
         HooksConfig(flutterCompat: true),
         ['flutterCompat'],
