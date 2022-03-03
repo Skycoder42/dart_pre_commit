@@ -122,6 +122,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
     final logger = di.read(HooksProviderInternal.loggerProvider);
     final tasks = <RepoTask>[
       di.read(HooksProviderInternal.analyzeProvider),
+      di.read(HooksProviderInternal.libExportProvider),
       di.read(HooksProviderInternal.flutterCompatProvider),
       await di.read(
         HooksProviderInternal.outdatedProvider(OutdatedLevel.any).future,

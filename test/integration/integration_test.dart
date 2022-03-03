@@ -81,8 +81,9 @@ void main() {
   }) {
     final disableArgs = [
       '--no-format',
-      '--no-analyze',
       '--no-test-imports',
+      '--no-analyze',
+      '--no-lib-exports',
       '--no-flutter-compat',
       '--outdated=disabled',
       '--no-check-pull-up',
@@ -280,6 +281,26 @@ void main() {
       lines,
       contains(
         startsWith('  [ERR] Found self import that is not from src: import '),
+      ),
+    );
+  });
+
+  test('lib-exports', () async {
+    final lines = <String>[];
+    await _git(const ['add', 'lib']);
+    final code = await _sut(
+      'lib-exports',
+      arguments: const ['--detailed-exit-code', '-ldebug'],
+      failOnError: false,
+      onStdout: lines.add,
+    );
+    expect(code, HookResult.rejected.index);
+    expect(
+      lines,
+      contains(
+        startsWith(
+          '  [ERR] lib/src/analyze.dart - Source file is not exported anywhere',
+        ),
       ),
     );
   });

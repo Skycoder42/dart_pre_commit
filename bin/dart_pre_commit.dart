@@ -35,6 +35,12 @@ Future<int> _run(List<String> args) async {
       help: 'Runs dart_test_tools TestImportLinter on all staged files.',
     )
     ..addFlag(
+      'lib-exports',
+      abbr: 'x',
+      defaultsTo: true,
+      help: 'Runs dart_test_tools LibExportLinter on all staged files.',
+    )
+    ..addFlag(
       'flutter-compat',
       abbr: 'u',
       defaultsTo: null,
@@ -170,6 +176,7 @@ Future<int> _run(List<String> args) async {
           format: options['format'] as bool,
           analyze: options['analyze'] as bool,
           testImports: options['test-imports'] as bool,
+          libExports: options['lib-exports'] as bool,
           outdated: outdatedLevel == disabledOutdatedLevel
               ? null
               : OutdatedLevel.values.byName(outdatedLevel),
