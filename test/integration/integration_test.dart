@@ -298,8 +298,9 @@ void main() {
     expect(
       lines,
       contains(
-        startsWith(
-          '  [ERR] lib/src/analyze.dart - Source file is not exported anywhere',
+        allOf(
+          startsWith('  [ERR] '),
+          endsWith('Source file is not exported anywhere'),
         ),
       ),
     );
