@@ -68,10 +68,12 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
+    if (entries.isEmpty) {
+      throw ArgumentError('must not be empty', 'entries');
+    }
     final lints = {
       for (final entry in entries) entry.file.path: <_AnalyzeResult>[],
     };
-    assert(lints.isNotEmpty);
 
     await for (final entry in _runAnalyze()) {
       final lintList = lints.entries

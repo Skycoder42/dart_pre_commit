@@ -136,6 +136,6 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
       ])
       .transform(json.decoder)
       .cast<Map<String, dynamic>>()
-      .map((json) => OutdatedInfo.fromJson(json))
+      .map(OutdatedInfo.fromJson)
       .single;
 }

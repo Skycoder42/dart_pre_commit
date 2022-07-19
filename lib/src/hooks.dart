@@ -289,7 +289,7 @@ class Hooks {
           return HookResult.hasChanges;
         }
       case TaskResult.rejected:
-        assert(continueOnRejected);
+        assert(continueOnRejected, 'continueOnRejected must be true');
         return HookResult.rejected;
     }
   }

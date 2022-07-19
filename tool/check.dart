@@ -66,8 +66,8 @@ Future<void> main(List<String> args) async {
         )
         .runFileTasks(di)
         .runRepoTasks(di);
-  } catch (e, s) {
-    di.read(HooksProviderInternal.loggerProvider).except(e as Exception, s);
+  } on Exception catch (e, s) {
+    di.read(HooksProviderInternal.loggerProvider).except(e, s);
     exitCode = 1;
   } finally {
     di.dispose();

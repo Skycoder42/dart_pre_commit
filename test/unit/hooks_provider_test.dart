@@ -51,7 +51,7 @@ void main() {
   final mockPullUp = MockPullUpDependenciesTask();
   final mockFlutterCompat = MockFlutterCompatTask();
 
-  ProviderContainer ioc() => ProviderContainer(
+  ProviderContainer createIoc() => ProviderContainer(
         overrides: [
           HooksProviderInternal.loggerProvider.overrideWithValue(mockLogger),
           HooksProviderInternal.fileResolverProvider
@@ -134,8 +134,8 @@ void main() {
       ),
     ],
     (fixture) async {
-      final _ioc = ioc();
-      final hooks = await _ioc.read(
+      final ioc = createIoc();
+      final hooks = await ioc.read(
         HooksProvider.hookProvider(fixture.item1).future,
       );
       expect(hooks.tasks, fixture.item2);
