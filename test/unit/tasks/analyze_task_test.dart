@@ -36,6 +36,7 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.fromIterable(const []));
 
+    // ignore: discarded_futures
     when(() => mockResolver.resolve(any()))
         .thenAnswer((i) async => i.positionalArguments.first as String);
     when(() => mockResolver.resolveAll(any())).thenAnswer(

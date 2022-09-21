@@ -5,8 +5,8 @@ import '../util/program_runner.dart';
 /// A task the runs `dart format` on the given file.
 ///
 /// This task simply runs dart to format the staged file before committing it.
-/// The formatted file is immediatly saved and staged again, if something had to
-/// be fixed. In that case, [TaskResult.modified] is returned.
+/// The formatted file is immediately saved and staged again, if something had
+/// to be fixed. In that case, [TaskResult.modified] is returned.
 ///
 /// {@category tasks}
 class FormatTask with PatternTaskMixin implements FileTask {

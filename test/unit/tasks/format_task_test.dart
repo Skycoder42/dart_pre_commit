@@ -20,6 +20,7 @@ void main() {
   setUp(() {
     reset(mockRunner);
 
+    // ignore: discarded_futures
     when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 0);
 
     sut = FormatTask(

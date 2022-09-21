@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 
+import 'hooks.dart';
 import 'repo_entry.dart';
 
 /// The possible result states of a generic task.
@@ -56,8 +57,8 @@ abstract class TaskBase {
 
 /// A task that is run multiple times, once for every matching file.
 ///
-/// For this task, all staged files are filtered based on [filePattern] and then
-/// each file is processed via [call()].
+/// For this task, all staged files are filtered based on [canProcess] and then
+/// each file is processed via [call].
 ///
 /// Use this kind of task in case your task does something atomically on a per
 /// file basis, like formatting a file or checking file permissions. If the task
@@ -72,7 +73,7 @@ abstract class TaskBase {
 abstract class FileTask extends TaskBase {
   /// Executes the task on the given [entry].
   ///
-  /// **Important:** This function should run without sideeffects, i.e. the
+  /// **Important:** This function should run without side effects, i.e. the
   /// following two examples should yield the exact same results, no matter
   /// what entries are passed to them:
   ///
@@ -90,7 +91,7 @@ abstract class FileTask extends TaskBase {
   /// ```
   ///
   /// This does not mean, you cannot cache data between multiple calls of a file
-  /// task, but that should not modifiy the public behavior of subsequent calls.
+  /// task, but that should not modify the public behavior of subsequent calls.
   /// The only thing you must never cache is information about the given
   /// [entry] or any other local file in the repo, as those could be modified
   /// between different calls to you task by other tasks.
@@ -99,13 +100,13 @@ abstract class FileTask extends TaskBase {
 
 /// A task that runs once for the whole repository.
 ///
-/// For this task, all staged files are filtered based on [filePattern] and the
-/// list of filtered tasks is the passed to [call()]. If no files do match,
-/// [callForEmptyEntries] defines the behaviour.
+/// For this task, all staged files are filtered based on [canProcess] and the
+/// list of filtered tasks is the passed to [call]. If no files do match,
+/// [callForEmptyEntries] defines the behavior.
 ///
 /// Use this kind of task in case your task does something that affects the
 /// whole repository or uses multiple files at once, like checking for lints.
-/// If you only do things on a per file basis, without sideeffects or
+/// If you only do things on a per file basis, without side effects or
 /// interaction between multiple files, you can use [FileTask] instead. The
 /// [RepoTask] is also very useful if you want to perform certain operations at
 /// the end of the hook, after all modifications.
@@ -119,7 +120,7 @@ abstract class RepoTask extends TaskBase {
   /// match.
   ///
   /// If true, the task always gets called. Otherwise it only gets called if at
-  /// least one file matches [filePattern].
+  /// least one file matches [canProcess].
   bool get callForEmptyEntries;
 
   /// Executes the task on all given [entries].
@@ -137,6 +138,7 @@ abstract class RepoTask extends TaskBase {
 /// A mixin for [TaskBase] that implements [TaskBase.canProcess] based on a
 /// [filePattern].
 mixin PatternTaskMixin implements TaskBase {
+  // ignore: comment_references
   /// The pattern that the [RepoEntry.file] is matched against.
   Pattern get filePattern;
 

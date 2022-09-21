@@ -14,7 +14,7 @@ class FakeFile extends Fake implements File {
   File get absolute => FakeFile(p.absolute(path), exists: _exists);
 
   @override
-  Future<bool> exists() async => _exists;
+  bool existsSync() => _exists;
 
   @override
   String resolveSymbolicLinksSync() => path;

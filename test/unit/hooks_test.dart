@@ -73,11 +73,13 @@ void main() {
 
     when(() => mockFileTask.taskName).thenReturn('file-task');
     when(() => mockFileTask.filePattern).thenReturn(RegExp('.*'));
+    // ignore: discarded_futures
     when(() => mockFileTask(any()))
         .thenAnswer((_) async => TaskResult.accepted);
     when(() => mockRepoTask.taskName).thenReturn('repo-task');
     when(() => mockRepoTask.filePattern).thenReturn(RegExp('.*'));
     when(() => mockRepoTask.callForEmptyEntries).thenReturn(true);
+    // ignore: discarded_futures
     when(() => mockRepoTask(any()))
         .thenAnswer((_) async => TaskResult.accepted);
 

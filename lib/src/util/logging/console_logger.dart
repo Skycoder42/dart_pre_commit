@@ -4,13 +4,14 @@ import 'dart:convert';
 import 'package:console/console.dart';
 
 import '../logger.dart';
+import 'simple_logger.dart';
 
 /// An advanced logger, that providers console optimized, interactive logging.
 ///
 /// This class uses colors and other ANSI-escapes to provide logs to the user
 /// via a TTY. It constantly updates lines and replaces content to provide a
 /// smooth logging experience. This logger should not be used in conjunction
-/// with a logfile or other, non-console output.
+/// with a log file or other, non-console output.
 ///
 /// For simple logging, i.e. to a file, use [SimpleLogger] instead.
 class ConsoleLogger implements Logger {

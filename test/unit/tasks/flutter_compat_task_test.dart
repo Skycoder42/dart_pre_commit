@@ -107,10 +107,12 @@ dependencies:
 
       setUp(() {
         when(() => mockFile.uri).thenReturn(testUri);
+        // ignore: discarded_futures
         when(() => mockFile.readAsString())
             .thenAnswer((i) async => testContent);
         when(() => mockFile.parent).thenReturn(FakeDirectory(dependencyPath));
         when(
+          // ignore: discarded_futures
           () => mockProgramRunner.run(
             any(),
             any(),

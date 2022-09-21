@@ -66,7 +66,7 @@ void main() {
   });
 
   group('outdated', () {
-    OutdatedTask _sut(OutdatedLevel level) => OutdatedTask(
+    OutdatedTask createSut(OutdatedLevel level) => OutdatedTask(
           programRunner: mockRunner,
           logger: mockLogger,
           config: const Config(
@@ -76,14 +76,14 @@ void main() {
         );
 
     test('task metadata is correct', () {
-      final sut = _sut(OutdatedLevel.any);
+      final sut = createSut(OutdatedLevel.any);
       expect(sut.taskName, 'outdated');
       expect(sut.callForEmptyEntries, true);
       expect(sut.filePattern, '');
     });
 
     test('Runs dart with correct arguments', () async {
-      final sut = _sut(OutdatedLevel.any);
+      final sut = createSut(OutdatedLevel.any);
       final res = await sut.call(const []);
 
       expect(res, TaskResult.accepted);
@@ -135,7 +135,7 @@ void main() {
           ),
         ]);
 
-        final sut = _sut(fixture.item1);
+        final sut = createSut(fixture.item1);
         final res = await sut(const []);
 
         expect(
@@ -173,7 +173,7 @@ void main() {
         ),
       ]);
 
-      final sut = _sut(OutdatedLevel.any);
+      final sut = createSut(OutdatedLevel.any);
       final res = await sut(const []);
 
       expect(res, TaskResult.accepted);
@@ -190,7 +190,7 @@ void main() {
           ),
         ]);
 
-        final sut = _sut(OutdatedLevel.any);
+        final sut = createSut(OutdatedLevel.any);
         final res = await sut(const []);
 
         expect(res, TaskResult.rejected);
@@ -206,7 +206,7 @@ void main() {
           ),
         ]);
 
-        final sut = _sut(OutdatedLevel.major);
+        final sut = createSut(OutdatedLevel.major);
         final res = await sut(const []);
 
         expect(res, TaskResult.accepted);
@@ -222,7 +222,7 @@ void main() {
           ),
         ]);
 
-        final sut = _sut(OutdatedLevel.any);
+        final sut = createSut(OutdatedLevel.any);
         final res = await sut(const []);
 
         expect(res, TaskResult.accepted);
@@ -239,7 +239,7 @@ void main() {
             ),
           ]);
 
-          final sut = _sut(OutdatedLevel.any);
+          final sut = createSut(OutdatedLevel.any);
           final res = await sut(const []);
 
           expect(res, TaskResult.accepted);
@@ -258,7 +258,7 @@ void main() {
             ),
           ]);
 
-          final sut = _sut(OutdatedLevel.major);
+          final sut = createSut(OutdatedLevel.major);
           final res = await sut(const []);
 
           expect(res, TaskResult.accepted);
@@ -277,7 +277,7 @@ void main() {
             ),
           ]);
 
-          final sut = _sut(OutdatedLevel.any);
+          final sut = createSut(OutdatedLevel.any);
           final res = await sut(const []);
 
           expect(res, TaskResult.accepted);

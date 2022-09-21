@@ -8,8 +8,8 @@ import 'package:riverpod/riverpod.dart';
 const disabledOutdatedLevel = 'disabled';
 
 /// @nodoc
-void main(List<String> args) {
-  _run(args).then((c) => exitCode = c);
+Future<void> main(List<String> args) async {
+  exitCode = await _run(args);
 }
 
 Future<int> _run(List<String> args) async {
@@ -212,7 +212,7 @@ Future<int> _run(List<String> args) async {
 
 Future<bool> _isFlutter(ProviderContainer di) async {
   final pubspecFile = File('pubspec.yaml');
-  if (!await pubspecFile.exists()) {
+  if (!pubspecFile.existsSync()) {
     di
         .read(HooksProviderInternal.loggerProvider)
         .warn('No pubspec.yaml file in ${Directory.current.path}');

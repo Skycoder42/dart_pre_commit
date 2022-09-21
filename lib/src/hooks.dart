@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 
+import 'hooks_provider.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
 import 'util/file_resolver.dart';
@@ -73,9 +74,9 @@ class _RejectedException implements Exception {
 ///
 /// This is the main entrypoint of the library. The class will scan your
 /// repository for staged files and run all activated hooks on them, reporting
-/// a result. Check the documentation of [FixImportsTask], [FormatTask],
-/// [AnalyzeTask] and [PullUpDependenciesTask] for more details on the actual
-/// supported hook operations. Check the Tasks category for a list of all tasks.
+/// a result. Check the documentation of the different tasks for more details
+/// on the actual supported hook operations. Check the Tasks category for a
+/// list of all tasks.
 ///
 /// For an easier use of this class and the standard hook tasks, see
 /// [HooksProvider].
@@ -321,7 +322,7 @@ class Hooks {
 
     await for (final path in stagedChanges) {
       final file = _fileResolver.file(path);
-      if (!await file.exists()) {
+      if (!file.existsSync()) {
         continue;
       }
       yield RepoEntry(

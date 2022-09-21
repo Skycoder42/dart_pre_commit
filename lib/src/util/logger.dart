@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import '../hooks.dart';
+import '../task_base.dart';
+
 /// The status a [TaskBase] can be in.
 enum TaskStatus {
   /// The task is currently running.
@@ -19,8 +22,6 @@ enum TaskStatus {
 }
 
 /// The logging level that different log messages can have.
-///
-/// See [LogLevelX] for extensions on the enum.
 enum LogLevel {
   /// Print all messages.
   debug,
@@ -77,8 +78,8 @@ abstract class Logger implements TaskLogger {
   /// rule here is: All levels that are equal or higher then the given
   /// [logLevel] are displayed, all that are lower are silently discarded.
   ///
-  /// The log levels severity is the same as the [LogLevel.index]. You can use
-  /// the [LoggerX.canLog()] method to check if the current logger should log
+  /// The log levels severity is the same as the [LogLevel] index. You can use
+  /// the [LoggerX.canLog] method to check if the current logger should log
   /// a specific log level
   LogLevel get logLevel;
   set logLevel(LogLevel level);
@@ -86,7 +87,7 @@ abstract class Logger implements TaskLogger {
   /// Updates the current status message.
   ///
   /// This method is used by [Hooks] to keep the user informed about what is
-  /// currently happening, that is, which files and tasks are currently beeing
+  /// currently happening, that is, which files and tasks are currently being
   /// processed. It also serves as a headline/barrier between "normal" log
   /// messages, so they can be easily grouped and mapped to a certain task/file.
   ///

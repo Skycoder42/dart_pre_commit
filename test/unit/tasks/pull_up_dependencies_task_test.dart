@@ -70,6 +70,7 @@ void main() {
     setUp(() {
       when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
         final res = MockFile();
+        // ignore: discarded_futures
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
 name: pull_up
@@ -80,6 +81,7 @@ name: pull_up
 
       when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
         final res = MockFile();
+        // ignore: discarded_futures
         when(() => res.readAsString()).thenAnswer(
           (i) async => '''
 packages:
@@ -150,6 +152,7 @@ packages:
 
   group('task operation', () {
     setUp(() {
+      // ignore: discarded_futures
       when(() => mockRunner.run(any(), any())).thenAnswer((i) async => 0);
     });
 

@@ -12,18 +12,18 @@ import 'package:test/test.dart';
 void main() {
   late Directory testDir;
 
-  Future<void> _writeFile(String path, String contents) async {
+  Future<void> writeFile(String path, String contents) async {
     final file = File(join(testDir.path, path));
-    if (!await file.parent.exists()) {
+    if (!file.parent.existsSync()) {
       await file.parent.create(recursive: true);
     }
     await file.writeAsString(contents);
   }
 
-  Future<String> _readFile(String path) =>
+  Future<String> readFile(String path) async =>
       File(join(testDir.path, path)).readAsString();
 
-  Future<int> _run(
+  Future<int> run(
     String program,
     List<String> arguments, {
     bool failOnError = true,
@@ -56,14 +56,14 @@ void main() {
     return exitCode;
   }
 
-  Future<void> _git(List<String> arguments) async => _run('git', arguments);
+  Future<void> git(List<String> arguments) async => run('git', arguments);
 
-  Future<int> _pub(
+  Future<int> pub(
     List<String> arguments, {
     bool failOnError = true,
     Function(Stream<List<int>>)? onStdout,
-  }) =>
-      _run(
+  }) async =>
+      run(
         'dart',
         [
           'pub',
@@ -73,12 +73,12 @@ void main() {
         onStdout: onStdout,
       );
 
-  Future<int> _sut(
+  Future<int> sut(
     String mode, {
     List<String>? arguments,
     bool failOnError = true,
     Function(String)? onStdout,
-  }) {
+  }) async {
     final disableArgs = [
       '--no-format',
       '--no-test-imports',
@@ -88,7 +88,7 @@ void main() {
       '--outdated=disabled',
       '--no-check-pull-up',
     ];
-    return _pub(
+    return pub(
       [
         'run',
         'dart_pre_commit',
@@ -109,10 +109,10 @@ void main() {
   setUp(() async {
     // create git repo
     testDir = await Directory.systemTemp.createTemp();
-    await _git(const ['init']);
+    await git(const ['init']);
 
     // create files
-    await _writeFile(
+    await writeFile(
       'pubspec.yaml',
       '''
 name: test_project
@@ -137,7 +137,7 @@ dart_pre_commit:
 ''',
     );
 
-    await _writeFile(
+    await writeFile(
       'bin/format.dart',
       '''
 import 'package:test_project/test_project.dart';
@@ -147,7 +147,7 @@ void main() {
 }
 ''',
     );
-    await _writeFile(
+    await writeFile(
       'lib/src/analyze.dart',
       '''
 void main() {
@@ -155,14 +155,14 @@ void main() {
 }
 ''',
     );
-    await _writeFile('lib/test_project.dart', '');
-    await _writeFile(
+    await writeFile('lib/test_project.dart', '');
+    await writeFile(
       'test/test.dart',
       'import "package:test_project/test_project.dart";',
     );
 
     // init dart
-    await _pub(const ['get']);
+    await pub(const ['get']);
   });
 
   tearDown(() async {
@@ -170,10 +170,10 @@ void main() {
   });
 
   test('format', () async {
-    await _git(const ['add', 'bin/format.dart']);
-    await _sut('format');
+    await git(const ['add', 'bin/format.dart']);
+    await sut('format');
 
-    final data = await _readFile('bin/format.dart');
+    final data = await readFile('bin/format.dart');
     expect(
       data,
       '''
@@ -188,10 +188,10 @@ void main() {
   });
 
   test('analyze', () async {
-    await _git(const ['add', 'lib/src/analyze.dart']);
+    await git(const ['add', 'lib/src/analyze.dart']);
 
     final lines = <String>[];
-    final code = await _sut(
+    final code = await sut(
       'analyze',
       arguments: const ['--detailed-exit-code'],
       failOnError: false,
@@ -213,10 +213,10 @@ void main() {
     () async {
       printOnFailure('Using PATH: ${Platform.environment['PATH']}');
 
-      await _git(const ['add', 'pubspec.yaml']);
+      await git(const ['add', 'pubspec.yaml']);
 
       final lines = <String>[];
-      final code = await _sut(
+      final code = await sut(
         'flutter-compat',
         onStdout: lines.add,
       );
@@ -232,10 +232,10 @@ void main() {
   );
 
   test('check-pull-up', () async {
-    await _git(const ['add', 'pubspec.lock']);
+    await git(const ['add', 'pubspec.lock']);
 
     final lines = <String>[];
-    final code = await _sut(
+    final code = await sut(
       'check-pull-up',
       arguments: const ['--detailed-exit-code'],
       failOnError: false,
@@ -247,7 +247,7 @@ void main() {
 
   test('outdated', () async {
     final lines = <String>[];
-    final code = await _sut(
+    final code = await sut(
       'outdated',
       arguments: const ['--detailed-exit-code'],
       failOnError: false,
@@ -269,8 +269,8 @@ void main() {
 
   test('test-imports', () async {
     final lines = <String>[];
-    await _git(const ['add', 'test/test.dart']);
-    final code = await _sut(
+    await git(const ['add', 'test/test.dart']);
+    final code = await sut(
       'test-imports',
       arguments: const ['--detailed-exit-code', '-ldebug'],
       failOnError: false,
@@ -287,8 +287,8 @@ void main() {
 
   test('lib-exports', () async {
     final lines = <String>[];
-    await _git(const ['add', 'lib']);
-    final code = await _sut(
+    await git(const ['add', 'lib']);
+    final code = await sut(
       'lib-exports',
       arguments: const ['--detailed-exit-code', '-ldebug'],
       failOnError: false,

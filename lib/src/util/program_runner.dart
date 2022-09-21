@@ -1,3 +1,5 @@
+// ignore_for_file: comment_references
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -42,7 +44,7 @@ class ProgramExitException implements Exception {
   }
 }
 
-/// A helper class to run subprocessed easily.
+/// A helper class to run subprocesses easily.
 class ProgramRunner {
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;

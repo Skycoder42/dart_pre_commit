@@ -29,7 +29,7 @@ Future<void> main(List<String> args) async {
     final flutterBin = File(
       '$toolPath/bin/flutter${Platform.isWindows ? '.bat' : ''}',
     );
-    if (!await flutterBin.exists()) {
+    if (!flutterBin.existsSync()) {
       throw Exception('Flutter binary ${flutterBin.path} does not exist');
     }
 

@@ -7,6 +7,4 @@ analyzer:
 
 linter:
   rules:
-    avoid_slow_async_io: false
     avoid_types_on_closure_parameters: false
-    comment_references: false

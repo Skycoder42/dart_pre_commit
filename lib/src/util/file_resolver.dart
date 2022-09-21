@@ -4,9 +4,9 @@ import 'package:path/path.dart';
 
 /// Helper class to resolve file paths
 class FileResolver {
-  /// Finds the conanical relative path of [path], relative to [from]
+  /// Finds the canonical relative path of [path], relative to [from]
   ///
-  /// Unlike the standard paths methods, this also relsoves symlinks etc.
+  /// Unlike the standard paths methods, this also resolves symlinks etc.
   ///
   /// If [from] is not specified, [Directory.current] is used.
   Future<String> resolve(String path, [Directory? from]) async => relative(
@@ -14,13 +14,13 @@ class FileResolver {
         from: await (from ?? Directory.current).resolveSymbolicLinks(),
       );
 
-  /// Finds the conanical relative paths of all [paths], relative to [from]
+  /// Finds the canonical relative paths of all [paths], relative to [from]
   ///
-  /// Unlike the standard paths methods, this also relsoves symlinks etc.
+  /// Unlike the standard paths methods, this also resolves symlinks etc.
   ///
   /// If [from] is not specified, [Directory.current] is used.
   Stream<String> resolveAll(Iterable<String> paths, [Directory? from]) =>
-      Stream.fromIterable(paths).asyncMap((p) => resolve(p, from));
+      Stream.fromIterable(paths).asyncMap((p) async => resolve(p, from));
 
   /// Create a new [File] instance.
   ///

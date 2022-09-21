@@ -43,6 +43,7 @@ void main() {
   setUp(() {
     reset(mockLogger);
 
+    // ignore: discarded_futures
     when(() => mockLogger.pipeStderr(any())).thenAnswer((i) async {});
 
     sut = ProgramRunner(
@@ -50,11 +51,11 @@ void main() {
     );
   });
 
-  Future<int> _run(
+  Future<int> run(
     List<String> args, {
     bool failOnExit = false,
     String? workingDirectory,
-  }) =>
+  }) async =>
       Platform.isWindows
           ? sut.run(
               'cmd',
@@ -69,7 +70,7 @@ void main() {
               workingDirectory: workingDirectory,
             );
 
-  Stream<String> _stream(
+  Stream<String> runStream(
     List<String> args, {
     bool failOnExit = true,
     String? workingDirectory,
@@ -90,20 +91,20 @@ void main() {
 
   group('run', () {
     test('forwards exit code', () async {
-      final exitCode = await _run(const ['exit 42']);
+      final exitCode = await run(const ['exit 42']);
       expect(exitCode, 42);
     });
 
     test('throws on unexpected exit code if enabled', () async {
       const args = ['exit 42'];
       expect(
-        () => _run(args, failOnExit: true),
+        () => run(args, failOnExit: true),
         throwsA(isAProgramException(args, 42)),
       );
     });
 
     test('runs in working directory', () async {
-      final exitCode = await _run(
+      final exitCode = await run(
         Platform.isWindows ? const ['cd'] : const ['pwd'],
         workingDirectory: Directory.systemTemp.path,
       );
@@ -113,7 +114,7 @@ void main() {
 
   group('stream', () {
     test('forwards output', () async {
-      final res = _stream(const [
+      final res = runStream(const [
         'echo a && echo b && echo c',
       ]);
       expect(
@@ -131,7 +132,7 @@ void main() {
       const args = [
         'echo a && echo b && false',
       ];
-      final stream = _stream(args);
+      final stream = runStream(args);
       expect(
         stream,
         emitsInOrder(<dynamic>[
@@ -147,7 +148,7 @@ void main() {
       const args = [
         'echo a && echo b && false',
       ];
-      final stream = _stream(args, failOnExit: false);
+      final stream = runStream(args, failOnExit: false);
       expect(
         stream,
         emitsInOrder(<dynamic>[
@@ -161,7 +162,7 @@ void main() {
     test(
       'runs in working directory',
       () async {
-        final stream = _stream(
+        final stream = runStream(
           Platform.isWindows ? const ['cd'] : const ['pwd'],
           workingDirectory: Directory.systemTemp.path,
         );

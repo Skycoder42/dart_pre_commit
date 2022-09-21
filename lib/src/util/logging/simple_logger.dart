@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../logger.dart';
+import 'console_logger.dart';
 
 /// A simple logger class, the provides file-optimized logs.
 ///

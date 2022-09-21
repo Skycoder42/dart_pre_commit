@@ -1,3 +1,4 @@
+import 'package:dart_test_tools/lint.dart';
 import 'package:meta/meta.dart';
 
 /// An exception that gets thrown to wrap [FileResult.failure] linter results.
