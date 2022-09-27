@@ -8,3 +8,4 @@ analyzer:
 linter:
   rules:
     avoid_types_on_closure_parameters: false
+    public_member_api_docs: false

@@ -1,7 +1,13 @@
 import 'dart:io';
 
+import 'package:riverpod/riverpod.dart';
+
 import '../logger.dart';
 import 'console_logger.dart';
+
+final simpleLoggerProvider = Provider<Logger>(
+  (ref) => SimpleLogger(),
+);
 
 /// A simple logger class, the provides file-optimized logs.
 ///

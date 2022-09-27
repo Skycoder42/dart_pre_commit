@@ -1,10 +1,19 @@
 import 'package:path/path.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
+
+final analyzeTaskProvider = Provider(
+  (ref) => AnalyzeTask(
+    fileResolver: ref.watch(fileResolverProvider),
+    programRunner: ref.watch(programRunnerProvider),
+    logger: ref.watch(taskLoggerProvider),
+  ),
+);
 
 class _AnalyzeResult {
   final String category;

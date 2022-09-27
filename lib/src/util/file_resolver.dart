@@ -1,6 +1,11 @@
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:riverpod/riverpod.dart';
+
+final fileResolverProvider = Provider(
+  (ref) => FileResolver(),
+);
 
 /// Helper class to resolve file paths
 class FileResolver {

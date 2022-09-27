@@ -2,9 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:console/console.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../logger.dart';
 import 'simple_logger.dart';
+
+final consoleLoggerProvider = Provider<Logger>(
+  (ref) => ConsoleLogger(),
+);
 
 /// An advanced logger, that providers console optimized, interactive logging.
 ///

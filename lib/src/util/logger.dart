@@ -1,7 +1,17 @@
 import 'dart:async';
 
+import 'package:riverpod/riverpod.dart';
+
 import '../hooks.dart';
 import '../task_base.dart';
+
+final loggerProvider = Provider<Logger>(
+  (ref) => throw UnimplementedError(),
+);
+
+final taskLoggerProvider = Provider<TaskLogger>(
+  (ref) => ref.watch(loggerProvider),
+);
 
 /// The status a [TaskBase] can be in.
 enum TaskStatus {

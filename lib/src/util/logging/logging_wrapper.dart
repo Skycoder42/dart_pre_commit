@@ -2,8 +2,15 @@ import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logging/logging.dart' as logging;
+import 'package:riverpod/riverpod.dart';
 
 import '../../../dart_pre_commit.dart';
+
+final loggingWrapperProvider = Provider(
+  (ref) => LoggingWrapper(
+    ref.watch(taskLoggerProvider),
+  ),
+);
 
 /// @nodoc
 @internal

@@ -1,11 +1,23 @@
 import 'dart:convert';
 
+import 'package:riverpod/riverpod.dart';
+
 import '../config/config.dart';
+import '../config/config_loader.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/outdated/outdated_info.dart';
+
+final outdatedTaskProvider = FutureProvider.family(
+  (ref, OutdatedLevel level) async => OutdatedTask(
+    programRunner: ref.watch(programRunnerProvider),
+    logger: ref.watch(taskLoggerProvider),
+    config: await ref.watch(configProvider.future),
+    outdatedLevel: level,
+  ),
+);
 
 /// The different levels of outdated-ness that can be checked.
 enum OutdatedLevel {

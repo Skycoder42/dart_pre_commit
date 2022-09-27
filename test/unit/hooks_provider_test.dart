@@ -53,28 +53,23 @@ void main() {
 
   ProviderContainer createIoc() => ProviderContainer(
         overrides: [
-          HooksProviderInternal.loggerProvider.overrideWithValue(mockLogger),
-          HooksProviderInternal.fileResolverProvider
-              .overrideWithValue(mockResolver),
-          HooksProviderInternal.programRunnerProvider
-              .overrideWithValue(mockRunner),
-          HooksProviderInternal.formatProvider.overrideWithValue(mockFormat),
-          HooksProviderInternal.analyzeProvider.overrideWithValue(mockAnalyze),
-          HooksProviderInternal.testImportProvider
-              .overrideWithValue(mockTestImport),
-          HooksProviderInternal.libExportProvider
-              .overrideWithValue(mockLibExport),
-          HooksProviderInternal.outdatedProvider.overrideWithProvider(
+          loggerProvider.overrideWithValue(mockLogger),
+          fileResolverProvider.overrideWithValue(mockResolver),
+          programRunnerProvider.overrideWithValue(mockRunner),
+          formatTaskProvider.overrideWithValue(mockFormat),
+          analyzeTaskProvider.overrideWithValue(mockAnalyze),
+          testImportTaskProvider.overrideWithValue(mockTestImport),
+          libExportTaskProvider.overrideWithValue(mockLibExport),
+          outdatedTaskProvider.overrideWithProvider(
             FutureProvider.family(
               (ref, OutdatedLevel level) =>
                   // ignore: unnecessary_cast
                   (mockOutdated..outdatedLevel = level) as OutdatedTask,
             ),
           ),
-          HooksProviderInternal.pullUpDependenciesProvider
+          pullUpDependenciesTaskProvider
               .overrideWithValue(AsyncValue.data(mockPullUp)),
-          HooksProviderInternal.flutterCompatProvider
-              .overrideWithValue(mockFlutterCompat),
+          flutterCompatTaskProvider.overrideWithValue(mockFlutterCompat),
         ],
       );
 

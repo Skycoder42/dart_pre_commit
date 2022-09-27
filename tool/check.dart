@@ -22,9 +22,20 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  final di = ProviderContainer();
+  final di = ProviderContainer(
+    overrides: [
+      configFilePathProvider.overrideWithValue(null),
+      loggerProvider.overrideWithProvider(
+        Provider(
+          (ref) => stdout.hasTerminal && stdout.supportsAnsiEscapes
+              ? ref.watch(consoleLoggerProvider)
+              : ref.watch(simpleLoggerProvider),
+        ),
+      ),
+    ],
+  );
   try {
-    final logger = di.read(HooksProviderInternal.loggerProvider);
+    final logger = di.read(loggerProvider);
     logger.logLevel = LogLevel.values.byName(
       args.firstWhere(
         (_) => true,
@@ -57,7 +68,7 @@ Future<void> main(List<String> args) async {
           (entry) async => RepoEntry(
             file: File(
               await di
-                  .read(HooksProviderInternal.fileResolverProvider)
+                  .read(fileResolverProvider)
                   .resolve(entry.path, Directory.current),
             ),
             partiallyStaged: false,
@@ -67,7 +78,7 @@ Future<void> main(List<String> args) async {
         .runFileTasks(di)
         .runRepoTasks(di);
   } on Exception catch (e, s) {
-    di.read(HooksProviderInternal.loggerProvider).except(e, s);
+    di.read(loggerProvider).except(e, s);
     exitCode = 1;
   } finally {
     di.dispose();
@@ -94,10 +105,10 @@ exec dart run tool/check.dart
 
 extension _TaskStreamX on Stream<RepoEntry> {
   Stream<RepoEntry> runFileTasks(ProviderContainer di) async* {
-    final logger = di.read(HooksProviderInternal.loggerProvider);
+    final logger = di.read(loggerProvider);
     final tasks = [
-      di.read(HooksProviderInternal.formatProvider),
-      di.read(HooksProviderInternal.testImportProvider),
+      di.read(formatTaskProvider),
+      di.read(testImportTaskProvider),
     ];
 
     await for (final repoEntry in this) {
@@ -119,15 +130,15 @@ extension _TaskStreamX on Stream<RepoEntry> {
   }
 
   Future<void> runRepoTasks(ProviderContainer di) async {
-    final logger = di.read(HooksProviderInternal.loggerProvider);
+    final logger = di.read(loggerProvider);
     final tasks = <RepoTask>[
-      di.read(HooksProviderInternal.analyzeProvider),
-      di.read(HooksProviderInternal.libExportProvider),
-      di.read(HooksProviderInternal.flutterCompatProvider),
+      di.read(analyzeTaskProvider),
+      // di.read(libExportTaskProvider),
+      di.read(flutterCompatTaskProvider),
       await di.read(
-        HooksProviderInternal.outdatedProvider(OutdatedLevel.any).future,
+        outdatedTaskProvider(OutdatedLevel.any).future,
       ),
-      await di.read(HooksProviderInternal.pullUpDependenciesProvider.future),
+      await di.read(pullUpDependenciesTaskProvider.future),
     ];
 
     final repoEntries = await toList();

@@ -1,14 +1,25 @@
 import 'package:checked_yaml/checked_yaml.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../config/config.dart';
+import '../config/config_loader.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
+
+final pullUpDependenciesTaskProvider = FutureProvider(
+  (ref) async => PullUpDependenciesTask(
+    fileResolver: ref.watch(fileResolverProvider),
+    programRunner: ref.watch(programRunnerProvider),
+    config: await ref.watch(configProvider.future),
+    logger: ref.watch(taskLoggerProvider),
+  ),
+);
 
 /// This task scans the lockfile to check if dependencies should be pulled up.
 ///

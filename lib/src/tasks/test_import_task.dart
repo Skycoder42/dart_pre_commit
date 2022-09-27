@@ -1,9 +1,21 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:path/path.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
 import '../util/linter_exception.dart';
+import '../util/linter_providers.dart';
+
+final testImportTaskProvider = Provider(
+  (ref) => TestImportTask(
+    analysisContextCollectionProvider: (entry) => ref.read(
+      analysisContextCollectionProvider([entry.gitRoot.absolute.path]),
+    ),
+    logger: ref.watch(taskLoggerProvider),
+    linter: ref.watch(testImportLinterProvider),
+  ),
+);
 
 /// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
 typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection

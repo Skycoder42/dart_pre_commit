@@ -13,7 +13,6 @@ Future<void> main(List<String> args) async {
 }
 
 Future<int> _run(List<String> args) async {
-  final di = ProviderContainer();
   final parser = ArgParser()
     ..addSeparator('Task selection:')
     ..addFlag(
@@ -130,7 +129,7 @@ Future<int> _run(List<String> args) async {
     )
     ..addFlag(
       'ansi',
-      defaultsTo: di.read(HooksProviderInternal.ansiSupportedProvider),
+      defaultsTo: stdout.hasTerminal && stdout.supportsAnsiEscapes,
       help: 'When enabled, a rich, ANSI-backed output is used. If disabled, '
           'a simple logger is used, which is optimized for logging to files. '
           'The mode is auto-detected, but might not detect all terminals '
@@ -150,6 +149,7 @@ Future<int> _run(List<String> args) async {
       help: 'Show this help.',
     );
 
+  ProviderContainer? di;
   try {
     final options = parser.parse(args);
     if (options['help'] as bool) {
@@ -162,12 +162,23 @@ Future<int> _run(List<String> args) async {
       Directory.current = dir;
     }
 
-    di.read(HooksProviderInternal.ansiSupportedProvider.notifier).state =
-        options['ansi'] as bool;
-    di.read(HooksProviderInternal.configFilePathProvider.notifier).state =
-        options.options.contains('config-path')
-            ? File(options['config-path'] as String)
-            : null;
+    final ansiSupported = options['ansi'] as bool;
+    di = ProviderContainer(
+      overrides: [
+        configFilePathProvider.overrideWithValue(
+          options.options.contains('config-path')
+              ? File(options['config-path'] as String)
+              : null,
+        ),
+        loggerProvider.overrideWithProvider(
+          Provider(
+            (ref) => ansiSupported
+                ? ref.watch(consoleLoggerProvider)
+                : ref.watch(simpleLoggerProvider),
+          ),
+        ),
+      ],
+    );
 
     final outdatedLevel = options['outdated'] as String;
     final hooks = await di.read(
@@ -203,10 +214,10 @@ Future<int> _run(List<String> args) async {
       ..write(parser.usage);
     return 2;
   } on Exception catch (e, s) {
-    di.read(HooksProviderInternal.taskLoggerProvider).except(e, s);
+    di?.read(taskLoggerProvider).except(e, s);
     return 127;
   } finally {
-    di.dispose();
+    di?.dispose();
   }
 }
 
@@ -214,7 +225,7 @@ Future<bool> _isFlutter(ProviderContainer di) async {
   final pubspecFile = File('pubspec.yaml');
   if (!pubspecFile.existsSync()) {
     di
-        .read(HooksProviderInternal.loggerProvider)
+        .read(loggerProvider)
         .warn('No pubspec.yaml file in ${Directory.current.path}');
     return false;
   }

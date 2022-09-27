@@ -1,8 +1,22 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/lint.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
 import '../util/linter_exception.dart';
+import '../util/linter_providers.dart';
+
+final libExportTaskProvider = Provider(
+  (ref) => LibExportTask(
+    analysisContextCollectionProvider: (entries) => ref.read(
+      analysisContextCollectionProvider(
+        entries.map((e) => e.file.absolute.path).toList(),
+      ),
+    ),
+    logger: ref.watch(taskLoggerProvider),
+    linter: ref.watch(libExportLinterProvider),
+  ),
+);
 
 /// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
 typedef AnalysisContextCollectionRepoProviderFn = AnalysisContextCollection

@@ -1,10 +1,27 @@
 import 'dart:io';
 
 import 'package:checked_yaml/checked_yaml.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../util/file_resolver.dart';
 import 'config.dart';
 import 'pubspec_stub.dart';
+
+final configFilePathProvider = Provider<File?>(
+  (ref) => throw UnimplementedError(),
+);
+
+final configLoaderProvider = Provider(
+  (ref) => ConfigLoader(
+    fileResolver: ref.watch(fileResolverProvider),
+  ),
+);
+
+final configProvider = FutureProvider<Config>(
+  (ref) => ref
+      .watch(configLoaderProvider)
+      .loadConfig(ref.watch(configFilePathProvider)),
+);
 
 /// A helper class that extracts the [Config] for the pre commit hooks from
 /// the pubspec.yaml or any other yaml file.

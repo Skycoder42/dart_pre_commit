@@ -1,6 +1,14 @@
+import 'package:riverpod/riverpod.dart';
+
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/program_runner.dart';
+
+final formatTaskProvider = Provider(
+  (ref) => FormatTask(
+    programRunner: ref.watch(programRunnerProvider),
+  ),
+);
 
 /// A task the runs `dart format` on the given file.
 ///

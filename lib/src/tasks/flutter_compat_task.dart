@@ -1,8 +1,16 @@
 import 'dart:io';
 
 import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
+
+final flutterCompatTaskProvider = Provider(
+  (ref) => FlutterCompatTask(
+    programRunner: ref.watch(programRunnerProvider),
+    taskLogger: ref.watch(taskLoggerProvider),
+  ),
+);
 
 /// A task that checks if the package can be added to a flutter project.
 ///
