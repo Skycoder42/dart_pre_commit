@@ -1,10 +1,9 @@
 import 'package:checked_yaml/checked_yaml.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../config/config.dart';
-import '../config/config_loader.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
@@ -12,14 +11,33 @@ import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
 
-final pullUpDependenciesTaskProvider = FutureProvider(
-  (ref) async => PullUpDependenciesTask(
+part 'pull_up_dependencies_task.freezed.dart';
+part 'pull_up_dependencies_task.g.dart';
+
+final pullUpDependenciesTaskProvider = Provider.family(
+  (ref, PullUpDependenciesConfig config) => PullUpDependenciesTask(
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
-    config: await ref.watch(configProvider.future),
     logger: ref.watch(taskLoggerProvider),
+    config: config,
   ),
 );
+
+@freezed
+class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
+  // ignore: invalid_annotation_target
+  @JsonSerializable(
+    anyMap: true,
+    checked: true,
+    disallowUnrecognizedKeys: true,
+  )
+  const factory PullUpDependenciesConfig({
+    @Default(<String>[]) List<String> allowed,
+  }) = _PullUpDependenciesConfig;
+
+  factory PullUpDependenciesConfig.fromJson(Map<String, dynamic> json) =>
+      _$PullUpDependenciesConfigFromJson(json);
+}
 
 /// This task scans the lockfile to check if dependencies should be pulled up.
 ///
@@ -60,8 +78,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   /// The [FileResolver] instance used by this task.
   final FileResolver fileResolver;
 
-  /// The loaded [Config] for the hooks
-  final Config config;
+  final PullUpDependenciesConfig config;
 
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
@@ -168,7 +185,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
           if (_checkValidRelease(resolvedVersion) &&
               minVersion != null &&
               resolvedVersion! > minVersion) {
-            if (config.allowOutdated.contains(entry.key)) {
+            if (config.allowed.contains(entry.key)) {
               logger.warn(
                 '${entry.key}: Ignoring $versionConstraint -> $resolvedVersion',
               );

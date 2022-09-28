@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dart_pre_commit/src/config/config.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/models/outdated/outdated_info.dart';
 import 'package:dart_pre_commit/src/tasks/models/outdated/package_info.dart';
@@ -69,10 +68,10 @@ void main() {
     OutdatedTask createSut(OutdatedLevel level) => OutdatedTask(
           programRunner: mockRunner,
           logger: mockLogger,
-          config: const Config(
-            allowOutdated: [ignoredTestPackage],
+          config: OutdatedConfig(
+            level: level,
+            allowed: [ignoredTestPackage],
           ),
-          outdatedLevel: level,
         );
 
     test('task metadata is correct', () {

@@ -181,7 +181,9 @@ Future<int> _run(List<String> args) async {
     );
 
     final outdatedLevel = options['outdated'] as String;
-    final hooks = await di.read(
+    final config = await di.read(configProvider.future);
+
+    final hooks = di.read(
       HooksProvider.hookProvider(
         HooksConfig(
           format: options['format'] as bool,
@@ -190,13 +192,20 @@ Future<int> _run(List<String> args) async {
           libExports: options['lib-exports'] as bool,
           outdated: outdatedLevel == disabledOutdatedLevel
               ? null
-              : OutdatedLevel.values.byName(outdatedLevel),
-          pullUpDependencies: options['check-pull-up'] as bool,
+              : OutdatedConfig(
+                  level: OutdatedLevel.values.byName(outdatedLevel),
+                  allowed: config.allowOutdated,
+                ),
+          pullUpDependencies: options['check-pull-up'] as bool
+              ? PullUpDependenciesConfig(
+                  allowed: config.allowOutdated,
+                )
+              : null,
           flutterCompat:
               options['flutter-compat'] as bool? ?? !(await _isFlutter(di)),
           continueOnRejected: options['continue-on-rejected'] as bool,
         ),
-      ).future,
+      ),
     );
     hooks.logger.logLevel = LogLevel.values.byName(
       options['log-level'] as String,

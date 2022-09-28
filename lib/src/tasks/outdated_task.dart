@@ -1,21 +1,22 @@
 import 'dart:convert';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../config/config.dart';
-import '../config/config_loader.dart';
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/outdated/outdated_info.dart';
 
-final outdatedTaskProvider = FutureProvider.family(
-  (ref, OutdatedLevel level) async => OutdatedTask(
+part 'outdated_task.freezed.dart';
+part 'outdated_task.g.dart';
+
+final outdatedTaskProvider = Provider.family(
+  (ref, OutdatedConfig config) => OutdatedTask(
     programRunner: ref.watch(programRunnerProvider),
     logger: ref.watch(taskLoggerProvider),
-    config: await ref.watch(configProvider.future),
-    outdatedLevel: level,
+    config: config,
   ),
 );
 
@@ -37,13 +38,30 @@ enum OutdatedLevel {
   any,
 }
 
+@freezed
+class OutdatedConfig with _$OutdatedConfig {
+  // ignore: invalid_annotation_target
+  @JsonSerializable(
+    anyMap: true,
+    checked: true,
+    disallowUnrecognizedKeys: true,
+  )
+  const factory OutdatedConfig({
+    @Default(OutdatedLevel.any) OutdatedLevel level,
+    @Default(<String>[]) List<String> allowed,
+  }) = _OutdatedConfig;
+
+  factory OutdatedConfig.fromJson(Map<String, dynamic> json) =>
+      _$OutdatedConfigFromJson(json);
+}
+
 /// A task that checks if any of your installed dependencies have to be updated.
 ///
 /// It runs `dart pub outdated` to check on the current status of all packages.
 /// If any package can be updated, that update will be printed as a
 /// recommendation, but won't reject your commit.
 ///
-/// The [outdatedLevel] however configures, which levels of outdatedness are
+/// The [config] however configures, which levels of outdatedness are
 /// acceptable. Any updates that at least reach the level are considered
 /// mandatory and if available will reject the commit. See [OutdatedLevel] for
 /// more details on which versions each level includes.
@@ -56,18 +74,13 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
-  /// The loaded [Config] for the hooks
-  final Config config;
-
-  /// The level of outdatedness that will cause the task to reject the commit.
-  final OutdatedLevel outdatedLevel;
+  final OutdatedConfig config;
 
   /// Default Constructor.
   const OutdatedTask({
     required this.programRunner,
     required this.logger,
     required this.config,
-    required this.outdatedLevel,
   });
 
   @override
@@ -97,7 +110,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
 
       var updated = false;
       final hasUpdate = resolvable > current;
-      switch (outdatedLevel) {
+      switch (config.level) {
         case OutdatedLevel.none:
           break;
         case OutdatedLevel.any:
@@ -116,7 +129,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
           break;
       }
 
-      if (hasUpdate && config.allowOutdated.contains(package.package)) {
+      if (hasUpdate && config.allowed.contains(package.package)) {
         logger.warn('Ignored:     ${package.package}: $current -> $resolvable');
       } else if (updated) {
         ++outdatedCnt;

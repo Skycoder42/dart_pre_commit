@@ -131,14 +131,25 @@ extension _TaskStreamX on Stream<RepoEntry> {
 
   Future<void> runRepoTasks(ProviderContainer di) async {
     final logger = di.read(loggerProvider);
+    final config = await di.read(configProvider.future);
     final tasks = <RepoTask>[
       di.read(analyzeTaskProvider),
       // di.read(libExportTaskProvider),
       di.read(flutterCompatTaskProvider),
       await di.read(
-        outdatedTaskProvider(OutdatedLevel.any).future,
+        outdatedTaskProvider(
+          OutdatedConfig(
+            allowed: config.allowOutdated,
+          ),
+        ),
       ),
-      await di.read(pullUpDependenciesTaskProvider.future),
+      await di.read(
+        pullUpDependenciesTaskProvider(
+          PullUpDependenciesConfig(
+            allowed: config.allowOutdated,
+          ),
+        ),
+      ),
     ];
 
     final repoEntries = await toList();

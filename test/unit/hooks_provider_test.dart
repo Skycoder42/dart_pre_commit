@@ -31,11 +31,14 @@ class MockLibExportTask extends Mock implements LibExportTask {}
 
 class MockOutdatedTask extends Mock implements OutdatedTask {
   @override
-  late OutdatedLevel outdatedLevel;
+  late OutdatedConfig config;
 }
 
 class MockPullUpDependenciesTask extends Mock
-    implements PullUpDependenciesTask {}
+    implements PullUpDependenciesTask {
+  @override
+  late PullUpDependenciesConfig config;
+}
 
 class MockFlutterCompatTask extends Mock implements FlutterCompatTask {}
 
@@ -61,14 +64,19 @@ void main() {
           testImportTaskProvider.overrideWithValue(mockTestImport),
           libExportTaskProvider.overrideWithValue(mockLibExport),
           outdatedTaskProvider.overrideWithProvider(
-            FutureProvider.family(
-              (ref, OutdatedLevel level) =>
+            Provider.family(
+              (ref, OutdatedConfig config) =>
                   // ignore: unnecessary_cast
-                  (mockOutdated..outdatedLevel = level) as OutdatedTask,
+                  (mockOutdated..config = config) as OutdatedTask,
             ),
           ),
-          pullUpDependenciesTaskProvider
-              .overrideWithValue(AsyncValue.data(mockPullUp)),
+          pullUpDependenciesTaskProvider.overrideWithProvider(
+            Provider.family(
+              (ref, PullUpDependenciesConfig config) =>
+                  // ignore: unnecessary_cast
+                  (mockPullUp..config = config) as PullUpDependenciesTask,
+            ),
+          ),
           flutterCompatTaskProvider.overrideWithValue(mockFlutterCompat),
         ],
       );
@@ -83,8 +91,9 @@ void main() {
     when(() => mockTestImport.taskName).thenReturn('testImports');
     when(() => mockLibExport.taskName).thenReturn('libExports');
     when(() => mockOutdated.taskName)
-        .thenAnswer((i) => 'outdated:${mockOutdated.outdatedLevel.name}');
-    when(() => mockPullUp.taskName).thenReturn('pullUpDependencies');
+        .thenAnswer((i) => 'outdated:${mockOutdated.config}');
+    when(() => mockPullUp.taskName)
+        .thenAnswer((i) => 'pullUpDependencies:${mockPullUp.config}');
     when(() => mockFlutterCompat.taskName).thenReturn('flutterCompat');
   });
 
@@ -103,36 +112,34 @@ void main() {
       ),
       for (final level in OutdatedLevel.values)
         Tuple3(
-          HooksConfig(outdated: level),
-          ['outdated:${level.name}'],
+          HooksConfig(outdated: OutdatedConfig(level: level)),
+          ['outdated:${OutdatedConfig(level: level)}'],
           false,
         ),
-      const Tuple3(
-        HooksConfig(pullUpDependencies: true),
-        ['pullUpDependencies'],
+      Tuple3(
+        const HooksConfig(pullUpDependencies: PullUpDependenciesConfig()),
+        ['pullUpDependencies:${const PullUpDependenciesConfig()}'],
         false,
       ),
       const Tuple3(HooksConfig(continueOnRejected: true), [], true),
-      const Tuple3(
-        HooksConfig(
+      Tuple3(
+        const HooksConfig(
           format: true,
           analyze: true,
-          pullUpDependencies: true,
+          pullUpDependencies: PullUpDependenciesConfig(),
           continueOnRejected: true,
         ),
         [
           'format',
           'analyze',
-          'pullUpDependencies',
+          'pullUpDependencies:${const PullUpDependenciesConfig()}',
         ],
         true,
       ),
     ],
     (fixture) async {
       final ioc = createIoc();
-      final hooks = await ioc.read(
-        HooksProvider.hookProvider(fixture.item1).future,
-      );
+      final hooks = ioc.read(HooksProvider.hookProvider(fixture.item1));
       expect(hooks.tasks, fixture.item2);
       expect(hooks.continueOnRejected, fixture.item3);
     },

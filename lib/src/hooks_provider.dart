@@ -37,14 +37,8 @@ class HooksConfig with _$HooksConfig {
 
     /// Specifies, whether the [FlutterCompatTask] should be enabled.
     @Default(false) bool flutterCompat,
-
-    /// Specifies, whether the [OutdatedTask] in default mode should be enabled.
-    ///
-    /// The [outdated] value is used to initialize the task with that value.
-    OutdatedLevel? outdated,
-
-    /// Specifies, whether the [PullUpDependenciesTask] should be enabled.
-    @Default(false) bool pullUpDependencies,
+    OutdatedConfig? outdated,
+    PullUpDependenciesConfig? pullUpDependencies,
 
     /// Sets [Hooks.continueOnRejected].
     @Default(false) bool continueOnRejected,
@@ -55,8 +49,8 @@ class HooksConfig with _$HooksConfig {
 abstract class HooksProvider {
   const HooksProvider._();
 
-  static final hookProvider = FutureProvider.family(
-    (ref, HooksConfig param) async => Hooks(
+  static final hookProvider = Provider.family(
+    (ref, HooksConfig param) => Hooks(
       logger: ref.watch(loggerProvider),
       fileResolver: ref.watch(fileResolverProvider),
       programRunner: ref.watch(programRunnerProvider),
@@ -68,9 +62,9 @@ abstract class HooksProvider {
         if (param.libExports) ref.watch(libExportTaskProvider),
         if (param.flutterCompat) ref.watch(flutterCompatTaskProvider),
         if (param.outdated != null)
-          await ref.watch(outdatedTaskProvider(param.outdated!).future),
-        if (param.pullUpDependencies)
-          await ref.watch(pullUpDependenciesTaskProvider.future),
+          ref.watch(outdatedTaskProvider(param.outdated!)),
+        if (param.pullUpDependencies != null)
+          ref.watch(pullUpDependenciesTaskProvider(param.pullUpDependencies!)),
         if (param.extraTasks != null) ...param.extraTasks!,
       ],
     ),

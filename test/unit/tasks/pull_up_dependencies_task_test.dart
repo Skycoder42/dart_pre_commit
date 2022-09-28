@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dart_pre_commit/src/config/config.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
@@ -40,7 +39,7 @@ void main() {
       logger: mockLogger,
       programRunner: mockRunner,
       fileResolver: mockResolver,
-      config: const Config(),
+      config: const PullUpDependenciesConfig(), // TODO test with ignored
     );
   });
 
