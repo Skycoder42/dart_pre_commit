@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 void main() {
   late Directory testDir;
@@ -76,24 +77,37 @@ void main() {
   Future<int> sut(
     String mode, {
     List<String>? arguments,
+    Map<String, dynamic>? config,
     bool failOnError = true,
     Function(String)? onStdout,
   }) async {
-    final disableArgs = [
-      '--no-format',
-      '--no-test-imports',
-      '--no-analyze',
-      '--no-lib-exports',
-      '--no-flutter-compat',
-      '--outdated=disabled',
-      '--no-check-pull-up',
+    final knownTasks = [
+      'format',
+      'test-imports',
+      'analyze',
+      'flutter-compat',
+      'outdated',
+      'pull-up-dependencies',
+      'lib-exports',
     ];
+    final configEditor = YamlEditor('_placeholder: null');
+    for (final task in knownTasks) {
+      configEditor.update(
+        [task],
+        mode == task ? (config ?? true) : false,
+      );
+    }
+
+    final configFile = File.fromUri(testDir.uri.resolve('config.yaml'));
+    await configFile.writeAsString(configEditor.toString());
+
     return pub(
       [
         'run',
         'dart_pre_commit',
         '--no-ansi',
-        ...disableArgs.where((arg) => !arg.contains(mode)),
+        '--config-path',
+        configFile.path,
         ...?arguments,
       ],
       failOnError: failOnError,
@@ -130,10 +144,6 @@ dependencies:
 
 dev_dependencies:
   lint: null
-
-dart_pre_commit:
-  allow_outdated:
-    - rxdart
 ''',
     );
 
@@ -231,12 +241,12 @@ void main() {
     timeout: const Timeout(Duration(minutes: 2)),
   );
 
-  test('check-pull-up', () async {
+  test('pull-up-dependencies', () async {
     await git(const ['add', 'pubspec.lock']);
 
     final lines = <String>[];
     final code = await sut(
-      'check-pull-up',
+      'pull-up-dependencies',
       arguments: const ['--detailed-exit-code'],
       failOnError: false,
       onStdout: lines.add,
@@ -250,6 +260,9 @@ void main() {
     final code = await sut(
       'outdated',
       arguments: const ['--detailed-exit-code'],
+      config: const <String, dynamic>{
+        'allowed': ['rxdart'],
+      },
       failOnError: false,
       onStdout: lines.add,
     );

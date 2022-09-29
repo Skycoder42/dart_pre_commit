@@ -2,7 +2,6 @@ import 'package:checked_yaml/checked_yaml.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
@@ -10,11 +9,14 @@ import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
+import 'provider/task_provider.dart';
 
 part 'pull_up_dependencies_task.freezed.dart';
 part 'pull_up_dependencies_task.g.dart';
 
-final pullUpDependenciesTaskProvider = Provider.family(
+final pullUpDependenciesTaskProvider = TaskProvider.configurable(
+  PullUpDependenciesTask._taskName,
+  PullUpDependenciesConfig.fromJson,
   (ref, PullUpDependenciesConfig config) => PullUpDependenciesTask(
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
@@ -72,6 +74,8 @@ class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
 ///
 /// {@category tasks}
 class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
+  static const _taskName = 'pull-up-dependencies';
+
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
@@ -92,7 +96,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   });
 
   @override
-  String get taskName => 'pull-up-dependencies';
+  String get taskName => _taskName;
 
   @override
   bool get callForEmptyEntries => true;

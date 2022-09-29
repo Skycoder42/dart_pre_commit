@@ -1,17 +1,42 @@
 import 'dart:io';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
+import 'package:riverpod/riverpod.dart';
 
-import 'hooks_provider.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
+import 'tasks/provider/task_loader.dart';
 import 'util/file_resolver.dart';
 import 'util/logger.dart';
 import 'util/program_runner.dart';
 
+part 'hooks.freezed.dart';
+
+final hooksProvider = Provider.family(
+  (ref, HooksConfig config) => Hooks(
+    logger: ref.watch(loggerProvider),
+    fileResolver: ref.watch(fileResolverProvider),
+    programRunner: ref.watch(programRunnerProvider),
+    tasks: ref.watch(tasksProvider),
+    config: config,
+  ),
+);
+
+@freezed
+class HooksConfig with _$HooksConfig {
+  const factory HooksConfig({
+    /// Specifies, whether processing should continue on rejections.
+    ///
+    /// Normally, once one of the hook operations detects an unfixable problem,
+    /// the whole process is aborted with [HookResult.rejected]. If however
+    /// [continueOnRejected] is set to true, instead processing will continue as
+    /// usual. In both cases, the hooks will resolve with [HookResult.rejected].
+    @Default(false) bool continueOnRejected,
+  }) = _HooksConfig;
+}
+
 /// The result of a [Hooks] call.
-///
-/// See [HookResultX] for extension methods defined on the enum.
 enum HookResult {
   /// All is ok, nothing was modified.
   clean,
@@ -26,11 +51,8 @@ enum HookResult {
 
   /// At least one hook detected a problem that has to be fixed manually before
   /// the commit can be accepted
-  rejected,
-}
+  rejected;
 
-/// Extension methods for [HookResult]
-extension HookResultX on HookResult {
   /// Returns a boolean that indicates whether the result should be treated as
   /// success or as failure.
   ///
@@ -77,9 +99,6 @@ class _RejectedException implements Exception {
 /// a result. Check the documentation of the different tasks for more details
 /// on the actual supported hook operations. Check the Tasks category for a
 /// list of all tasks.
-///
-/// For an easier use of this class and the standard hook tasks, see
-/// [HooksProvider].
 class Hooks {
   final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
@@ -88,13 +107,7 @@ class Hooks {
   /// The [Logger] instance used to log progress and errors
   final Logger logger;
 
-  /// Specifies, whether processing should continue on rejections.
-  ///
-  /// Normally, once one of the hook operations detects an unfixable problem,
-  /// the whole process is aborted with [HookResult.rejected]. If however
-  /// [continueOnRejected] is set to true, instead processing will continue as
-  /// usual. In both cases, [call()] will resolve with [HookResult.rejected].
-  final bool continueOnRejected;
+  final HooksConfig config;
 
   /// Returns all tasks this hook will run on the repository upon [call()].
   Iterable<String> get tasks => _tasks.map((t) => t.taskName);
@@ -108,14 +121,14 @@ class Hooks {
   /// should be run upon [call()]. Each task can either be a [FileTask] or as
   /// [RepoTask]. Check the Tasks category for a list of all tasks.
   ///
-  /// The [continueOnRejected] can be used to control rejection behaviour. See
-  /// [this.continueOnRejected] for details.
+  /// The [config] can be used to control custom behavior. See [HooksConfig] for
+  /// more details.
   const Hooks({
     required this.logger,
     required FileResolver fileResolver,
     required ProgramRunner programRunner,
     required List<TaskBase> tasks,
-    this.continueOnRejected = false,
+    this.config = const HooksConfig(),
   })  : _fileResolver = fileResolver,
         _programRunner = programRunner,
         _tasks = tasks;
@@ -265,7 +278,7 @@ class Hooks {
   }
 
   void _checkTaskRejected(TaskResult result) {
-    if (!continueOnRejected && result == TaskResult.rejected) {
+    if (!config.continueOnRejected && result == TaskResult.rejected) {
       throw const _RejectedException();
     }
   }
@@ -290,7 +303,7 @@ class Hooks {
           return HookResult.hasChanges;
         }
       case TaskResult.rejected:
-        assert(continueOnRejected, 'continueOnRejected must be true');
+        assert(config.continueOnRejected, 'continueOnRejected must be true');
         return HookResult.rejected;
     }
   }

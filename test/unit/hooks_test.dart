@@ -41,7 +41,9 @@ void main() {
         fileResolver: mockResolver,
         programRunner: mockRunner,
         tasks: tasks.toList(),
-        continueOnRejected: continueOnRejected,
+        config: HooksConfig(
+          continueOnRejected: continueOnRejected,
+        ),
       );
 
   setUpAll(() {

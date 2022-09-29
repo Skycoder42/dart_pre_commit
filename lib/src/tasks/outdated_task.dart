@@ -1,18 +1,20 @@
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/outdated/outdated_info.dart';
+import 'provider/task_provider.dart';
 
 part 'outdated_task.freezed.dart';
 part 'outdated_task.g.dart';
 
-final outdatedTaskProvider = Provider.family(
+final outdatedTaskProvider = TaskProvider.configurable(
+  OutdatedTask._taskName,
+  OutdatedConfig.fromJson,
   (ref, OutdatedConfig config) => OutdatedTask(
     programRunner: ref.watch(programRunnerProvider),
     logger: ref.watch(taskLoggerProvider),
@@ -68,6 +70,8 @@ class OutdatedConfig with _$OutdatedConfig {
 ///
 /// {@category tasks}
 class OutdatedTask with PatternTaskMixin implements RepoTask {
+  static const _taskName = 'outdated';
+
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
@@ -84,7 +88,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
   });
 
   @override
-  String get taskName => 'outdated';
+  String get taskName => _taskName;
 
   @override
   bool get callForEmptyEntries => true;

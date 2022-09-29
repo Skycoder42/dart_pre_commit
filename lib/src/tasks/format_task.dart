@@ -1,10 +1,10 @@
-import 'package:riverpod/riverpod.dart';
-
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/program_runner.dart';
+import 'provider/task_provider.dart';
 
-final formatTaskProvider = Provider(
+final formatTaskProvider = TaskProvider(
+  FormatTask._taskName,
   (ref) => FormatTask(
     programRunner: ref.watch(programRunnerProvider),
   ),
@@ -18,6 +18,8 @@ final formatTaskProvider = Provider(
 ///
 /// {@category tasks}
 class FormatTask with PatternTaskMixin implements FileTask {
+  static const _taskName = 'format';
+
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
@@ -27,7 +29,7 @@ class FormatTask with PatternTaskMixin implements FileTask {
   });
 
   @override
-  String get taskName => 'format';
+  String get taskName => _taskName;
 
   @override
   Pattern get filePattern => RegExp(r'^.*\.dart$');

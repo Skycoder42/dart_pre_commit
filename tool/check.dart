@@ -24,7 +24,6 @@ Future<void> main(List<String> args) async {
 
   final di = ProviderContainer(
     overrides: [
-      configFilePathProvider.overrideWithValue(null),
       loggerProvider.overrideWithProvider(
         Provider(
           (ref) => stdout.hasTerminal && stdout.supportsAnsiEscapes
@@ -131,24 +130,15 @@ extension _TaskStreamX on Stream<RepoEntry> {
 
   Future<void> runRepoTasks(ProviderContainer di) async {
     final logger = di.read(loggerProvider);
-    final config = await di.read(configProvider.future);
     final tasks = <RepoTask>[
       di.read(analyzeTaskProvider),
       // di.read(libExportTaskProvider),
       di.read(flutterCompatTaskProvider),
       await di.read(
-        outdatedTaskProvider(
-          OutdatedConfig(
-            allowed: config.allowOutdated,
-          ),
-        ),
+        outdatedTaskProvider(const OutdatedConfig()),
       ),
       await di.read(
-        pullUpDependenciesTaskProvider(
-          PullUpDependenciesConfig(
-            allowed: config.allowOutdated,
-          ),
-        ),
+        pullUpDependenciesTaskProvider(const PullUpDependenciesConfig()),
       ),
     ];
 

@@ -1,7 +1,5 @@
-export 'src/config/config.dart';
 export 'src/config/config_loader.dart';
 export 'src/hooks.dart';
-export 'src/hooks_provider.dart';
 export 'src/repo_entry.dart';
 export 'src/task_base.dart';
 export 'src/tasks/analyze_task.dart';

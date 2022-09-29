@@ -1,13 +1,14 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:path/path.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
 import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
+import 'provider/task_provider.dart';
 
-final testImportTaskProvider = Provider(
+final testImportTaskProvider = TaskProvider(
+  TestImportTask._taskName,
   (ref) => TestImportTask(
     analysisContextCollectionProvider: (entry) => ref.read(
       analysisContextCollectionProvider([entry.gitRoot.absolute.path]),
@@ -30,6 +31,8 @@ typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection
 ///
 /// {@category tasks}
 class TestImportTask implements FileTask {
+  static const _taskName = 'test-imports';
+
   /// The [AnalysisContextCollectionEntryProviderFn] used by this task.
   final AnalysisContextCollectionEntryProviderFn
       analysisContextCollectionProvider;
@@ -41,7 +44,7 @@ class TestImportTask implements FileTask {
   final TestImportLinter linter;
 
   @override
-  String get taskName => 'test-imports';
+  String get taskName => _taskName;
 
   /// Default Constructor.
   const TestImportTask({

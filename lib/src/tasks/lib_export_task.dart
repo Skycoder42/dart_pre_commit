@@ -1,12 +1,13 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/lint.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
 import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
+import 'provider/task_provider.dart';
 
-final libExportTaskProvider = Provider(
+final libExportTaskProvider = TaskProvider(
+  LibExportTask._taskName,
   (ref) => LibExportTask(
     analysisContextCollectionProvider: (entries) => ref.read(
       analysisContextCollectionProvider(
@@ -30,6 +31,8 @@ typedef AnalysisContextCollectionRepoProviderFn = AnalysisContextCollection
 ///
 /// {@category tasks}
 class LibExportTask with PatternTaskMixin implements RepoTask {
+  static const _taskName = 'lib-exports';
+
   /// The [AnalysisContextCollectionRepoProviderFn] used by this task.
   final AnalysisContextCollectionRepoProviderFn
       analysisContextCollectionProvider;
@@ -48,7 +51,7 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
   });
 
   @override
-  String get taskName => 'lib-exports';
+  String get taskName => _taskName;
 
   @override
   bool get callForEmptyEntries => false;

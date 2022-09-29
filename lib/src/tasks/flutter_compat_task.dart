@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../../dart_pre_commit.dart';
+import 'provider/task_provider.dart';
 
-final flutterCompatTaskProvider = Provider(
+final flutterCompatTaskProvider = TaskProvider(
+  FlutterCompatTask._taskName,
   (ref) => FlutterCompatTask(
     programRunner: ref.watch(programRunnerProvider),
     taskLogger: ref.watch(taskLoggerProvider),
@@ -21,6 +22,7 @@ final flutterCompatTaskProvider = Provider(
 ///
 /// {@category tasks}
 class FlutterCompatTask implements RepoTask {
+  static const _taskName = 'flutter-compat';
   static final _pubspecRegexp = RegExp(r'^pubspec.ya?ml$');
 
   /// The [ProgramRunner] instance used by this task.
@@ -36,7 +38,7 @@ class FlutterCompatTask implements RepoTask {
   });
 
   @override
-  String get taskName => 'flutter-compat';
+  String get taskName => _taskName;
 
   @override
   bool get callForEmptyEntries => false;

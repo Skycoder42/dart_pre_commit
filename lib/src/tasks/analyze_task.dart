@@ -1,13 +1,14 @@
 import 'package:path/path.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
+import 'provider/task_provider.dart';
 
-final analyzeTaskProvider = Provider(
+final analyzeTaskProvider = TaskProvider(
+  AnalyzeTask._taskName,
   (ref) => AnalyzeTask(
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
@@ -50,6 +51,8 @@ class _AnalyzeResult {
 ///
 /// {@category tasks}
 class AnalyzeTask with PatternTaskMixin implements RepoTask {
+  static const _taskName = 'analyze';
+
   /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
@@ -67,7 +70,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
   });
 
   @override
-  String get taskName => 'analyze';
+  String get taskName => _taskName;
 
   @override
   Pattern get filePattern => RegExp(r'^(?:pubspec.ya?ml|.*\.dart)$');

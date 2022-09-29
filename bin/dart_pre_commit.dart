@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -14,73 +15,6 @@ Future<void> main(List<String> args) async {
 
 Future<int> _run(List<String> args) async {
   final parser = ArgParser()
-    ..addSeparator('Task selection:')
-    ..addFlag(
-      'format',
-      abbr: 'f',
-      defaultsTo: true,
-      help: 'Format staged files with dart format.',
-    )
-    ..addFlag(
-      'analyze',
-      abbr: 'a',
-      defaultsTo: true,
-      help: 'Run dart analyze to find issue for the staged files.',
-    )
-    ..addFlag(
-      'test-imports',
-      abbr: 't',
-      defaultsTo: true,
-      help: 'Runs dart_test_tools TestImportLinter on all staged files.',
-    )
-    ..addFlag(
-      'lib-exports',
-      abbr: 'x',
-      defaultsTo: true,
-      help: 'Runs dart_test_tools LibExportLinter on all staged files.',
-    )
-    ..addFlag(
-      'flutter-compat',
-      abbr: 'u',
-      defaultsTo: null,
-      help: 'Check if the package can be added to a flutter project without '
-          'breaking the flutter dependency constraints. This task is run by '
-          'default only if the current package is not a flutter package.',
-    )
-    ..addOption(
-      'outdated',
-      abbr: 'o',
-      allowed: OutdatedLevel.values
-          .map((e) => e.name)
-          .followedBy([disabledOutdatedLevel]),
-      defaultsTo: OutdatedLevel.any.name,
-      help: 'Enables the outdated packages check. You can choose one of the '
-          'levels described below to require certain package updates. If they '
-          'are not met, the hook will fail. No matter what level, as long as '
-          'it is not disabled - which will completely disable the hook - it '
-          'will still print available package updates without failing.',
-      valueHelp: 'level',
-      allowedHelp: {
-        disabledOutdatedLevel: 'Do not run the hook.',
-        OutdatedLevel.none.name:
-            'Only print recommended updates, do not require any.',
-        OutdatedLevel.major.name:
-            'Only require major updates, e.g. 1.X.Y-Z to 2.0.0-0.',
-        OutdatedLevel.minor.name:
-            'Only require minor updates, e.g. 1.0.X-Y to 1.1.0-0.',
-        OutdatedLevel.patch.name:
-            'Only require patch updates, e.g. 1.0.0-X to 1.0.1-0.',
-        OutdatedLevel.any.name: 'Require all updates that are available.',
-      },
-    )
-    ..addFlag(
-      'check-pull-up',
-      abbr: 'p',
-      defaultsTo: true,
-      help: 'Check if direct dependencies in the pubspec.lock have '
-          'higher versions then specified in pubspec.yaml and warn if '
-          "that's the case.",
-    )
     ..addFlag(
       'continue-on-rejected',
       abbr: 'c',
@@ -88,7 +22,6 @@ Future<int> _run(List<String> args) async {
           'hook will still exit with rejected, but only after all files have '
           'been processed.',
     )
-    ..addSeparator('Other:')
     ..addOption(
       'directory',
       abbr: 'd',
@@ -136,6 +69,7 @@ Future<int> _run(List<String> args) async {
           'correctly. In this case, you can use this option to set it '
           'explicitly.',
     )
+    ..addSeparator('Other:')
     ..addFlag(
       'version',
       abbr: 'v',
@@ -165,11 +99,6 @@ Future<int> _run(List<String> args) async {
     final ansiSupported = options['ansi'] as bool;
     di = ProviderContainer(
       overrides: [
-        configFilePathProvider.overrideWithValue(
-          options.options.contains('config-path')
-              ? File(options['config-path'] as String)
-              : null,
-        ),
         loggerProvider.overrideWithProvider(
           Provider(
             (ref) => ansiSupported
@@ -180,33 +109,34 @@ Future<int> _run(List<String> args) async {
       ],
     );
 
-    final outdatedLevel = options['outdated'] as String;
-    final config = await di.read(configProvider.future);
+    // register tasks
+    final taskLoader = di.read(taskLoaderProvider)
+      ..registerTask(formatTaskProvider)
+      ..registerTask(testImportTaskProvider)
+      ..registerTask(analyzeTaskProvider);
+    if (!await _isFlutter(di)) {
+      taskLoader.registerTask(flutterCompatTaskProvider);
+    }
+    taskLoader
+      ..registerTask(libExportTaskProvider)
+      ..registerConfigurableTask(outdatedTaskProvider)
+      ..registerConfigurableTask(pullUpDependenciesTaskProvider);
 
-    final hooks = di.read(
-      HooksProvider.hookProvider(
-        HooksConfig(
-          format: options['format'] as bool,
-          analyze: options['analyze'] as bool,
-          testImports: options['test-imports'] as bool,
-          libExports: options['lib-exports'] as bool,
-          outdated: outdatedLevel == disabledOutdatedLevel
-              ? null
-              : OutdatedConfig(
-                  level: OutdatedLevel.values.byName(outdatedLevel),
-                  allowed: config.allowOutdated,
-                ),
-          pullUpDependencies: options['check-pull-up'] as bool
-              ? PullUpDependenciesConfig(
-                  allowed: config.allowOutdated,
-                )
+    // load configuration
+    final enabled = await di.read(configLoaderProvider).loadGlobalConfig(
+          options.options.contains('config-path')
+              ? File(options['config-path'] as String)
               : null,
-          flutterCompat:
-              options['flutter-compat'] as bool? ?? !(await _isFlutter(di)),
-          continueOnRejected: options['continue-on-rejected'] as bool,
-        ),
-      ),
+        );
+    if (!enabled) {
+      // TODO log skipped
+      return 0;
+    }
+
+    final config = HooksConfig(
+      continueOnRejected: options['continue-on-rejected'] as bool,
     );
+    final hooks = di.read(hooksProvider(config));
     hooks.logger.logLevel = LogLevel.values.byName(
       options['log-level'] as String,
     );
