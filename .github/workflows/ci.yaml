@@ -16,6 +16,7 @@ jobs:
     with:
       platforms: '["linux","windows","macos"]'
       buildRunner: true
+      extendedAnalyzerArgs: --linter test-import # Do not run the lib-export linter
       publishExclude: '["lib/src/.gitignore"]'
       unitTestPaths: test/unit
       coverageExclude: >-
