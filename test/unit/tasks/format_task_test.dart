@@ -25,6 +25,7 @@ void main() {
 
     sut = FormatTask(
       programRunner: mockRunner,
+      config: const FormatConfig(),
     );
   });
 
@@ -60,6 +61,31 @@ void main() {
           'format',
           '--fix',
           '--set-exit-if-changed',
+          'mock.dart',
+        ],
+      ),
+    );
+  });
+
+  test('calls dart format with line length if given', () async {
+    sut = FormatTask(
+      programRunner: mockRunner,
+      config: const FormatConfig(
+        lineLength: 160,
+      ),
+    );
+
+    final res = await sut(fakeEntry);
+    expect(res, TaskResult.accepted);
+    verify(
+      () => mockRunner.run(
+        'dart',
+        const [
+          'format',
+          '--fix',
+          '--set-exit-if-changed',
+          '--line-length',
+          '160',
           'mock.dart',
         ],
       ),

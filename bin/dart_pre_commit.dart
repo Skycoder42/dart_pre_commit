@@ -111,7 +111,7 @@ Future<int> _run(List<String> args) async {
 
     // register tasks
     final taskLoader = di.read(taskLoaderProvider)
-      ..registerTask(formatTaskProvider)
+      ..registerConfigurableTask(formatTaskProvider)
       ..registerTask(testImportTaskProvider)
       ..registerTask(analyzeTaskProvider);
     if (!await _isFlutter(di)) {

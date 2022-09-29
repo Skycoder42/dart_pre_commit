@@ -106,7 +106,7 @@ extension _TaskStreamX on Stream<RepoEntry> {
   Stream<RepoEntry> runFileTasks(ProviderContainer di) async* {
     final logger = di.read(loggerProvider);
     final tasks = [
-      di.read(formatTaskProvider),
+      di.read(formatTaskProvider(const FormatConfig())),
       di.read(testImportTaskProvider),
     ];
 

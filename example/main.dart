@@ -16,7 +16,7 @@ Future<void> main(List<String> arguments) async {
 
   // register tasks you want to run
   container.read(taskLoaderProvider)
-    ..registerTask(formatTaskProvider)
+    ..registerConfigurableTask(formatTaskProvider)
     ..registerTask(analyzeTaskProvider);
 
   // obtain the hooks instance from the IoC
