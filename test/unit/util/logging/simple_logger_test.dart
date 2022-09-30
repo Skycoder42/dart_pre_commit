@@ -168,7 +168,11 @@ void main() {
         Tuple3(LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {
-        sut.logLevel = fixture.item1;
+        sut = SimpleLogger(
+          outSink: mockOutSink,
+          errSink: mockErrSink,
+          logLevel: fixture.item1,
+        );
 
         fixture.item2?.call(sut);
         verifyZeroInteractions(mockOutSink);

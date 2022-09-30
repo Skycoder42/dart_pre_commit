@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:dart_pre_commit/src/tasks/provider/default_tasks_loader.dart';
 import 'package:riverpod/riverpod.dart';
 
 const disabledOutdatedLevel = 'disabled';
@@ -85,42 +84,36 @@ Future<int> _run(List<String> args) async {
 
   ProviderContainer? di;
   try {
+    // parse command line options
     final options = parser.parse(args);
     if (options['help'] as bool) {
       stdout.writeln(parser.usage);
       return 0;
     }
 
+    // change working directory if given
     final dir = options['directory'] as String?;
     if (dir != null) {
       Directory.current = dir;
     }
 
+    // setup dependency injection container
     final ansiSupported = options['ansi'] as bool;
+    final logLevel = LogLevel.values.byName(options['log-level'] as String);
     di = ProviderContainer(
       overrides: [
         loggerProvider.overrideWithProvider(
           Provider(
             (ref) => ansiSupported
-                ? ref.watch(consoleLoggerProvider)
-                : ref.watch(simpleLoggerProvider),
+                ? ref.watch(consoleLoggerProvider(logLevel))
+                : ref.watch(simpleLoggerProvider(logLevel)),
           ),
         ),
       ],
     );
 
     // register tasks
-    final taskLoader = di.read(taskLoaderProvider)
-      ..registerConfigurableTask(formatTaskProvider)
-      ..registerTask(testImportTaskProvider)
-      ..registerTask(analyzeTaskProvider);
-    if (!await _isFlutter(di)) {
-      taskLoader.registerTask(flutterCompatTaskProvider);
-    }
-    taskLoader
-      ..registerTask(libExportTaskProvider)
-      ..registerConfigurableTask(outdatedTaskProvider)
-      ..registerConfigurableTask(pullUpDependenciesTaskProvider);
+    await di.read(defaultTasksLoaderProvider).registerDefaultTasks();
 
     // load configuration
     final enabled = await di.read(configLoaderProvider).loadGlobalConfig(
@@ -133,14 +126,16 @@ Future<int> _run(List<String> args) async {
       return 0;
     }
 
-    final config = HooksConfig(
-      continueOnRejected: options['continue-on-rejected'] as bool,
-    );
-    final hooks = di.read(hooksProvider(config));
-    hooks.logger.logLevel = LogLevel.values.byName(
-      options['log-level'] as String,
+    // load hooks instance
+    final hooks = di.read(
+      hooksProvider(
+        HooksConfig(
+          continueOnRejected: options['continue-on-rejected'] as bool,
+        ),
+      ),
     );
 
+    // run hooks and return result
     final result = await hooks();
     if (options['detailed-exit-code'] as bool) {
       return result.index;
@@ -158,19 +153,4 @@ Future<int> _run(List<String> args) async {
   } finally {
     di?.dispose();
   }
-}
-
-Future<bool> _isFlutter(ProviderContainer di) async {
-  final pubspecFile = File('pubspec.yaml');
-  if (!pubspecFile.existsSync()) {
-    di
-        .read(loggerProvider)
-        .warn('No pubspec.yaml file in ${Directory.current.path}');
-    return false;
-  }
-
-  final pubspecString = await pubspecFile.readAsString();
-  final pubspec = Pubspec.parse(pubspecString, sourceUrl: pubspecFile.uri);
-
-  return pubspec.dependencies.containsKey('flutter');
 }

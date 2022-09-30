@@ -184,7 +184,7 @@ void main() {
         Tuple3(LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {
-        sut.logLevel = fixture.item1;
+        sut = ConsoleLogger(fixture.item1);
 
         fixture.item2?.call(sut);
         expect(output.toString(), isEmpty);

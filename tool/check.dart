@@ -22,26 +22,20 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  final logLevel =
+      args.isNotEmpty ? LogLevel.values.byName(args.first) : LogLevel.info;
   final di = ProviderContainer(
     overrides: [
       loggerProvider.overrideWithProvider(
         Provider(
           (ref) => stdout.hasTerminal && stdout.supportsAnsiEscapes
-              ? ref.watch(consoleLoggerProvider)
-              : ref.watch(simpleLoggerProvider),
+              ? ref.watch(consoleLoggerProvider(logLevel))
+              : ref.watch(simpleLoggerProvider(logLevel)),
         ),
       ),
     ],
   );
   try {
-    final logger = di.read(loggerProvider);
-    logger.logLevel = LogLevel.values.byName(
-      args.firstWhere(
-        (_) => true,
-        orElse: () => logger.logLevel.name,
-      ),
-    );
-
     final excludeEntries = [
       Directory('.git'),
       Directory('.dart_tool'),

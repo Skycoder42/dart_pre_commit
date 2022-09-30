@@ -7,8 +7,8 @@ import 'package:riverpod/riverpod.dart';
 import '../logger.dart';
 import 'simple_logger.dart';
 
-final consoleLoggerProvider = Provider<Logger>(
-  (ref) => ConsoleLogger(),
+final consoleLoggerProvider = Provider.family<Logger, LogLevel>(
+  (ref, logLevel) => ConsoleLogger(logLevel),
 );
 
 /// An advanced logger, that providers console optimized, interactive logging.
@@ -26,7 +26,7 @@ class ConsoleLogger implements Logger {
   bool _freshStatus = false;
 
   @override
-  LogLevel logLevel;
+  final LogLevel logLevel;
 
   /// Default constructor.
   ///

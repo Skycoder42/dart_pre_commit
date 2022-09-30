@@ -92,7 +92,6 @@ abstract class Logger implements TaskLogger {
   /// the [LoggerX.canLog] method to check if the current logger should log
   /// a specific log level
   LogLevel get logLevel;
-  set logLevel(LogLevel level);
 
   /// Updates the current status message.
   ///

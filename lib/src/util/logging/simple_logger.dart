@@ -5,8 +5,8 @@ import 'package:riverpod/riverpod.dart';
 import '../logger.dart';
 import 'console_logger.dart';
 
-final simpleLoggerProvider = Provider<Logger>(
-  (ref) => SimpleLogger(),
+final simpleLoggerProvider = Provider.family<Logger, LogLevel>(
+  (ref, logLevel) => SimpleLogger(logLevel: logLevel),
 );
 
 /// A simple logger class, the provides file-optimized logs.
@@ -27,7 +27,7 @@ class SimpleLogger implements Logger {
   final IOSink errSink;
 
   @override
-  LogLevel logLevel;
+  final LogLevel logLevel;
 
   String _statusMessage = '';
   TaskStatus? _statusState;
