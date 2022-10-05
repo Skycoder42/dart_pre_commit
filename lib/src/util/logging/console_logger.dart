@@ -129,7 +129,7 @@ extension _TaskStatusIconX on TaskStatus {
       case TaskStatus.scanning:
         return '🔎';
       case TaskStatus.clean:
-        return '✔️';
+        return '✅';
       case TaskStatus.hasChanges:
         return '✏️';
       case TaskStatus.hasUnstagedChanges:
