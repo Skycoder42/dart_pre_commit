@@ -351,7 +351,14 @@ void main() {
       expect(capture, const ['a.dart', 'b.dart']);
     });
 
-    test('does get called without any() files if enabled', () async {
+    test('does get called without any matching files if enabled', () async {
+      when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable(const [
+          'a.js',
+        ]),
+      );
       final sut = createSut([mockRepoTask]);
 
       final result = await sut();
@@ -362,6 +369,13 @@ void main() {
 
     test('does not get called without any() files if disabled', () async {
       when(() => mockRepoTask.callForEmptyEntries).thenReturn(false);
+      when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable(const [
+          'a.js',
+        ]),
+      );
       final sut = createSut([mockRepoTask]);
 
       final result = await sut();
@@ -391,6 +405,13 @@ void main() {
     });
 
     test('returns hasChanges for no files but still modified', () async {
+      when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable(const [
+          'b.txt',
+        ]),
+      );
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
       final sut = createSut([mockRepoTask]);
@@ -427,6 +448,12 @@ void main() {
         ).thenAnswer(
           (_) => Stream.fromIterable(fixture.item1!),
         );
+      } else {
+        when(
+          () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
+        ).thenAnswer(
+          (_) => Stream.value('other.txt'),
+        );
       }
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.rejected);
@@ -441,28 +468,45 @@ void main() {
     });
   });
 
-  testData<Tuple3<TaskResult, TaskResult, HookResult>>(
-    'mixed tasks report correct result',
-    const [
-      Tuple3(TaskResult.accepted, TaskResult.accepted, HookResult.clean),
-      Tuple3(TaskResult.accepted, TaskResult.modified, HookResult.hasChanges),
-      Tuple3(TaskResult.modified, TaskResult.accepted, HookResult.hasChanges),
-      Tuple3(TaskResult.modified, TaskResult.rejected, HookResult.rejected),
-      Tuple3(TaskResult.rejected, TaskResult.modified, HookResult.rejected),
-    ],
-    (fixture) async {
-      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
-          .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-      when(() => mockFileTask(any())).thenAnswer((i) async => fixture.item1);
-      when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.item2);
+  group('mixed tasks', () {
+    testData<Tuple3<TaskResult, TaskResult, HookResult>>(
+      'reports correct results',
+      const [
+        Tuple3(TaskResult.accepted, TaskResult.accepted, HookResult.clean),
+        Tuple3(TaskResult.accepted, TaskResult.modified, HookResult.hasChanges),
+        Tuple3(TaskResult.modified, TaskResult.accepted, HookResult.hasChanges),
+        Tuple3(TaskResult.modified, TaskResult.rejected, HookResult.rejected),
+        Tuple3(TaskResult.rejected, TaskResult.modified, HookResult.rejected),
+      ],
+      (fixture) async {
+        when(
+          () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
+        ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+        when(() => mockFileTask(any())).thenAnswer((i) async => fixture.item1);
+        when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.item2);
+        final sut = createSut([mockRepoTask, mockFileTask], true);
+
+        final result = await sut();
+        expect(result, fixture.item3);
+        verify(() => mockFileTask(any()));
+        verify(() => mockRepoTask(any()));
+      },
+    );
+
+    test('returns clean and does nothing if no files have been staged',
+        () async {
+      when(
+        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
+      ).thenAnswer((_) => const Stream.empty());
+
       final sut = createSut([mockRepoTask, mockFileTask], true);
 
       final result = await sut();
-      expect(result, fixture.item3);
-      verify(() => mockFileTask(any()));
-      verify(() => mockRepoTask(any()));
-    },
-  );
+      expect(result, HookResult.clean);
+      verifyZeroInteractions(mockRepoTask);
+      verifyZeroInteractions(mockFileTask);
+    });
+  });
 
   testData<Tuple2<HookResult, bool>>(
       'HookResult returns correct success status', const [

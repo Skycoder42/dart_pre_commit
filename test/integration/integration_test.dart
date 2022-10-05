@@ -170,6 +170,7 @@ void main() {
       'test/test.dart',
       'import "package:test_project/test_project.dart";',
     );
+    await writeFile('stuff.txt', 'not a dart file');
 
     // init dart
     await pub(const ['get']);
@@ -256,6 +257,8 @@ void main() {
   });
 
   test('outdated', () async {
+    await git(const ['add', 'stuff.txt']);
+
     final lines = <String>[];
     final code = await sut(
       'outdated',

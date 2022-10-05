@@ -149,6 +149,9 @@ class Hooks {
   Future<HookResult> call() async {
     try {
       final entries = await _collectStagedFiles().toList();
+      if (entries.isEmpty) {
+        return HookResult.clean;
+      }
 
       var lintState = HookResult.clean;
       lintState = await Stream.fromIterable(entries)
