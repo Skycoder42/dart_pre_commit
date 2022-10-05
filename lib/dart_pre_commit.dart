@@ -7,6 +7,7 @@ export 'src/tasks/flutter_compat_task.dart';
 export 'src/tasks/format_task.dart';
 export 'src/tasks/lib_export_task.dart';
 export 'src/tasks/outdated_task.dart';
+export 'src/tasks/provider/default_tasks_loader.dart';
 export 'src/tasks/pull_up_dependencies_task.dart';
 export 'src/tasks/test_import_task.dart';
 export 'src/util/file_resolver.dart';

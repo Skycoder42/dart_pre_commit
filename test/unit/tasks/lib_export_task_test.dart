@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/lib_export_task.dart';
+import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/linter_exception.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
@@ -16,19 +16,22 @@ class FakeAnalysisContextCollection extends Fake
 
 class FakeResultLocation extends Fake implements ResultLocation {
   @override
+  final String relPath;
+
+  FakeResultLocation(this.relPath);
+
+  @override
   String createLogMessage(String message) => message;
-}
 
-abstract class IAnalysisContextCollectionProviderFn {
-  AnalysisContextCollection call(Iterable<RepoEntry> repoEntries);
+  @override
+  String toString() => 'FakeResultLocation($relPath)';
 }
-
-class MockAnalysisContextCollectionProviderFn extends Mock
-    implements IAnalysisContextCollectionProviderFn {}
 
 class MockTaskLogger extends Mock implements TaskLogger {}
 
 class MockLibExportLinter extends Mock implements LibExportLinter {}
+
+class MockFileResolver extends Mock implements FileResolver {}
 
 void main() {
   setUpAll(() {
@@ -40,23 +43,25 @@ void main() {
     final fakeEntry = FakeEntry('lib/lib.dart');
     final fakeContext = FakeAnalysisContextCollection();
 
-    final mockAccProvider = MockAnalysisContextCollectionProviderFn();
     final mockLogger = MockTaskLogger();
     final mockLinter = MockLibExportLinter();
+    final mockFileResolver = MockFileResolver();
 
     late LibExportTask sut;
 
-    setUp(() {
-      reset(mockAccProvider);
+    setUp(() async {
       reset(mockLogger);
       reset(mockLinter);
+      reset(mockFileResolver);
 
-      when(() => mockAccProvider.call(any())).thenReturn(fakeContext);
+      when(() => mockFileResolver.resolve(any(), any()))
+          .thenAnswer((i) async => i.positionalArguments.first as String);
 
       sut = LibExportTask(
-        analysisContextCollectionProvider: mockAccProvider,
+        contextCollection: fakeContext,
         logger: mockLogger,
         linter: mockLinter,
+        fileResolver: mockFileResolver,
       );
     });
 
@@ -84,13 +89,16 @@ void main() {
     );
 
     group('call', () {
+      const testFile = 'file.dart';
+      const otherTestFile = 'other.dart';
+      const unstagedTestFile = 'unstaged.dart';
+
       test('calls linter.call with context collection', () async {
         when(() => mockLinter.call()).thenStream(const Stream.empty());
 
         await sut.call([fakeEntry]);
 
         verifyInOrder([
-          () => mockAccProvider.call([fakeEntry]),
           () => mockLinter.contextCollection = fakeContext,
           () => mockLinter.call(),
         ]);
@@ -100,14 +108,16 @@ void main() {
         'correctly maps linter result to task result',
         [
           Tuple3(
-            FileResult.accepted(resultLocation: FakeResultLocation()),
+            FileResult.accepted(
+              resultLocation: FakeResultLocation(testFile),
+            ),
             TaskResult.accepted,
             () => mockLogger.debug('OK'),
           ),
           Tuple3(
             FileResult.rejected(
               reason: 'REJECTED',
-              resultLocation: FakeResultLocation(),
+              resultLocation: FakeResultLocation(testFile),
             ),
             TaskResult.rejected,
             () => mockLogger.error('REJECTED'),
@@ -115,7 +125,7 @@ void main() {
           Tuple3(
             FileResult.skipped(
               reason: 'SKIPPED',
-              resultLocation: FakeResultLocation(),
+              resultLocation: FakeResultLocation(testFile),
             ),
             TaskResult.accepted,
             () => mockLogger.info('SKIPPED'),
@@ -124,7 +134,7 @@ void main() {
             FileResult.failure(
               error: 'FAILURE',
               stackTrace: StackTrace.empty,
-              resultLocation: FakeResultLocation(),
+              resultLocation: FakeResultLocation(testFile),
             ),
             TaskResult.rejected,
             () => mockLogger.except(
@@ -142,11 +152,83 @@ void main() {
         (fixture) async {
           when(() => mockLinter.call()).thenStream(Stream.value(fixture.item1));
 
-          final result = await sut.call(const []);
+          final result = await sut.call([FakeEntry(testFile)]);
 
           expect(result, fixture.item2);
 
-          verify(fixture.item3);
+          verifyInOrder([
+            () => mockLinter.contextCollection = fakeContext,
+            () => mockLinter.call(),
+            () => mockFileResolver.resolve(testFile),
+            fixture.item3,
+          ]);
+          verifyNoMoreInteractions(mockLinter);
+          verifyNoMoreInteractions(mockFileResolver);
+          verifyNoMoreInteractions(mockLogger);
+        },
+      );
+
+      testData<Tuple3<FileResult, TaskResult, void Function()?>>(
+        'correctly maps linter result to task result for unstaged files',
+        [
+          Tuple3(
+            FileResult.accepted(
+              resultLocation: FakeResultLocation(unstagedTestFile),
+            ),
+            TaskResult.accepted,
+            null,
+          ),
+          Tuple3(
+            FileResult.rejected(
+              reason: 'REJECTED',
+              resultLocation: FakeResultLocation(unstagedTestFile),
+            ),
+            TaskResult.accepted,
+            null,
+          ),
+          Tuple3(
+            FileResult.skipped(
+              reason: 'SKIPPED',
+              resultLocation: FakeResultLocation(unstagedTestFile),
+            ),
+            TaskResult.accepted,
+            null,
+          ),
+          Tuple3(
+            FileResult.failure(
+              error: 'FAILURE',
+              stackTrace: StackTrace.empty,
+              resultLocation: FakeResultLocation(unstagedTestFile),
+            ),
+            TaskResult.rejected,
+            () => mockLogger.except(
+              any(
+                that: isA<LinterException>().having(
+                  (e) => e.message,
+                  'message',
+                  'FAILURE',
+                ),
+              ),
+              StackTrace.empty,
+            ),
+          ),
+        ],
+        (fixture) async {
+          when(() => mockLinter.call()).thenStream(Stream.value(fixture.item1));
+
+          final result = await sut.call([FakeEntry(testFile)]);
+
+          expect(result, fixture.item2);
+
+          verifyInOrder([
+            () => mockLinter.contextCollection = fakeContext,
+            () => mockLinter.call(),
+            () => mockFileResolver.resolve(unstagedTestFile),
+            if (fixture.item3 != null) fixture.item3!,
+          ]);
+          verifyNoMoreInteractions(mockLinter);
+          verifyNoMoreInteractions(mockFileResolver);
+          verifyNoMoreInteractions(mockLogger);
         },
       );
 
@@ -157,12 +239,16 @@ void main() {
           Tuple2(
             Stream.fromIterable(
               [
-                FileResult.accepted(resultLocation: FakeResultLocation()),
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(testFile),
+                ),
                 FileResult.rejected(
                   reason: '',
-                  resultLocation: FakeResultLocation(),
+                  resultLocation: FakeResultLocation(testFile),
                 ),
-                FileResult.accepted(resultLocation: FakeResultLocation()),
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(otherTestFile),
+                ),
               ],
             ),
             TaskResult.rejected,
@@ -170,10 +256,12 @@ void main() {
           Tuple2(
             Stream.fromIterable(
               [
-                FileResult.accepted(resultLocation: FakeResultLocation()),
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(testFile),
+                ),
                 FileResult.skipped(
                   reason: '',
-                  resultLocation: FakeResultLocation(),
+                  resultLocation: FakeResultLocation(otherTestFile),
                 ),
               ],
             ),
@@ -182,14 +270,48 @@ void main() {
           Tuple2(
             Stream.fromIterable(
               [
-                FileResult.accepted(resultLocation: FakeResultLocation()),
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(otherTestFile),
+                ),
                 FileResult.failure(
                   error: '',
-                  resultLocation: FakeResultLocation(),
+                  resultLocation: FakeResultLocation(otherTestFile),
                 ),
                 FileResult.skipped(
                   reason: '',
-                  resultLocation: FakeResultLocation(),
+                  resultLocation: FakeResultLocation(testFile),
+                ),
+              ],
+            ),
+            TaskResult.rejected,
+          ),
+          Tuple2(
+            Stream.fromIterable(
+              [
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(testFile),
+                ),
+                FileResult.rejected(
+                  reason: 'REJECTED',
+                  resultLocation: FakeResultLocation(unstagedTestFile),
+                ),
+              ],
+            ),
+            TaskResult.accepted,
+          ),
+          Tuple2(
+            Stream.fromIterable(
+              [
+                FileResult.accepted(
+                  resultLocation: FakeResultLocation(testFile),
+                ),
+                FileResult.failure(
+                  error: 'FAILURE',
+                  resultLocation: FakeResultLocation(unstagedTestFile),
+                ),
+                FileResult.skipped(
+                  reason: 'SKIPPED',
+                  resultLocation: FakeResultLocation(testFile),
                 ),
               ],
             ),
@@ -199,7 +321,10 @@ void main() {
         (fixture) async {
           when(() => mockLinter.call()).thenStream(fixture.item1);
 
-          final result = await sut.call(const []);
+          final result = await sut.call([
+            FakeEntry(testFile),
+            FakeEntry(otherTestFile),
+          ]);
 
           expect(result, fixture.item2);
         },

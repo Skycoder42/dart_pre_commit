@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/lint.dart';
 
@@ -9,19 +11,14 @@ import 'provider/task_provider.dart';
 final libExportTaskProvider = TaskProvider(
   LibExportTask._taskName,
   (ref) => LibExportTask(
-    analysisContextCollectionProvider: (entries) => ref.read(
-      analysisContextCollectionProvider(
-        entries.map((e) => e.file.absolute.path).toList(),
-      ),
-    ),
     logger: ref.watch(taskLoggerProvider),
+    contextCollection: ref.watch(
+      analysisContextCollectionProvider([Directory.current.path]),
+    ),
     linter: ref.watch(libExportLinterProvider),
+    fileResolver: ref.watch(fileResolverProvider),
   ),
 );
-
-/// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
-typedef AnalysisContextCollectionRepoProviderFn = AnalysisContextCollection
-    Function(Iterable<RepoEntry> entries);
 
 /// A task that uses a [LibExportLinter] to check for missing exports of src
 /// files.
@@ -33,21 +30,22 @@ typedef AnalysisContextCollectionRepoProviderFn = AnalysisContextCollection
 class LibExportTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'lib-exports';
 
-  /// The [AnalysisContextCollectionRepoProviderFn] used by this task.
-  final AnalysisContextCollectionRepoProviderFn
-      analysisContextCollectionProvider;
-
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
+
+  final AnalysisContextCollection contextCollection;
 
   /// The [LibExportLinter] used by this task.
   final LibExportLinter linter;
 
+  final FileResolver fileResolver;
+
   /// Default Constructor.
   LibExportTask({
-    required this.analysisContextCollectionProvider,
     required this.logger,
+    required this.contextCollection,
     required this.linter,
+    required this.fileResolver,
   });
 
   @override
@@ -61,19 +59,32 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    linter.contextCollection = analysisContextCollectionProvider(entries);
+    linter.contextCollection = contextCollection;
+
+    final entriesList = entries.toList();
     var result = TaskResult.accepted;
     await for (final fileResult in linter()) {
+      final hasEntry = await _hasEntryForLocation(
+        fileResult.resultLocation,
+        entriesList,
+      );
+
       fileResult.when(
         accepted: (resultLocation) {
-          logger.debug(resultLocation.createLogMessage('OK'));
+          if (hasEntry) {
+            logger.debug(resultLocation.createLogMessage('OK'));
+          }
         },
         rejected: (reason, resultLocation) {
-          logger.error(resultLocation.createLogMessage(reason));
-          result = result.raiseTo(TaskResult.rejected);
+          if (hasEntry) {
+            logger.error(resultLocation.createLogMessage(reason));
+            result = result.raiseTo(TaskResult.rejected);
+          }
         },
         skipped: (reason, resultLocation) {
-          logger.info(resultLocation.createLogMessage(reason));
+          if (hasEntry) {
+            logger.info(resultLocation.createLogMessage(reason));
+          }
         },
         failure: (error, stackTrace, resultLocation) {
           logger.except(
@@ -86,5 +97,13 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
     }
 
     return result;
+  }
+
+  Future<bool> _hasEntryForLocation(
+    ResultLocation resultLocation,
+    Iterable<RepoEntry> entries,
+  ) async {
+    final actualLocation = await fileResolver.resolve(resultLocation.relPath);
+    return entries.any((entry) => entry.file.path == actualLocation);
   }
 }
