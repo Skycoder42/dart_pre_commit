@@ -72,7 +72,7 @@ void main() {
             ),
           ),
           HooksProviderInternal.pullUpDependenciesProvider
-              .overrideWithValue(AsyncValue.data(mockPullUp)),
+              .overrideWithProvider(FutureProvider((ref) => mockPullUp)),
           HooksProviderInternal.flutterCompatProvider
               .overrideWithValue(mockFlutterCompat),
         ],

@@ -35,7 +35,7 @@ jobs:
       - ci
     uses: Skycoder42/dart_test_tools/.github/workflows/publish.yml@main
     with:
-      releaseRef: refs/heads/master
+      releaseRef: refs/heads/v3_maintenance
       buildRunner: true
       publishExclude: '["lib/src/.gitignore"]'
     secrets:
