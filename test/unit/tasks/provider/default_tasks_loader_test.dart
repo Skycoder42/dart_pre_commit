@@ -51,7 +51,7 @@ void main() {
           () => mockPubspecConfigLoader.loadPubspecConfig(),
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerTask(testImportTaskProvider),
-          () => mockTaskLoader.registerTask(analyzeTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
               .registerConfigurableTask(pullUpDependenciesTaskProvider),
@@ -71,7 +71,7 @@ void main() {
           () => mockPubspecConfigLoader.loadPubspecConfig(),
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerTask(testImportTaskProvider),
-          () => mockTaskLoader.registerTask(analyzeTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
           () => mockTaskLoader.registerTask(libExportTaskProvider),
           () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),

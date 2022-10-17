@@ -9,6 +9,7 @@ import '../../task_base.dart';
 
 // ignore: subtype_of_sealed_class
 @sealed
+@internal
 class TaskProvider<State extends TaskBase> extends Provider<State> {
   TaskProvider(
     String name,
@@ -24,9 +25,12 @@ class TaskProvider<State extends TaskBase> extends Provider<State> {
   static const configurable = ConfigurableTaskProviderBuilder();
 }
 
+@internal
 typedef ArgFromJson<Arg> = Arg Function(Map<String, dynamic> json);
 
 // ignore: subtype_of_sealed_class
+@sealed
+@internal
 class ConfigurableTaskProviderFamily<State extends TaskBase, Arg>
     extends ProviderFamily<State, Arg> {
   final ArgFromJson<Arg> fromJson;
@@ -44,12 +48,14 @@ class ConfigurableTaskProviderFamily<State extends TaskBase, Arg>
 
 // ignore: subtype_of_sealed_class
 @sealed
+@internal
 class ConfigurableTaskProviderBuilder {
   const ConfigurableTaskProviderBuilder();
 
   ConfigurableTaskProviderFamily<State, Arg> call<State extends TaskBase, Arg>(
     String name,
     ArgFromJson<Arg> fromJson,
+    // ignore: invalid_use_of_internal_member
     FamilyCreate<State, ProviderRef<State>, Arg> create, {
     List<ProviderOrFamily>? dependencies,
   }) =>

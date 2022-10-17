@@ -1,3 +1,4 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
 
 import '../repo_entry.dart';
@@ -7,12 +8,17 @@ import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'provider/task_provider.dart';
 
-final analyzeTaskProvider = TaskProvider(
+part 'analyze_task.freezed.dart';
+part 'analyze_task.g.dart';
+
+final analyzeTaskProvider = TaskProvider.configurable(
   AnalyzeTask._taskName,
-  (ref) => AnalyzeTask(
+  AnalyzeConfig.fromJson,
+  (ref, config) => AnalyzeTask(
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
     logger: ref.watch(taskLoggerProvider),
+    config: config,
   ),
 );
 
@@ -42,6 +48,32 @@ class _AnalyzeResult {
       ].join(' - ');
 }
 
+enum AnalyzeErrorLevel {
+  error(['--no-fatal-warnings']),
+  warning(['--fatal-warnings']),
+  info(['--fatal-warnings', '--fatal-infos']);
+
+  final List<String> _params;
+
+  const AnalyzeErrorLevel(this._params);
+}
+
+@freezed
+class AnalyzeConfig with _$AnalyzeConfig {
+  // ignore: invalid_annotation_target
+  @JsonSerializable(
+    anyMap: true,
+    checked: true,
+    disallowUnrecognizedKeys: true,
+  )
+  const factory AnalyzeConfig({
+    @Default(AnalyzeErrorLevel.info) AnalyzeErrorLevel errorLevel,
+  }) = _AnalyzeConfig;
+
+  factory AnalyzeConfig.fromJson(Map<String, dynamic> json) =>
+      _$AnalyzeConfigFromJson(json);
+}
+
 /// A task the runs `dart analyze` to check for problems.
 ///
 /// This task analyzes all files in the repository for problems and then filters
@@ -62,11 +94,14 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
   /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
+  final AnalyzeConfig config;
+
   /// Default Constructor.
   const AnalyzeTask({
     required this.programRunner,
     required this.fileResolver,
     required this.logger,
+    required this.config,
   });
 
   @override
@@ -118,9 +153,9 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     yield* programRunner
         .stream(
           'dart',
-          const [
+          [
             'analyze',
-            '--fatal-infos',
+            ...config.errorLevel._params,
           ],
           failOnExit: false,
         )

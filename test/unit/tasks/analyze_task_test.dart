@@ -48,6 +48,7 @@ void main() {
       logger: mockLogger,
       programRunner: mockRunner,
       fileResolver: mockResolver,
+      config: const AnalyzeConfig(),
     );
   });
 
@@ -78,23 +79,38 @@ void main() {
     },
   );
 
-  test('Run dart analyze with correct arguments', () async {
-    final result = await sut([
-      FakeEntry('test.dart'),
-    ]);
-
-    expect(result, TaskResult.accepted);
-    verify(
-      () => mockRunner.stream(
-        'dart',
-        const [
-          'analyze',
-          '--fatal-infos',
-        ],
-        failOnExit: false,
+  testData<Tuple2<AnalyzeErrorLevel, List<String>>>(
+    'Runs dart analyze with correct arguments',
+    const [
+      Tuple2(AnalyzeErrorLevel.error, ['analyze', '--no-fatal-warnings']),
+      Tuple2(AnalyzeErrorLevel.warning, ['analyze', '--fatal-warnings']),
+      Tuple2(
+        AnalyzeErrorLevel.info,
+        ['analyze', '--fatal-warnings', '--fatal-infos'],
       ),
-    );
-  });
+    ],
+    (fixture) async {
+      sut = AnalyzeTask(
+        logger: mockLogger,
+        programRunner: mockRunner,
+        fileResolver: mockResolver,
+        config: AnalyzeConfig(errorLevel: fixture.item1),
+      );
+
+      final result = await sut([
+        FakeEntry('test.dart'),
+      ]);
+
+      expect(result, TaskResult.accepted);
+      verify(
+        () => mockRunner.stream(
+          'dart',
+          fixture.item2,
+          failOnExit: false,
+        ),
+      );
+    },
+  );
 
   test('Collects lints for specified files', () async {
     when(

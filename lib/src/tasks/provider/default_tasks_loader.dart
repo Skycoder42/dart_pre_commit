@@ -38,7 +38,7 @@ class DefaultTasksLoader {
     taskLoader
       ..registerConfigurableTask(formatTaskProvider)
       ..registerTask(testImportTaskProvider)
-      ..registerTask(analyzeTaskProvider);
+      ..registerConfigurableTask(analyzeTaskProvider);
 
     if (pubspecConfig.isPublished) {
       taskLoader.registerTask(libExportTaskProvider);
