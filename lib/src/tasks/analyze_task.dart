@@ -1,11 +1,16 @@
+import 'dart:collection';
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
+import 'models/analyze/analyze_result.dart';
+import 'models/analyze/diagnostic.dart';
 import 'provider/task_provider.dart';
 
 part 'analyze_task.freezed.dart';
@@ -22,32 +27,6 @@ final analyzeTaskProvider = TaskProvider.configurable(
   ),
 );
 
-class _AnalyzeResult {
-  final String category;
-  final String type;
-  final String path;
-  final int line;
-  final int column;
-  final String description;
-
-  _AnalyzeResult({
-    required this.category,
-    required this.type,
-    required this.path,
-    required this.line,
-    required this.column,
-    required this.description,
-  });
-
-  @override
-  String toString() => [
-        '  $category',
-        '$path:$line:$column',
-        description,
-        type,
-      ].join(' - ');
-}
-
 enum AnalyzeErrorLevel {
   error(['--no-fatal-warnings']),
   warning(['--fatal-warnings']),
@@ -56,6 +35,11 @@ enum AnalyzeErrorLevel {
   final List<String> _params;
 
   const AnalyzeErrorLevel(this._params);
+}
+
+enum AnalysisScanMode {
+  all,
+  staged,
 }
 
 @freezed
@@ -67,7 +51,14 @@ class AnalyzeConfig with _$AnalyzeConfig {
     disallowUnrecognizedKeys: true,
   )
   const factory AnalyzeConfig({
-    @Default(AnalyzeErrorLevel.info) AnalyzeErrorLevel errorLevel,
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'error-level')
+    @Default(AnalyzeErrorLevel.info)
+        AnalyzeErrorLevel errorLevel,
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'scan-mode')
+    @Default(AnalysisScanMode.all)
+        AnalysisScanMode scanMode,
   }) = _AnalyzeConfig;
 
   factory AnalyzeConfig.fromJson(Map<String, dynamic> json) =>
@@ -118,21 +109,43 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     if (entries.isEmpty) {
       throw ArgumentError('must not be empty', 'entries');
     }
-    final lints = {
-      for (final entry in entries) entry.file.path: <_AnalyzeResult>[],
-    };
 
-    await for (final entry in _runAnalyze()) {
-      final lintList = lints.entries
-          .cast<MapEntry<String, List<_AnalyzeResult>>?>()
-          .firstWhere(
-            (lint) => equals(entry.path, lint!.key),
-            orElse: () => null,
-          )
-          ?.value;
-      if (lintList != null) {
-        lintList.add(entry);
-      }
+    final int lintCnt;
+    switch (config.scanMode) {
+      case AnalysisScanMode.all:
+        lintCnt = await _scanAll();
+        break;
+      case AnalysisScanMode.staged:
+        lintCnt = await _scanStaged(entries);
+        break;
+    }
+
+    logger.info('$lintCnt issue(s) found.');
+    return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
+  }
+
+  Future<int> _scanAll() async {
+    final result = await _runAnalyze();
+    var lintCnt = 0;
+    for (final diagnostic in result.diagnostics) {
+      await _logDiagnostic(diagnostic);
+      ++lintCnt;
+    }
+    return lintCnt;
+  }
+
+  Future<int> _scanStaged(Iterable<RepoEntry> entries) async {
+    final lints = HashMap<String, List<Diagnostic>>(
+      equals: path.equals,
+      hashCode: path.hash,
+    );
+    for (final entry in entries) {
+      lints[entry.file.path] = <Diagnostic>[];
+    }
+
+    final result = await _runAnalyze();
+    for (final diagnostic in result.diagnostics) {
+      lints[diagnostic.location.file]?.add(diagnostic);
     }
 
     var lintCnt = 0;
@@ -140,55 +153,46 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
       if (entry.value.isNotEmpty) {
         for (final lint in entry.value) {
           ++lintCnt;
-          logger.info(lint.toString());
+          await _logDiagnostic(lint, entry.key);
         }
       }
     }
 
-    logger.info('$lintCnt issue(s) found.');
-    return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
+    return lintCnt;
   }
 
-  Stream<_AnalyzeResult> _runAnalyze() async* {
-    yield* programRunner
+  Future<AnalyzeResult> _runAnalyze() async {
+    final jsonString = await programRunner
         .stream(
           'dart',
           [
             'analyze',
+            '--format',
+            'json',
             ...config.errorLevel._params,
           ],
           failOnExit: false,
         )
-        .parseResult(
-          fileResolver: fileResolver,
-          logger: logger,
+        .firstWhere(
+          (line) => line.trimLeft().startsWith('{'),
+          orElse: () => '',
         );
-  }
-}
 
-extension _ResultTransformer on Stream<String> {
-  Stream<_AnalyzeResult> parseResult({
-    required FileResolver fileResolver,
-    required TaskLogger logger,
-  }) async* {
-    final regExp = RegExp(
-      r'^\s*(\w+)\s+-\s+([^:]+?):(\d+):(\d+)\s+-\s+(.+?)\s+-\s+(\w+)\s*$',
-    );
-    await for (final line in this) {
-      final match = regExp.firstMatch(line);
-      if (match != null) {
-        final res = _AnalyzeResult(
-          category: match[1]!,
-          type: match[6]!,
-          path: await fileResolver.resolve(match[2]!),
-          line: int.parse(match[3]!, radix: 10),
-          column: int.parse(match[4]!, radix: 10),
-          description: match[5]!,
-        );
-        yield res;
-      } else {
-        logger.debug('Skipping analyze line: $line');
-      }
+    if (jsonString.isEmpty) {
+      return const AnalyzeResult(version: 1, diagnostics: []);
     }
+
+    return AnalyzeResult.fromJson(
+      json.decode(jsonString) as Map<String, dynamic>,
+    );
+  }
+
+  Future<void> _logDiagnostic(Diagnostic diagnostic, [String? path]) async {
+    final actualPath =
+        path ?? await fileResolver.resolve(diagnostic.location.file);
+    final loggableDiagnostic = diagnostic.copyWith(
+      location: diagnostic.location.copyWith(file: actualPath),
+    );
+    logger.info('  $loggableDiagnostic');
   }
 }

@@ -26,7 +26,8 @@ class FormatConfig with _$FormatConfig {
     disallowUnrecognizedKeys: true,
   )
   const factory FormatConfig({
-    int? lineLength,
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'line-length') int? lineLength,
   }) = _FormatConfig;
 
   factory FormatConfig.fromJson(Map<String, dynamic> json) =>
