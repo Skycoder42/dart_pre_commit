@@ -236,6 +236,7 @@ void main() {
           'this is an invalid line',
           '    this as well  ',
           json.encode(fullAnalyzeResult),
+          'also this',
         ]),
       );
 
@@ -249,14 +250,15 @@ void main() {
         FakeEntry('pipeline.yaml'),
       ]);
       expect(result, TaskResult.rejected);
-      verifyInOrder([
-        () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
-        () =>
-            mockLogger.info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
-        () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
-        () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
-        () => mockLogger.info('4 issue(s) found.'),
-      ]);
+      verify(() => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'));
+      verify(
+        () => mockLogger.info(
+          '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
+        ),
+      );
+      verify(() => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'));
+      verify(() => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'));
+      verify(() => mockLogger.info('4 issue(s) found.'));
       verifyNever(() => mockLogger.info(any()));
     });
 
