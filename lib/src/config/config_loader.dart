@@ -6,11 +6,13 @@ import 'package:yaml/yaml.dart';
 
 import '../util/file_resolver.dart';
 
+// coverage:ignore-start
 final configLoaderProvider = Provider(
   (ref) => ConfigLoader(
     fileResolver: ref.watch(fileResolverProvider),
   ),
 );
+// coverage:ignore-end
 
 class ConfigLoader {
   /// The [FileResolver] instance used by the loader.

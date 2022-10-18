@@ -124,170 +124,40 @@ const minimalAnalyzeResult = AnalyzeResult(
 );
 
 void main() {
-  final mockLogger = MockTaskLogger();
-  final mockRunner = MockProgramRunner();
-  final mockResolver = MockFileResolver();
-
-  late AnalyzeTask sut;
-
-  setUp(() {
-    reset(mockLogger);
-    reset(mockRunner);
-    reset(mockResolver);
-
-    when(
-      () => mockRunner.stream(
-        any(),
-        any(),
-        failOnExit: any(named: 'failOnExit'),
-      ),
-    ).thenAnswer(
-      (_) => Stream.value(
-        json.encode(const AnalyzeResult(version: 1, diagnostics: [])),
-      ),
-    );
-
-    // ignore: discarded_futures
-    when(() => mockResolver.resolve(any()))
-        .thenAnswer((i) async => i.positionalArguments.first as String);
-    when(() => mockResolver.resolveAll(any())).thenAnswer(
-      (i) =>
-          Stream.fromIterable(i.positionalArguments.first as Iterable<String>),
-    );
-
-    sut = AnalyzeTask(
-      logger: mockLogger,
-      programRunner: mockRunner,
-      fileResolver: mockResolver,
-      config: const AnalyzeConfig(scanMode: AnalysisScanMode.staged),
+  group('$AnalyzeConfig', () {
+    testData<Tuple2<Map<String, dynamic>, AnalyzeConfig>>(
+      'correctly converts from json',
+      [
+        const Tuple2(<String, dynamic>{}, AnalyzeConfig()),
+        const Tuple2(
+          <String, dynamic>{
+            'error-level': 'warning',
+            'scan-mode': 'staged',
+          },
+          AnalyzeConfig(
+            errorLevel: AnalyzeErrorLevel.warning,
+            scanMode: AnalysisScanMode.staged,
+          ),
+        ),
+      ],
+      (fixture) {
+        expect(AnalyzeConfig.fromJson(fixture.item1), fixture.item2);
+      },
     );
   });
 
-  test('task metadata is correct', () {
-    expect(sut.taskName, 'analyze');
-    expect(sut.callForEmptyEntries, false);
-  });
+  group('$AnalyzeTask', () {
+    final mockLogger = MockTaskLogger();
+    final mockRunner = MockProgramRunner();
+    final mockResolver = MockFileResolver();
 
-  testData<Tuple2<String, bool>>(
-    'matches only dart/pubspec.yaml files',
-    const [
-      Tuple2('test1.dart', true),
-      Tuple2('test/path2.dart', true),
-      Tuple2('test3.g.dart', true),
-      Tuple2('test4.dart.g', false),
-      Tuple2('test5_dart', false),
-      Tuple2('test6.dat', false),
-      Tuple2('pubspec.yaml', true),
-      Tuple2('pubspec.yml', true),
-      Tuple2('pubspec.lock', false),
-      Tuple2('path/pubspec.yaml', false),
-    ],
-    (fixture) {
-      expect(
-        sut.filePattern.matchAsPrefix(fixture.item1),
-        fixture.item2 ? isNotNull : isNull,
-      );
-    },
-  );
+    late AnalyzeTask sut;
 
-  testData<Tuple2<AnalyzeErrorLevel, List<String>>>(
-    'Runs dart analyze with correct arguments',
-    const [
-      Tuple2(AnalyzeErrorLevel.error, ['--no-fatal-warnings']),
-      Tuple2(AnalyzeErrorLevel.warning, ['--fatal-warnings']),
-      Tuple2(
-        AnalyzeErrorLevel.info,
-        ['--fatal-warnings', '--fatal-infos'],
-      ),
-    ],
-    (fixture) async {
-      sut = AnalyzeTask(
-        logger: mockLogger,
-        programRunner: mockRunner,
-        fileResolver: mockResolver,
-        config: AnalyzeConfig(errorLevel: fixture.item1),
-      );
-
-      final result = await sut([
-        FakeEntry('test.dart'),
-      ]);
-
-      expect(result, TaskResult.accepted);
-      verify(
-        () => mockRunner.stream(
-          'dart',
-          ['analyze', '--format', 'json', ...fixture.item2],
-          failOnExit: false,
-        ),
-      );
-    },
-  );
-
-  group('staged', () {
-    test('collects lints for specified files', () async {
-      when(
-        () => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        ),
-      ).thenAnswer(
-        (_) => Stream.fromIterable([
-          'this is an invalid line',
-          '    this as well  ',
-          json.encode(fullAnalyzeResult),
-          'also this',
-        ]),
-      );
-
-      final result = await sut([
-        FakeEntry('a.dart'),
-        FakeEntry('a-a-a.dart'),
-        FakeEntry('b/b.dart'),
-        FakeEntry('c/c/d.dart'),
-        FakeEntry('pubspec.yaml'),
-        FakeEntry('b/a.js'),
-        FakeEntry('pipeline.yaml'),
-      ]);
-      expect(result, TaskResult.rejected);
-      verify(() => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'));
-      verify(
-        () => mockLogger.info(
-          '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
-        ),
-      );
-      verify(() => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'));
-      verify(() => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'));
-      verify(() => mockLogger.info('4 issue(s) found.'));
-      verifyNever(() => mockLogger.info(any()));
-    });
-
-    test('succeeds if only lints of not specified files are found', () async {
-      when(
-        () => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        ),
-      ).thenAnswer((_) => Stream.value(json.encode(minimalAnalyzeResult)));
-
-      final result = await sut([FakeEntry('a.dart')]);
-      expect(result, TaskResult.accepted);
-      verify(() => mockLogger.info(any())).called(1);
-    });
-  });
-
-  group('collections lints for all files', () {
     setUp(() {
-      sut = AnalyzeTask(
-        logger: mockLogger,
-        programRunner: mockRunner,
-        fileResolver: mockResolver,
-        config: const AnalyzeConfig(scanMode: AnalysisScanMode.all),
-      );
-    });
+      reset(mockLogger);
+      reset(mockRunner);
+      reset(mockResolver);
 
-    test('collects lints for specified files', () async {
       when(
         () => mockRunner.stream(
           any(),
@@ -295,51 +165,238 @@ void main() {
           failOnExit: any(named: 'failOnExit'),
         ),
       ).thenAnswer(
-        (_) => Stream.fromIterable([
-          'this is an invalid line',
-          '    this as well  ',
-          json.encode(fullAnalyzeResult),
-        ]),
+        (_) => Stream.value(
+          json.encode(const AnalyzeResult(version: 1, diagnostics: [])),
+        ),
       );
 
-      final result = await sut([
-        FakeEntry('a.dart'),
-        FakeEntry('a-a-a.dart'),
-        FakeEntry('b/b.dart'),
-        FakeEntry('c/c/d.dart'),
-        FakeEntry('pubspec.yaml'),
-        FakeEntry('b/a.js'),
-        FakeEntry('pipeline.yaml'),
-      ]);
-      expect(result, TaskResult.rejected);
-      verifyInOrder([
-        () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
-        () =>
-            mockLogger.info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
-        () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
-        () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
-        () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
-        () => mockLogger.info('5 issue(s) found.'),
-      ]);
-      verifyNever(() => mockLogger.info(any()));
+      // ignore: discarded_futures
+      when(() => mockResolver.resolve(any()))
+          .thenAnswer((i) async => i.positionalArguments.first as String);
+      when(() => mockResolver.resolveAll(any())).thenAnswer(
+        (i) => Stream.fromIterable(
+          i.positionalArguments.first as Iterable<String>,
+        ),
+      );
+
+      sut = AnalyzeTask(
+        logger: mockLogger,
+        programRunner: mockRunner,
+        fileResolver: mockResolver,
+        config: const AnalyzeConfig(scanMode: AnalysisScanMode.staged),
+      );
     });
 
-    test('fails if only lints of not specified files are found', () async {
-      when(
-        () => mockRunner.stream(
-          any(),
-          any(),
-          failOnExit: any(named: 'failOnExit'),
-        ),
-      ).thenAnswer((_) => Stream.value(json.encode(minimalAnalyzeResult)));
+    test('task metadata is correct', () {
+      expect(sut.taskName, 'analyze');
+      expect(sut.callForEmptyEntries, false);
+    });
 
-      final result = await sut([FakeEntry('a.dart')]);
-      expect(result, TaskResult.rejected);
-      verifyInOrder([
-        () => mockLogger.info('  error - o.dart:0:0 - o - O'),
-        () => mockLogger.info('1 issue(s) found.'),
-      ]);
-      verifyNever(() => mockLogger.info(any()));
+    testData<Tuple2<String, bool>>(
+      'matches only dart/pubspec.yaml files',
+      const [
+        Tuple2('test1.dart', true),
+        Tuple2('test/path2.dart', true),
+        Tuple2('test3.g.dart', true),
+        Tuple2('test4.dart.g', false),
+        Tuple2('test5_dart', false),
+        Tuple2('test6.dat', false),
+        Tuple2('pubspec.yaml', true),
+        Tuple2('pubspec.yml', true),
+        Tuple2('pubspec.lock', false),
+        Tuple2('path/pubspec.yaml', false),
+      ],
+      (fixture) {
+        expect(
+          sut.filePattern.matchAsPrefix(fixture.item1),
+          fixture.item2 ? isNotNull : isNull,
+        );
+      },
+    );
+
+    testData<Tuple2<AnalyzeErrorLevel, List<String>>>(
+      'Runs dart analyze with correct arguments',
+      const [
+        Tuple2(AnalyzeErrorLevel.error, ['--no-fatal-warnings']),
+        Tuple2(AnalyzeErrorLevel.warning, ['--fatal-warnings']),
+        Tuple2(
+          AnalyzeErrorLevel.info,
+          ['--fatal-warnings', '--fatal-infos'],
+        ),
+      ],
+      (fixture) async {
+        sut = AnalyzeTask(
+          logger: mockLogger,
+          programRunner: mockRunner,
+          fileResolver: mockResolver,
+          config: AnalyzeConfig(errorLevel: fixture.item1),
+        );
+
+        final result = await sut([
+          FakeEntry('test.dart'),
+        ]);
+
+        expect(result, TaskResult.accepted);
+        verify(
+          () => mockRunner.stream(
+            'dart',
+            ['analyze', '--format', 'json', ...fixture.item2],
+            failOnExit: false,
+          ),
+        );
+      },
+    );
+
+    test('throws if invoked with empty entries iterable', () async {
+      expect(() => sut(const []), throwsArgumentError);
+    });
+
+    group('staged', () {
+      test('collects lints for specified files', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.fromIterable([
+            'this is an invalid line',
+            '    this as well  ',
+            json.encode(fullAnalyzeResult),
+            'also this',
+          ]),
+        );
+
+        final result = await sut([
+          FakeEntry('a.dart'),
+          FakeEntry('a-a-a.dart'),
+          FakeEntry('b/b.dart'),
+          FakeEntry('c/c/d.dart'),
+          FakeEntry('pubspec.yaml'),
+          FakeEntry('b/a.js'),
+          FakeEntry('pipeline.yaml'),
+        ]);
+        expect(result, TaskResult.rejected);
+        verify(() => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'));
+        verify(
+          () => mockLogger.info(
+            '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
+          ),
+        );
+        verify(() => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'));
+        verify(() => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'));
+        verify(() => mockLogger.info('4 issue(s) found.'));
+        verifyNever(() => mockLogger.info(any()));
+      });
+
+      test('succeeds if only lints of not specified files are found', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer((_) => Stream.value(json.encode(minimalAnalyzeResult)));
+
+        final result = await sut([FakeEntry('a.dart')]);
+        expect(result, TaskResult.accepted);
+        verify(() => mockLogger.info(any())).called(1);
+      });
+
+      test('succeeds if no lints are found at all', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer((_) => Stream.fromIterable(['line1', 'line2', 'line3']));
+
+        final result = await sut([FakeEntry('a.dart')]);
+        expect(result, TaskResult.accepted);
+        verify(() => mockLogger.info(any())).called(1);
+      });
+    });
+
+    group('collections lints for all files', () {
+      setUp(() {
+        sut = AnalyzeTask(
+          logger: mockLogger,
+          programRunner: mockRunner,
+          fileResolver: mockResolver,
+          config: const AnalyzeConfig(scanMode: AnalysisScanMode.all),
+        );
+      });
+
+      test('collects lints for specified files', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer(
+          (_) => Stream.fromIterable([
+            'this is an invalid line',
+            '    this as well  ',
+            json.encode(fullAnalyzeResult),
+          ]),
+        );
+
+        final result = await sut([
+          FakeEntry('a.dart'),
+          FakeEntry('a-a-a.dart'),
+          FakeEntry('b/b.dart'),
+          FakeEntry('c/c/d.dart'),
+          FakeEntry('pubspec.yaml'),
+          FakeEntry('b/a.js'),
+          FakeEntry('pipeline.yaml'),
+        ]);
+        expect(result, TaskResult.rejected);
+        verifyInOrder([
+          () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
+          () => mockLogger
+              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
+          () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
+          () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
+          () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
+          () => mockLogger.info('5 issue(s) found.'),
+        ]);
+        verifyNever(() => mockLogger.info(any()));
+      });
+
+      test('fails if only lints of not specified files are found', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer((_) => Stream.value(json.encode(minimalAnalyzeResult)));
+
+        final result = await sut([FakeEntry('a.dart')]);
+        expect(result, TaskResult.rejected);
+        verifyInOrder([
+          () => mockLogger.info('  error - o.dart:0:0 - o - O'),
+          () => mockLogger.info('1 issue(s) found.'),
+        ]);
+        verifyNever(() => mockLogger.info(any()));
+      });
+
+      test('succeeds if no lints are found at all', () async {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+          ),
+        ).thenAnswer((_) => Stream.fromIterable(['line1', 'line2', 'line3']));
+
+        final result = await sut([FakeEntry('a.dart')]);
+        expect(result, TaskResult.accepted);
+        verify(() => mockLogger.info(any())).called(1);
+      });
     });
   });
 }

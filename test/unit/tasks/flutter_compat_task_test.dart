@@ -32,7 +32,7 @@ class FakeDirectory extends Fake implements Directory {
 class MockRepoEntry extends Mock implements RepoEntry {}
 
 void main() {
-  group('FlutterCompatTask', () {
+  group('$FlutterCompatTask', () {
     final mockProgramRunner = MockProgramRunner();
     final mockTaskLogger = MockTaskLogger();
     final mockFile = MockFile();

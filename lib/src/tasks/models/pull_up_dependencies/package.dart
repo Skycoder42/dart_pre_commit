@@ -31,5 +31,7 @@ class Package with _$Package {
 
   static Version _versionFromJson(String json) => Version.parse(json);
 
+  // coverage:ignore-start
   static String _versionToJson(Version version) => version.toString();
+  // coverage:ignore-end
 }

@@ -5,6 +5,7 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 import '../../dart_pre_commit.dart';
 import 'provider/task_provider.dart';
 
+// coverage:ignore-start
 final flutterCompatTaskProvider = TaskProvider(
   FlutterCompatTask._taskName,
   (ref) => FlutterCompatTask(
@@ -12,6 +13,7 @@ final flutterCompatTaskProvider = TaskProvider(
     taskLogger: ref.watch(taskLoggerProvider),
   ),
 );
+// coverage:ignore-end
 
 /// A task that checks if the package can be added to a flutter project.
 ///

@@ -8,6 +8,7 @@ import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
 import 'provider/task_provider.dart';
 
+// coverage:ignore-start
 final libExportTaskProvider = TaskProvider(
   LibExportTask._taskName,
   (ref) => LibExportTask(
@@ -19,6 +20,7 @@ final libExportTaskProvider = TaskProvider(
     fileResolver: ref.watch(fileResolverProvider),
   ),
 );
+// coverage:ignore-end
 
 /// A task that uses a [LibExportLinter] to check for missing exports of src
 /// files.

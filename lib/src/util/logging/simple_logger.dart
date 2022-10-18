@@ -5,9 +5,11 @@ import 'package:riverpod/riverpod.dart';
 import '../logger.dart';
 import 'console_logger.dart';
 
+// coverage:ignore-start
 final simpleLoggerProvider = Provider.family<Logger, LogLevel>(
   (ref, logLevel) => SimpleLogger(logLevel: logLevel),
 );
+// coverage:ignore-end
 
 /// A simple logger class, the provides file-optimized logs.
 ///

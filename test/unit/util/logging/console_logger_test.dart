@@ -44,8 +44,8 @@ void main() {
       Tuple2(TaskStatus.hasUnstagedChanges, '⚠️ '),
       Tuple2(TaskStatus.rejected, '❌ '),
     ], (fixture) {
-      sut.updateStatus(message: 'test');
-      expect(output.toString(), cleanLine('test'));
+      sut.updateStatus(message: 'test', status: fixture.item1);
+      expect(output.toString(), contains(fixture.item2));
     });
 
     test('prints detail', () {

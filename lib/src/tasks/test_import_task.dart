@@ -7,6 +7,7 @@ import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
 import 'provider/task_provider.dart';
 
+// coverage:ignore-start
 final testImportTaskProvider = TaskProvider(
   TestImportTask._taskName,
   (ref) => TestImportTask(
@@ -17,6 +18,7 @@ final testImportTaskProvider = TaskProvider(
     linter: ref.watch(testImportLinterProvider),
   ),
 );
+// coverage:ignore-end
 
 /// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
 typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection

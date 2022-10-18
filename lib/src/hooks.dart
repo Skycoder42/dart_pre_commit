@@ -13,6 +13,7 @@ import 'util/program_runner.dart';
 
 part 'hooks.freezed.dart';
 
+// coverage:ignore-start
 final hooksProvider = Provider.family(
   (ref, HooksConfig config) => Hooks(
     logger: ref.watch(loggerProvider),
@@ -22,6 +23,7 @@ final hooksProvider = Provider.family(
     config: config,
   ),
 );
+// coverage:ignore-end
 
 @freezed
 class HooksConfig with _$HooksConfig {
@@ -108,9 +110,6 @@ class Hooks {
   final Logger logger;
 
   final HooksConfig config;
-
-  /// Returns all tasks this hook will run on the repository upon [call()].
-  Iterable<String> get tasks => _tasks.map((t) => t.taskName);
 
   /// Constructs a new [Hooks] instance.
   ///

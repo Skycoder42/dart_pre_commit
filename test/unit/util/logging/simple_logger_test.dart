@@ -26,6 +26,13 @@ void main() {
     );
   });
 
+  test('uses stdout and stderr by default', () {
+    sut = SimpleLogger(logLevel: LogLevel.debug);
+
+    expect(sut.outSink, same(stdout));
+    expect(sut.errSink, same(stderr));
+  });
+
   group('updateStatus', () {
     test('prints message', () {
       sut.updateStatus(message: 'message');

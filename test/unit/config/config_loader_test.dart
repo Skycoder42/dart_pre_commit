@@ -234,6 +234,15 @@ task:
           t.item2.describe(StringDescription()),
         ).toString(),
       );
+
+      test('throws exception on invalid task configuration value', () async {
+        when(() => mockFile.path).thenReturn('');
+        when(() => mockFile.readAsString()).thenReturnAsync('task: 42');
+
+        await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
+
+        expect(() => sut.loadTaskConfig('task'), throwsException);
+      });
     });
   });
 }

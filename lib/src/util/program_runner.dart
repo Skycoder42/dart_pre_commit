@@ -8,11 +8,13 @@ import 'package:riverpod/riverpod.dart';
 
 import 'logger.dart';
 
+// coverage:ignore-start
 final programRunnerProvider = Provider(
   (ref) => ProgramRunner(
     logger: ref.watch(taskLoggerProvider),
   ),
 );
+// coverage:ignore-end
 
 /// An exception that gets thrown if a subprocess exits with an unexpected code.
 class ProgramExitException implements Exception {

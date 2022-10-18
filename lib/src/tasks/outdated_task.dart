@@ -12,6 +12,7 @@ import 'provider/task_provider.dart';
 part 'outdated_task.freezed.dart';
 part 'outdated_task.g.dart';
 
+// coverage:ignore-start
 final outdatedTaskProvider = TaskProvider.configurable(
   OutdatedTask._taskName,
   OutdatedConfig.fromJson,
@@ -21,6 +22,7 @@ final outdatedTaskProvider = TaskProvider.configurable(
     config: config,
   ),
 );
+// coverage:ignore-end
 
 /// The different levels of outdated-ness that can be checked.
 enum OutdatedLevel {

@@ -39,7 +39,7 @@ void main() {
     registerFallbackValue(Exception());
   });
 
-  group('LibExportTask', () {
+  group('$LibExportTask', () {
     final fakeEntry = FakeEntry('lib/lib.dart');
     final fakeContext = FakeAnalysisContextCollection();
 

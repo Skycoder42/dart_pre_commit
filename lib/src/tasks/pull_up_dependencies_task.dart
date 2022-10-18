@@ -14,6 +14,7 @@ import 'provider/task_provider.dart';
 part 'pull_up_dependencies_task.freezed.dart';
 part 'pull_up_dependencies_task.g.dart';
 
+// coverage:ignore-start
 final pullUpDependenciesTaskProvider = TaskProvider.configurable(
   PullUpDependenciesTask._taskName,
   PullUpDependenciesConfig.fromJson,
@@ -24,6 +25,7 @@ final pullUpDependenciesTaskProvider = TaskProvider.configurable(
     config: config,
   ),
 );
+// coverage:ignore-end
 
 @freezed
 class PullUpDependenciesConfig with _$PullUpDependenciesConfig {

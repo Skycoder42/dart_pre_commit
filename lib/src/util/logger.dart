@@ -5,6 +5,7 @@ import 'package:riverpod/riverpod.dart';
 import '../hooks.dart';
 import '../task_base.dart';
 
+// coverage:ignore-start
 final loggerProvider = Provider<Logger>(
   (ref) => throw UnimplementedError(),
 );
@@ -12,6 +13,7 @@ final loggerProvider = Provider<Logger>(
 final taskLoggerProvider = Provider<TaskLogger>(
   (ref) => ref.watch(loggerProvider),
 );
+// coverage:ignore-end
 
 /// The status a [TaskBase] can be in.
 enum TaskStatus {

@@ -6,12 +6,14 @@ import '../../dart_pre_commit.dart';
 
 part 'pubspec_config_loader.freezed.dart';
 
+// coverage:ignore-start
 final pubspecConfigLoaderProvider = Provider(
   (ref) => PubspecConfigLoader(
     fileResolver: ref.watch(fileResolverProvider),
     logger: ref.watch(loggerProvider),
   ),
 );
+// coverage:ignore-end
 
 @freezed
 class PubspecConfig with _$PubspecConfig {

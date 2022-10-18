@@ -7,9 +7,11 @@ import 'package:riverpod/riverpod.dart';
 import '../logger.dart';
 import 'simple_logger.dart';
 
+// coverage:ignore-start
 final consoleLoggerProvider = Provider.family<Logger, LogLevel>(
   (ref, logLevel) => ConsoleLogger(logLevel),
 );
+// coverage:ignore-end
 
 /// An advanced logger, that providers console optimized, interactive logging.
 ///

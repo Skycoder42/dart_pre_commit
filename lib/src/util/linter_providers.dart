@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/lint.dart';
 import 'package:riverpod/riverpod.dart';

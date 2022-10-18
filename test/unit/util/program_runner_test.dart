@@ -103,6 +103,11 @@ void main() {
       );
     });
 
+    test('fail on exit ignores success codes', () async {
+      final exitCode = await run(const ['exit 0'], failOnExit: true);
+      expect(exitCode, 0);
+    });
+
     test('runs in working directory', () async {
       final exitCode = await run(
         Platform.isWindows ? const ['cd'] : const ['pwd'],

@@ -11,6 +11,7 @@ import '../pull_up_dependencies_task.dart';
 import '../test_import_task.dart';
 import 'task_loader.dart';
 
+// coverage:ignore-start
 final defaultTasksLoaderProvider = Provider(
   (ref) => DefaultTasksLoader(
     pubspecConfigLoader: ref.watch(pubspecConfigLoaderProvider),
@@ -18,6 +19,7 @@ final defaultTasksLoaderProvider = Provider(
     logger: ref.watch(loggerProvider),
   ),
 );
+// coverage:ignore-end
 
 class DefaultTasksLoader {
   final PubspecConfigLoader pubspecConfigLoader;

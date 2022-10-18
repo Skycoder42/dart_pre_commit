@@ -8,6 +8,7 @@ import 'provider/task_provider.dart';
 part 'format_task.freezed.dart';
 part 'format_task.g.dart';
 
+// coverage:ignore-start
 final formatTaskProvider = TaskProvider.configurable(
   FormatTask._taskName,
   FormatConfig.fromJson,
@@ -16,6 +17,7 @@ final formatTaskProvider = TaskProvider.configurable(
     config: config,
   ),
 );
+// coverage:ignore-end
 
 @freezed
 class FormatConfig with _$FormatConfig {

@@ -39,7 +39,7 @@ void main() {
     registerFallbackValue(Exception());
   });
 
-  group('TestImportTask', () {
+  group('$TestImportTask', () {
     const fakePath = 'test/mock_test.dart';
     final fakeEntry = FakeEntry(fakePath);
     final fakeContext = FakeAnalysisContextCollection();

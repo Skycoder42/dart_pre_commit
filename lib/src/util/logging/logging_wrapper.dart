@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'dart:async';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -6,11 +8,13 @@ import 'package:riverpod/riverpod.dart';
 
 import '../../../dart_pre_commit.dart';
 
+// coverage:ignore-start
 final loggingWrapperProvider = Provider(
   (ref) => LoggingWrapper(
     ref.watch(taskLoggerProvider),
   ),
 );
+// coverage:ignore-end
 
 /// @nodoc
 @internal

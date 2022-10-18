@@ -4,6 +4,7 @@ import 'package:yaml/yaml.dart';
 import '../../../dart_pre_commit.dart';
 import 'task_provider.dart';
 
+// coverage:ignore-start
 final taskLoaderProvider = Provider(
   (ref) => TaskLoader(ref.watch(configLoaderProvider)),
 );
@@ -11,6 +12,7 @@ final taskLoaderProvider = Provider(
 final tasksProvider = Provider(
   (ref) => ref.watch(taskLoaderProvider).loadTasks(ref).toList(),
 );
+// coverage:ignore-end
 
 abstract class _TaskConfig<TState extends TaskBase> {
   String get taskName;

@@ -16,6 +16,7 @@ import 'provider/task_provider.dart';
 part 'analyze_task.freezed.dart';
 part 'analyze_task.g.dart';
 
+// coverage:ignore-start
 final analyzeTaskProvider = TaskProvider.configurable(
   AnalyzeTask._taskName,
   AnalyzeConfig.fromJson,
@@ -26,6 +27,7 @@ final analyzeTaskProvider = TaskProvider.configurable(
     config: config,
   ),
 );
+// coverage:ignore-end
 
 enum AnalyzeErrorLevel {
   error(['--no-fatal-warnings']),
@@ -106,7 +108,8 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    if (entries.isEmpty) {
+    final entriesList = entries.toList();
+    if (entriesList.isEmpty) {
       throw ArgumentError('must not be empty', 'entries');
     }
 
@@ -116,7 +119,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
         lintCnt = await _scanAll();
         break;
       case AnalysisScanMode.staged:
-        lintCnt = await _scanStaged(entries);
+        lintCnt = await _scanStaged(entriesList);
         break;
     }
 
@@ -134,7 +137,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     return lintCnt;
   }
 
-  Future<int> _scanStaged(Iterable<RepoEntry> entries) async {
+  Future<int> _scanStaged(List<RepoEntry> entries) async {
     final lints = HashMap<String, List<Diagnostic>>(
       equals: path.equals,
       hashCode: path.hash,
