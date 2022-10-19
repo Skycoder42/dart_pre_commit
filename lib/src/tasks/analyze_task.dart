@@ -29,6 +29,7 @@ final analyzeTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
+@internal
 enum AnalyzeErrorLevel {
   error(['--no-fatal-warnings']),
   warning(['--fatal-warnings']),
@@ -39,11 +40,13 @@ enum AnalyzeErrorLevel {
   const AnalyzeErrorLevel(this._params);
 }
 
+@internal
 enum AnalysisScanMode {
   all,
   staged,
 }
 
+@internal
 @freezed
 class AnalyzeConfig with _$AnalyzeConfig {
   // ignore: invalid_annotation_target
@@ -67,29 +70,18 @@ class AnalyzeConfig with _$AnalyzeConfig {
       _$AnalyzeConfigFromJson(json);
 }
 
-/// A task the runs `dart analyze` to check for problems.
-///
-/// This task analyzes all files in the repository for problems and then filters
-/// the results for all files that have been staged in this commit. If anything
-/// was found for the staged files, the task will print out the problems and
-/// exit with [TaskResult.rejected].
-///
-/// {@category tasks}
+@internal
 class AnalyzeTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'analyze';
 
-  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
-  /// The [FileResolver] instance used by this task.
   final FileResolver fileResolver;
 
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
   final AnalyzeConfig config;
 
-  /// Default Constructor.
   const AnalyzeTask({
     required this.programRunner,
     required this.fileResolver,

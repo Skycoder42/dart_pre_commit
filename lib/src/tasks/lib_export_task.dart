@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/lint.dart';
+import 'package:meta/meta.dart';
 
-import '../../dart_pre_commit.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/file_resolver.dart';
 import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
+import '../util/logger.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
@@ -22,27 +26,18 @@ final libExportTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
-/// A task that uses a [LibExportLinter] to check for missing exports of src
-/// files.
-///
-/// This task analyses all files in the lib directory. In case a missing export
-/// is found, the task result will be [TaskResult.rejected].
-///
-/// {@category tasks}
+@internal
 class LibExportTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'lib-exports';
 
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
   final AnalysisContextCollection contextCollection;
 
-  /// The [LibExportLinter] used by this task.
   final LibExportLinter linter;
 
   final FileResolver fileResolver;
 
-  /// Default Constructor.
   LibExportTask({
     required this.logger,
     required this.contextCollection,

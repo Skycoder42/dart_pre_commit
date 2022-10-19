@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
 import 'package:riverpod/riverpod.dart';
 
 Future<void> main(List<String> arguments) async {

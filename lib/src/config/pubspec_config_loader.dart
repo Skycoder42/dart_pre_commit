@@ -2,11 +2,13 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../../dart_pre_commit.dart';
+import '../util/file_resolver.dart';
+import '../util/logger.dart';
 
 part 'pubspec_config_loader.freezed.dart';
 
 // coverage:ignore-start
+@internal
 final pubspecConfigLoaderProvider = Provider(
   (ref) => PubspecConfigLoader(
     fileResolver: ref.watch(fileResolverProvider),
@@ -15,6 +17,7 @@ final pubspecConfigLoaderProvider = Provider(
 );
 // coverage:ignore-end
 
+@internal
 @freezed
 class PubspecConfig with _$PubspecConfig {
   const factory PubspecConfig({
@@ -23,6 +26,7 @@ class PubspecConfig with _$PubspecConfig {
   }) = _PubspecConfig;
 }
 
+@internal
 class PubspecConfigLoader {
   final FileResolver fileResolver;
   final Logger logger;

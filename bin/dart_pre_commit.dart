@@ -147,7 +147,7 @@ Future<int> _run(List<String> args) async {
       ..write(parser.usage);
     return 2;
   } on Exception catch (e, s) {
-    di?.read(taskLoggerProvider).except(e, s);
+    di?.read(loggerProvider).except(e, s);
     return 127;
   } finally {
     di?.dispose();

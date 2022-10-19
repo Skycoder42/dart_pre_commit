@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
-import '../../dart_pre_commit.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
+import '../util/logger.dart';
+import '../util/program_runner.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
@@ -15,25 +19,15 @@ final flutterCompatTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
-/// A task that checks if the package can be added to a flutter project.
-///
-/// Flutter hardcodes certain package versions in their SDK, making any package
-/// that requires a different version of that package incompatible to all
-/// flutter projects. This task tries to create a temporary flutter project and
-/// add this package to it as dependency to check if such problems exist.
-///
-/// {@category tasks}
+@internal
 class FlutterCompatTask implements RepoTask {
   static const _taskName = 'flutter-compat';
   static final _pubspecRegexp = RegExp(r'^pubspec.ya?ml$');
 
-  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger taskLogger;
 
-  /// Default Constructor.
   const FlutterCompatTask({
     required this.programRunner,
     required this.taskLogger,

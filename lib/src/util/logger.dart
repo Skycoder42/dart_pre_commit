@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../hooks.dart';
@@ -10,6 +11,7 @@ final loggerProvider = Provider<Logger>(
   (ref) => throw UnimplementedError(),
 );
 
+@internal
 final taskLoggerProvider = Provider<TaskLogger>(
   (ref) => ref.watch(loggerProvider),
 );
@@ -128,8 +130,7 @@ abstract class Logger implements TaskLogger {
   void completeStatus();
 }
 
-/// Extensions to the [Logger] class.
+@internal
 extension LoggerX on Logger {
-  /// Checks if a message with [level] should be logged by this logger.
   bool canLog(LogLevel level) => level.index >= logLevel.index;
 }

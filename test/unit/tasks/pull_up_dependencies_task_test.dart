@@ -58,7 +58,7 @@ void main() {
         logger: mockLogger,
         programRunner: mockRunner,
         fileResolver: mockResolver,
-        config: const PullUpDependenciesConfig(), // TODO test with ignored
+        config: const PullUpDependenciesConfig(),
       );
     });
 

@@ -1,7 +1,9 @@
+import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:yaml/yaml.dart';
 
-import '../../../dart_pre_commit.dart';
+import '../../config/config_loader.dart';
+import '../../task_base.dart';
 import 'task_provider.dart';
 
 // coverage:ignore-start
@@ -9,6 +11,7 @@ final taskLoaderProvider = Provider(
   (ref) => TaskLoader(ref.watch(configLoaderProvider)),
 );
 
+@internal
 final tasksProvider = Provider(
   (ref) => ref.watch(taskLoaderProvider).loadTasks(ref).toList(),
 );

@@ -24,24 +24,16 @@ final outdatedTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
-/// The different levels of outdated-ness that can be checked.
+@internal
 enum OutdatedLevel {
-  /// Only print recommended updates, do not require any.
   none,
-
-  /// Only require major updates, e.g. 1.X.Y-Z to 2.0.0-0.
   major,
-
-  /// Only require minor updates, e.g. 1.0.X-Y to 1.1.0-0.
   minor,
-
-  /// Only require patch updates, e.g. 1.0.0-X to 1.0.1-0.
   patch,
-
-  /// Require all updates that are available.
   any,
 }
 
+@internal
 @freezed
 class OutdatedConfig with _$OutdatedConfig {
   // ignore: invalid_annotation_target
@@ -59,30 +51,16 @@ class OutdatedConfig with _$OutdatedConfig {
       _$OutdatedConfigFromJson(json);
 }
 
-/// A task that checks if any of your installed dependencies have to be updated.
-///
-/// It runs `dart pub outdated` to check on the current status of all packages.
-/// If any package can be updated, that update will be printed as a
-/// recommendation, but won't reject your commit.
-///
-/// The [config] however configures, which levels of outdatedness are
-/// acceptable. Any updates that at least reach the level are considered
-/// mandatory and if available will reject the commit. See [OutdatedLevel] for
-/// more details on which versions each level includes.
-///
-/// {@category tasks}
+@internal
 class OutdatedTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'outdated';
 
-  /// The [ProgramRunner] instance used by this task.
   final ProgramRunner programRunner;
 
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
   final OutdatedConfig config;
 
-  /// Default Constructor.
   const OutdatedTask({
     required this.programRunner,
     required this.logger,

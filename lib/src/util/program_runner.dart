@@ -4,11 +4,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'logger.dart';
 
 // coverage:ignore-start
+@internal
 final programRunnerProvider = Provider(
   (ref) => ProgramRunner(
     logger: ref.watch(taskLoggerProvider),
@@ -16,22 +18,14 @@ final programRunnerProvider = Provider(
 );
 // coverage:ignore-end
 
-/// An exception that gets thrown if a subprocess exits with an unexpected code.
+@internal
 class ProgramExitException implements Exception {
-  /// The exit code of the process.
   final int exitCode;
 
-  /// The program that was executed.
   final String? program;
 
-  /// The arguments that were passed to the program.
   final List<String>? arguments;
 
-  /// Default constructor.
-  ///
-  /// The [exitCode] is always required, but [program] and [arguments] are
-  /// optional. If [arguments] are specified but [program] is not, the arguments
-  /// are ignored.
   const ProgramExitException(
     this.exitCode, [
     this.program,
@@ -54,27 +48,14 @@ class ProgramExitException implements Exception {
   }
 }
 
-/// A helper class to run subprocesses easily.
+@internal
 class ProgramRunner {
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
-  /// Default constructor.
   const ProgramRunner({
     required this.logger,
   });
 
-  /// Runs a program and streams the output, line by line.
-  ///
-  /// This will start [program] with [arguments] and run the process in the
-  /// background. The standard output of the process is decoded using the
-  /// [utf8.decoder] and streamed line by line. The standard error is forwarded
-  /// to the [logger]. If [workingDirectory] is set, the process will be
-  /// launched in that directory. Otherwise it will run in [Directory.current].
-  /// The [runInShell] parameter is simply passed to [Process.start] as is.
-  ///
-  /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
-  /// the program exists with anything but 0.
   Stream<String> stream(
     String program,
     List<String> arguments, {
@@ -107,17 +88,6 @@ class ProgramRunner {
     }
   }
 
-  /// Runs a program until exited and returns the exit code.
-  ///
-  /// This will start [program] with [arguments] and run the process in the
-  /// background. The standard output of the process is discarded, as only the
-  /// exit code is needed.The standard error is forwarded to the [logger]. If
-  /// [workingDirectory] is set, the process will be launched in that directory.
-  /// Otherwise it will run in [Directory.current]. The [runInShell] parameter
-  /// is simply passed to [Process.start] as is.
-  ///
-  /// If [failOnExit] is true, the method will throw a [ProgramExitException] if
-  /// the program exists with anything but 0.
   Future<int> run(
     String program,
     List<String> arguments, {

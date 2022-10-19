@@ -6,9 +6,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logging/logging.dart' as logging;
 import 'package:riverpod/riverpod.dart';
 
-import '../../../dart_pre_commit.dart';
+import '../logger.dart';
 
 // coverage:ignore-start
+@internal
 final loggingWrapperProvider = Provider(
   (ref) => LoggingWrapper(
     ref.watch(taskLoggerProvider),
@@ -87,10 +88,10 @@ class LoggingWrapper implements logging.Logger {
     Zone? zone,
   ]) {
     if (logLevel >= logging.Level.SHOUT) {
-      final exeception = error is Exception
+      final exception = error is Exception
           ? error
           : LoggingWrapperException((error ?? message).toString());
-      taskLogger.except(exeception, stackTrace);
+      taskLogger.except(exception, stackTrace);
     } else if (logLevel >= logging.Level.SEVERE) {
       taskLogger.error(message.toString());
     } else if (logLevel >= logging.Level.WARNING) {
@@ -117,10 +118,10 @@ class LoggingWrapper implements logging.Logger {
 
   @override
   void shout(Object? message, [Object? error, StackTrace? stackTrace]) {
-    final exeception = error is Exception
+    final exception = error is Exception
         ? error
         : LoggingWrapperException((error ?? message).toString());
-    taskLogger.except(exeception, stackTrace);
+    taskLogger.except(exception, stackTrace);
   }
 
   @override

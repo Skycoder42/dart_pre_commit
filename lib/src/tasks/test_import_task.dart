@@ -1,10 +1,13 @@
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:dart_test_tools/dart_test_tools.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
-import '../../dart_pre_commit.dart';
+import '../repo_entry.dart';
+import '../task_base.dart';
 import '../util/linter_exception.dart';
 import '../util/linter_providers.dart';
+import '../util/logger.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
@@ -20,35 +23,24 @@ final testImportTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
-/// A callback the retrieves a [AnalysisContextCollection] for a [RepoEntry].
+@internal
 typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection
     Function(RepoEntry entry);
 
-/// A task that uses a [TestImportLinter] to check for invalid imports in test
-/// files.
-///
-/// This task analyzes a single file in the `test` directory with the test
-/// import linter. In case an invalid import is found, the task will be
-/// [TaskResult.rejected].
-///
-/// {@category tasks}
+@internal
 class TestImportTask implements FileTask {
   static const _taskName = 'test-imports';
 
-  /// The [AnalysisContextCollectionEntryProviderFn] used by this task.
   final AnalysisContextCollectionEntryProviderFn
       analysisContextCollectionProvider;
 
-  /// The [TaskLogger] instance used by this task.
   final TaskLogger logger;
 
-  /// The [TestImportLinter] used by this task.
   final TestImportLinter linter;
 
   @override
   String get taskName => _taskName;
 
-  /// Default Constructor.
   const TestImportTask({
     required this.analysisContextCollectionProvider,
     required this.logger,
