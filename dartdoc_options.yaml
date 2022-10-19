@@ -1,8 +1,5 @@
 dartdoc:
   categories:
-    tasks:
-      markdown: lib/src/tasks/tasks.md
-      name: Tasks
     bin:
       markdown: bin/dart_pre_commit.md
       name: Documentation of the dart_pre_commit binary

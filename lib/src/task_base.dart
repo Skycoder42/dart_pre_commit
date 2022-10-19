@@ -4,8 +4,6 @@ import 'hooks.dart';
 import 'repo_entry.dart';
 
 /// The possible result states of a generic task.
-///
-/// Check [TaskResultX] for extended functionality.
 enum TaskResult {
   /// The task completed with success, nothing had to be modified.
   accepted,
@@ -16,26 +14,10 @@ enum TaskResult {
 
   /// The task completed, but detected a problem with the commit that must be
   /// solved before the commit can be accepted.
-  rejected,
-}
+  rejected;
 
-/// Methodical extensions for the [TaskResult] enum.
-extension TaskResultX on TaskResult {
-  /// Raises the hook result to a more severe level, if required.
-  ///
-  /// Compares this with [target] and returns the more severe result. The
-  /// results severity is as according to the following table, the most severe
-  /// result at the top:
-  ///
-  /// - [TaskResult.rejected]
-  /// - [TaskResult.modified]
-  /// - [TaskResult.accepted]
-  ///
-  /// So, if for example, you would call:
-  /// ```dart
-  /// TaskResult.modified.raiseTo(TaskResult.rejected)
-  /// ```
-  /// if would return [TaskResult.rejected].
+  /// @nodoc
+  @internal
   TaskResult raiseTo(TaskResult target) => target.index > index ? target : this;
 }
 

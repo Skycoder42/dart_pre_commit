@@ -106,8 +106,7 @@ class Hooks {
   final ProgramRunner _programRunner;
   final List<TaskBase> _tasks;
 
-  /// The [Logger] instance used to log progress and errors
-  final Logger logger;
+  final Logger _logger;
 
   final HooksConfig config;
 
@@ -123,14 +122,15 @@ class Hooks {
   /// The [config] can be used to control custom behavior. See [HooksConfig] for
   /// more details.
   const Hooks({
-    required this.logger,
     required FileResolver fileResolver,
     required ProgramRunner programRunner,
     required List<TaskBase> tasks,
+    required Logger logger,
     this.config = const HooksConfig(),
   })  : _fileResolver = fileResolver,
         _programRunner = programRunner,
-        _tasks = tasks;
+        _tasks = tasks,
+        _logger = logger;
 
   /// Executes all enabled hooks on the current repository.
   ///
@@ -168,7 +168,7 @@ class Hooks {
 
   Future<HookResult> _scanEntry(RepoEntry entry) async {
     try {
-      logger.updateStatus(
+      _logger.updateStatus(
         message: 'Scanning ${entry.file.path}...',
         status: TaskStatus.scanning,
         refresh: false,
@@ -187,12 +187,12 @@ class Hooks {
       _logFileTaskResult(HookResult.rejected, entry);
       rethrow;
     } finally {
-      logger.completeStatus();
+      _logger.completeStatus();
     }
   }
 
   Future<TaskResult> _runFileTask(FileTask task, RepoEntry entry) async {
-    logger.updateStatus(detail: '[${task.taskName}]');
+    _logger.updateStatus(detail: '[${task.taskName}]');
     final taskResult = await task(entry);
     _checkTaskRejected(taskResult);
     return taskResult;
@@ -214,7 +214,7 @@ class Hooks {
         message = 'Rejected file ${entry.file.path}';
         break;
     }
-    logger.updateStatus(
+    _logger.updateStatus(
       status: hookResult._toStatus(),
       message: message,
       clear: true,
@@ -238,7 +238,7 @@ class Hooks {
     List<RepoEntry> entries,
   ) async {
     try {
-      logger.updateStatus(
+      _logger.updateStatus(
         message: 'Running ${task.taskName}...',
         status: TaskStatus.scanning,
       );
@@ -251,7 +251,7 @@ class Hooks {
       _logRepoTaskResult(HookResult.rejected, task);
       rethrow;
     } finally {
-      logger.completeStatus();
+      _logger.completeStatus();
     }
   }
 
@@ -272,7 +272,7 @@ class Hooks {
         message = 'Completed ${task.taskName}, found problems';
         break;
     }
-    logger.updateStatus(
+    _logger.updateStatus(
       status: hookResult._toStatus(),
       message: message,
       clear: true,

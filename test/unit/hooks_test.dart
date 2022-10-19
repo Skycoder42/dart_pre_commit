@@ -37,10 +37,10 @@ void main() {
     bool continueOnRejected = false,
   ]) =>
       Hooks(
-        logger: mockLogger,
         fileResolver: mockResolver,
         programRunner: mockRunner,
         tasks: tasks.toList(),
+        logger: mockLogger,
         config: HooksConfig(
           continueOnRejected: continueOnRejected,
         ),

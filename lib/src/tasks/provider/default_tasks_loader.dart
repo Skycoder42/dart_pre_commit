@@ -22,35 +22,37 @@ final defaultTasksLoaderProvider = Provider(
 // coverage:ignore-end
 
 class DefaultTasksLoader {
-  final PubspecConfigLoader pubspecConfigLoader;
-  final TaskLoader taskLoader;
-  final Logger logger;
+  final PubspecConfigLoader _pubspecConfigLoader;
+  final TaskLoader _taskLoader;
+  final Logger _logger;
 
   const DefaultTasksLoader({
-    required this.pubspecConfigLoader,
-    required this.taskLoader,
-    required this.logger,
-  });
+    required PubspecConfigLoader pubspecConfigLoader,
+    required TaskLoader taskLoader,
+    required Logger logger,
+  })  : _pubspecConfigLoader = pubspecConfigLoader,
+        _taskLoader = taskLoader,
+        _logger = logger;
 
   Future<void> registerDefaultTasks() async {
-    final pubspecConfig = await pubspecConfigLoader.loadPubspecConfig();
+    final pubspecConfig = await _pubspecConfigLoader.loadPubspecConfig();
 
-    logger.debug('detected pubspec config: $pubspecConfig');
+    _logger.debug('detected pubspec config: $pubspecConfig');
 
-    taskLoader
+    _taskLoader
       ..registerConfigurableTask(formatTaskProvider)
       ..registerTask(testImportTaskProvider)
       ..registerConfigurableTask(analyzeTaskProvider);
 
     if (pubspecConfig.isPublished) {
-      taskLoader.registerTask(libExportTaskProvider);
+      _taskLoader.registerTask(libExportTaskProvider);
     }
 
     if (!pubspecConfig.isFlutterProject) {
-      taskLoader.registerTask(flutterCompatTaskProvider);
+      _taskLoader.registerTask(flutterCompatTaskProvider);
     }
 
-    taskLoader
+    _taskLoader
       ..registerConfigurableTask(outdatedTaskProvider)
       ..registerConfigurableTask(pullUpDependenciesTaskProvider);
   }

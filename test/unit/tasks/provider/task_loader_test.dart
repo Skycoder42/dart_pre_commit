@@ -44,7 +44,7 @@ void main() {
 
       when(() => mockRef.watch<FakeTaskBase>(any())).thenReturn(fakeTask);
 
-      sut = TaskLoader(mockConfigLoader);
+      sut = TaskLoader(configLoader: mockConfigLoader);
     });
 
     group('loadTasks', () {

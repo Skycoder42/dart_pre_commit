@@ -8,7 +8,9 @@ import 'task_provider.dart';
 
 // coverage:ignore-start
 final taskLoaderProvider = Provider(
-  (ref) => TaskLoader(ref.watch(configLoaderProvider)),
+  (ref) => TaskLoader(
+    configLoader: ref.watch(configLoaderProvider),
+  ),
 );
 
 @internal
@@ -53,11 +55,12 @@ class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
 }
 
 class TaskLoader {
-  final ConfigLoader configLoader;
+  final ConfigLoader _configLoader;
 
   final _tasks = <_TaskConfig>[];
 
-  TaskLoader(this.configLoader);
+  TaskLoader({required ConfigLoader configLoader})
+      : _configLoader = configLoader;
 
   void registerTask<TState extends TaskBase>(
     TaskProvider<TState> provider,
@@ -69,9 +72,11 @@ class TaskLoader {
   ) =>
       _tasks.add(_ConfigurableTaskConfig<TState, TArg>(providerFamily));
 
+  /// @nodoc
+  @internal
   Iterable<TaskBase> loadTasks(Ref ref) sync* {
     for (final task in _tasks) {
-      final taskConfig = configLoader.loadTaskConfig(task.taskName);
+      final taskConfig = _configLoader.loadTaskConfig(task.taskName);
       if (taskConfig != null) {
         yield task.create(ref, taskConfig);
       }

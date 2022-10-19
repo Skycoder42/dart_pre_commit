@@ -16,14 +16,14 @@ final configLoaderProvider = Provider(
 
 class ConfigLoader {
   /// The [FileResolver] instance used by the loader.
-  final FileResolver fileResolver;
+  final FileResolver _fileResolver;
 
   late YamlMap _globalConfig;
 
   /// Default constructor
   ConfigLoader({
-    required this.fileResolver,
-  });
+    required FileResolver fileResolver,
+  }) : _fileResolver = fileResolver;
 
   Future<bool> loadGlobalConfig([File? customConfig]) {
     if (customConfig != null) {
@@ -33,6 +33,8 @@ class ConfigLoader {
     }
   }
 
+  /// @nodoc
+  @internal
   YamlMap? loadTaskConfig(String taskName) {
     final dynamic taskConfig = _globalConfig[taskName];
     if (taskConfig == null) {
@@ -50,7 +52,7 @@ class ConfigLoader {
   }
 
   Future<bool> _loadPubspecConfig() async {
-    final configFile = fileResolver.file('pubspec.yaml');
+    final configFile = _fileResolver.file('pubspec.yaml');
     final dynamic configYaml = loadYaml(
       await configFile.readAsString(),
       sourceUrl: configFile.uri,
@@ -86,6 +88,7 @@ class ConfigLoader {
     }
   }
 
+  /// @nodoc
   @visibleForTesting
   YamlMap get debugGlobalConfig => _globalConfig;
 }
