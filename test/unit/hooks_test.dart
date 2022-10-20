@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:dart_pre_commit/src/config/config_loader.dart';
 import 'package:dart_pre_commit/src/hooks.dart';
 import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
+import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
@@ -20,6 +22,10 @@ class MockFileResolver extends Mock implements FileResolver {}
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
+class MockConfigLoader extends Mock implements ConfigLoader {}
+
+class MockTaskLoader extends Mock implements TaskLoader {}
+
 class MockFileTask extends Mock with PatternTaskMixin implements FileTask {}
 
 class MockRepoTask extends Mock with PatternTaskMixin implements RepoTask {}
@@ -28,21 +34,24 @@ void main() {
   final mockLogger = MockLogger();
   final mockResolver = MockFileResolver();
   final mockRunner = MockProgramRunner();
+  final mockConfigLoader = MockConfigLoader();
+  final mockTaskLoader = MockTaskLoader();
   final mockFileTask = MockFileTask();
   final mockRepoTask = MockRepoTask();
 
-  Hooks createSut([
-    Iterable<TaskBase> tasks = const [],
-    // ignore: avoid_positional_boolean_parameters
+  Hooks createSut({
     bool continueOnRejected = false,
-  ]) =>
+    String? configFile,
+  }) =>
       Hooks(
         fileResolver: mockResolver,
         programRunner: mockRunner,
-        tasks: tasks.toList(),
+        taskLoader: mockTaskLoader,
+        configLoader: mockConfigLoader,
         logger: mockLogger,
         config: HooksConfig(
           continueOnRejected: continueOnRejected,
+          configFile: configFile,
         ),
       );
 
@@ -50,7 +59,7 @@ void main() {
     registerFallbackValue(FakeEntry(''));
   });
 
-  setUp(() {
+  setUp(() async {
     reset(mockLogger);
     reset(mockResolver);
     reset(mockRunner);
@@ -87,10 +96,49 @@ void main() {
 
     when(() => mockRunner.stream('git', ['rev-parse', '--show-toplevel']))
         .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
+
+    when(() => mockConfigLoader.loadGlobalConfig(any())).thenReturnAsync(true);
+  });
+
+  group('config', () {
+    test('skips all tests if config is disabled', () async {
+      when(() => mockConfigLoader.loadGlobalConfig()).thenReturnAsync(false);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenStream(Stream.fromIterable(const ['a.dart']));
+
+      final sut = createSut();
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+
+      verifyInOrder([
+        () => mockConfigLoader.loadGlobalConfig(),
+        () => mockLogger.info(any(that: contains('disabled'))),
+      ]);
+    });
+
+    test('uses custom config if config path is given', () async {
+      const testConfigFilePath = '/custom/config.yaml';
+      final testConfigFile = FakeFile(testConfigFilePath);
+      when(() => mockResolver.file(any())).thenReturn(testConfigFile);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
+      final sut = createSut(configFile: testConfigFilePath);
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+
+      verifyInOrder([
+        () => mockResolver.file(testConfigFilePath),
+        () => mockConfigLoader.loadGlobalConfig(testConfigFile),
+      ]);
+    });
   });
 
   group('file collection', () {
     test('calls git to collect changed files', () async {
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
       final sut = createSut();
 
       final result = await sut();
@@ -113,6 +161,8 @@ void main() {
           'any().txt',
         ]),
       );
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
       final sut = createSut();
 
       final result = await sut();
@@ -170,6 +220,8 @@ void main() {
           'c.dart',
         ]),
       );
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
       final sut = createSut();
 
       final result = await sut();
@@ -212,6 +264,8 @@ void main() {
           'other_$dirName/d.dart',
         ]),
       );
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
       final sut = createSut();
 
       final result = await sut();
@@ -251,10 +305,12 @@ void main() {
           'c.js',
         ]),
       );
-      final sut = createSut([mockFileTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.clean);
+      verify(() => mockTaskLoader.loadTasks());
       verify(() => mockFileTask.filePattern);
       final captures = verify(() => mockFileTask(captureAny()))
           .captured
@@ -269,7 +325,8 @@ void main() {
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
       when(() => mockFileTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
-      final sut = createSut([mockFileTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.hasChanges);
@@ -284,7 +341,8 @@ void main() {
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
       when(() => mockFileTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
-      final sut = createSut([mockFileTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.hasUnstagedChanges);
@@ -304,10 +362,8 @@ void main() {
       );
       when(() => mockFileTask(any()))
           .thenAnswer((_) async => TaskResult.rejected);
-      final sut = createSut(
-        [mockFileTask],
-        fixture.item1,
-      );
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
+      final sut = createSut(continueOnRejected: fixture.item1);
 
       final result = await sut();
       expect(result, HookResult.rejected);
@@ -319,7 +375,9 @@ void main() {
           .thenAnswer(
         (_) => Stream.fromIterable(const ['a.dart']),
       );
-      final sut = createSut([mockFileTask, mockFileTask, mockFileTask]);
+      when(() => mockTaskLoader.loadTasks())
+          .thenReturn([mockFileTask, mockFileTask, mockFileTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.clean);
@@ -338,10 +396,12 @@ void main() {
           'c.js',
         ]),
       );
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.clean);
+      verify(() => mockTaskLoader.loadTasks());
       verify(() => mockRepoTask.filePattern);
       final capture = verify(() => mockRepoTask(captureAny()))
           .captured
@@ -359,7 +419,8 @@ void main() {
           'a.js',
         ]),
       );
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.clean);
@@ -376,7 +437,8 @@ void main() {
           'a.js',
         ]),
       );
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.clean);
@@ -396,7 +458,8 @@ void main() {
       );
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.hasChanges);
@@ -414,7 +477,8 @@ void main() {
       );
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.hasChanges);
@@ -428,7 +492,8 @@ void main() {
           .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.modified);
-      final sut = createSut([mockRepoTask]);
+      when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
+      final sut = createSut();
 
       final result = await sut();
       expect(result, HookResult.hasUnstagedChanges);
@@ -457,10 +522,9 @@ void main() {
       }
       when(() => mockRepoTask(any()))
           .thenAnswer((_) async => TaskResult.rejected);
-      final sut = createSut(
-        [mockRepoTask, mockRepoTask],
-        fixture.item2,
-      );
+      when(() => mockTaskLoader.loadTasks())
+          .thenReturn([mockRepoTask, mockRepoTask]);
+      final sut = createSut(continueOnRejected: fixture.item2);
 
       final result = await sut();
       expect(result, HookResult.rejected);
@@ -484,7 +548,9 @@ void main() {
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
         when(() => mockFileTask(any())).thenAnswer((i) async => fixture.item1);
         when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.item2);
-        final sut = createSut([mockRepoTask, mockFileTask], true);
+        when(() => mockTaskLoader.loadTasks())
+            .thenReturn([mockRepoTask, mockFileTask]);
+        final sut = createSut(continueOnRejected: true);
 
         final result = await sut();
         expect(result, fixture.item3);
@@ -498,8 +564,10 @@ void main() {
       when(
         () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
       ).thenAnswer((_) => const Stream.empty());
+      when(() => mockTaskLoader.loadTasks())
+          .thenReturn([mockRepoTask, mockFileTask]);
 
-      final sut = createSut([mockRepoTask, mockFileTask], true);
+      final sut = createSut(continueOnRejected: true);
 
       final result = await sut();
       expect(result, HookResult.clean);

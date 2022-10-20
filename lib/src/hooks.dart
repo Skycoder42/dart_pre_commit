@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
 import 'package:riverpod/riverpod.dart';
 
+import 'config/config_loader.dart';
 import 'repo_entry.dart';
 import 'task_base.dart';
 import 'tasks/provider/task_loader.dart';
@@ -16,10 +17,11 @@ part 'hooks.freezed.dart';
 // coverage:ignore-start
 final hooksProvider = Provider.family(
   (ref, HooksConfig config) => Hooks(
-    logger: ref.watch(loggerProvider),
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
-    tasks: ref.watch(tasksProvider),
+    configLoader: ref.watch(configLoaderProvider),
+    taskLoader: ref.watch(taskLoaderProvider),
+    logger: ref.watch(loggerProvider),
     config: config,
   ),
 );
@@ -35,6 +37,18 @@ class HooksConfig with _$HooksConfig {
     /// [continueOnRejected] is set to true, instead processing will continue as
     /// usual. In both cases, the hooks will resolve with [HookResult.rejected].
     @Default(false) bool continueOnRejected,
+
+    /// Specifies the path to the configuration file.
+    ///
+    /// If not specified, the tool tries to read the configuration from the
+    /// pubspec.yaml. This will work as long as the pubspec is located in the
+    /// root directory of the directory that is being scanned. It will check for
+    /// entries under `dart_pre_commit` in the file.
+    ///
+    /// If a custom path is given, it is expected that this file directly
+    /// contains the configuration as root level elements (without the
+    /// `dart_pre_commit`).
+    String? configFile,
   }) = _HooksConfig;
 }
 
@@ -104,7 +118,8 @@ class _RejectedException implements Exception {
 class Hooks {
   final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
-  final List<TaskBase> _tasks;
+  final ConfigLoader _configLoader;
+  final TaskLoader _taskLoader;
 
   final Logger _logger;
 
@@ -112,24 +127,23 @@ class Hooks {
 
   /// Constructs a new [Hooks] instance.
   ///
-  /// The [logger], [fileResolver] and [programRunner] are needed by this class,
-  /// see their documentation for details.
-  ///
-  /// The [tasks] parameter can be used to provide a list of all tasks that
-  /// should be run upon [call()]. Each task can either be a [FileTask] or as
-  /// [RepoTask]. Check the Tasks category for a list of all tasks.
+  /// The [fileResolver], [programRunner], [configLoader] [taskLoader] and
+  /// [logger] are needed by this class. Use the [hooksProvider] for an easy
+  /// initialization.
   ///
   /// The [config] can be used to control custom behavior. See [HooksConfig] for
   /// more details.
   const Hooks({
     required FileResolver fileResolver,
     required ProgramRunner programRunner,
-    required List<TaskBase> tasks,
+    required ConfigLoader configLoader,
+    required TaskLoader taskLoader,
     required Logger logger,
     this.config = const HooksConfig(),
   })  : _fileResolver = fileResolver,
         _programRunner = programRunner,
-        _tasks = tasks,
+        _configLoader = configLoader,
+        _taskLoader = taskLoader,
         _logger = logger;
 
   /// Executes all enabled hooks on the current repository.
@@ -147,6 +161,20 @@ class Hooks {
   /// file with problems that cannot be fixed automatically.
   Future<HookResult> call() async {
     try {
+      final configFile = config.configFile != null
+          ? _fileResolver.file(config.configFile!)
+          : null;
+      final enabled = await _configLoader.loadGlobalConfig(configFile);
+
+      if (!enabled) {
+        _logger.info(
+          'dart_pre_commit has been disabled via the configuration.',
+        );
+        return HookResult.clean;
+      }
+
+      final tasks = _taskLoader.loadTasks().toList();
+
       final entries = await _collectStagedFiles().toList();
       if (entries.isEmpty) {
         return HookResult.clean;
@@ -154,9 +182,9 @@ class Hooks {
 
       var lintState = HookResult.clean;
       lintState = await Stream.fromIterable(entries)
-          .asyncMap(_scanEntry)
+          .asyncMap((e) => _scanEntry(tasks, e))
           .raise(lintState);
-      lintState = await Stream.fromIterable(_tasks.whereType<RepoTask>())
+      lintState = await Stream.fromIterable(tasks.whereType<RepoTask>())
           .asyncMap((task) => _evaluateRepoTask(task, entries))
           .raise(lintState);
 
@@ -166,7 +194,7 @@ class Hooks {
     }
   }
 
-  Future<HookResult> _scanEntry(RepoEntry entry) async {
+  Future<HookResult> _scanEntry(List<TaskBase> tasks, RepoEntry entry) async {
     try {
       _logger.updateStatus(
         message: 'Scanning ${entry.file.path}...',
@@ -174,7 +202,7 @@ class Hooks {
         refresh: false,
       );
       var scanResult = TaskResult.accepted;
-      for (final task in _tasks.whereType<FileTask>()) {
+      for (final task in tasks.whereType<FileTask>()) {
         if (task.canProcess(entry)) {
           final taskResult = await _runFileTask(task, entry);
           scanResult = scanResult.raiseTo(taskResult);

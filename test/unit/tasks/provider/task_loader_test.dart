@@ -42,9 +42,9 @@ void main() {
       reset(mockConfigLoader);
       reset(mockRef);
 
-      when(() => mockRef.watch<FakeTaskBase>(any())).thenReturn(fakeTask);
+      when(() => mockRef.read<FakeTaskBase>(any())).thenReturn(fakeTask);
 
-      sut = TaskLoader(configLoader: mockConfigLoader);
+      sut = TaskLoader(ref: mockRef, configLoader: mockConfigLoader);
     });
 
     group('loadTasks', () {
@@ -54,13 +54,13 @@ void main() {
 
         sut.registerTask(task1Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, [fakeTask]);
 
         verifyInOrder([
           () => mockConfigLoader.loadTaskConfig(task1Provider.name),
-          () => mockRef.watch(task1Provider),
+          () => mockRef.read(task1Provider),
         ]);
         verifyNoMoreInteractions(mockConfigLoader);
         verifyNoMoreInteractions(mockRef);
@@ -71,7 +71,7 @@ void main() {
 
         sut.registerTask(task1Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, isEmpty);
 
@@ -88,13 +88,13 @@ void main() {
 
         sut.registerConfigurableTask(task2Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, [fakeTask]);
 
         final captured = verifyInOrder([
           () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-          () => mockRef.watch<FakeTaskBase>(captureAny()),
+          () => mockRef.read<FakeTaskBase>(captureAny()),
         ]).captured[1].single as Provider<FakeTaskBase>;
         verifyNoMoreInteractions(mockConfigLoader);
         verifyNoMoreInteractions(mockRef);
@@ -113,13 +113,13 @@ void main() {
 
         sut.registerConfigurableTask(task2Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, [fakeTask]);
 
         final captured = verifyInOrder([
           () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-          () => mockRef.watch<FakeTaskBase>(captureAny()),
+          () => mockRef.read<FakeTaskBase>(captureAny()),
         ]).captured[1].single as Provider<FakeTaskBase>;
         verifyNoMoreInteractions(mockConfigLoader);
         verifyNoMoreInteractions(mockRef);
@@ -133,7 +133,7 @@ void main() {
 
         sut.registerConfigurableTask(task2Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, isEmpty);
 
@@ -152,15 +152,15 @@ void main() {
           ..registerTask(task1Provider)
           ..registerConfigurableTask(task2Provider);
 
-        final tasks = sut.loadTasks(mockRef);
+        final tasks = sut.loadTasks();
 
         expect(tasks, [fakeTask, fakeTask]);
 
         final captured = verifyInOrder([
           () => mockConfigLoader.loadTaskConfig(task1Provider.name),
-          () => mockRef.watch(task1Provider),
+          () => mockRef.read(task1Provider),
           () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-          () => mockRef.watch<FakeTaskBase>(captureAny()),
+          () => mockRef.read<FakeTaskBase>(captureAny()),
         ]).captured[3].single as Provider<FakeTaskBase>;
         verifyNoMoreInteractions(mockConfigLoader);
         verifyNoMoreInteractions(mockRef);

@@ -114,21 +114,11 @@ Future<int> _run(List<String> args) async {
     // register tasks
     await di.read(defaultTasksLoaderProvider).registerDefaultTasks();
 
-    // load configuration
-    final enabled = await di.read(configLoaderProvider).loadGlobalConfig(
-          options.options.contains('config-path')
-              ? File(options['config-path'] as String)
-              : null,
-        );
-    if (!enabled) {
-      // TODO log skipped
-      return 0;
-    }
-
     // load hooks instance
     final hooks = di.read(
       hooksProvider(
         HooksConfig(
+          configFile: options['config-path'] as String?,
           continueOnRejected: options['continue-on-rejected'] as bool,
         ),
       ),

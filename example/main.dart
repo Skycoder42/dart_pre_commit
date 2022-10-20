@@ -10,13 +10,8 @@ Future<void> main(List<String> arguments) async {
   // create an IoC-Container for easier initialization of the hooks
   final container = ProviderContainer();
 
-  // load the configuration
-  await container.read(configLoaderProvider).loadGlobalConfig();
-
   // register tasks you want to run
-  container.read(taskLoaderProvider)
-    ..registerConfigurableTask(formatTaskProvider)
-    ..registerConfigurableTask(analyzeTaskProvider);
+  await container.read(defaultTasksLoaderProvider).registerDefaultTasks();
 
   // obtain the hooks instance from the IoC
   final hooks = container.read(hooksProvider(const HooksConfig()));

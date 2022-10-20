@@ -9,13 +9,9 @@ import 'task_provider.dart';
 // coverage:ignore-start
 final taskLoaderProvider = Provider(
   (ref) => TaskLoader(
+    ref: ref,
     configLoader: ref.watch(configLoaderProvider),
   ),
-);
-
-@internal
-final tasksProvider = Provider(
-  (ref) => ref.watch(taskLoaderProvider).loadTasks(ref).toList(),
 );
 // coverage:ignore-end
 
@@ -34,7 +30,7 @@ class _SimpleTaskConfig<TState extends TaskBase> extends _TaskConfig<TState> {
   String get taskName => provider.name;
 
   @override
-  TState create(Ref ref, YamlMap config) => ref.watch(provider);
+  TState create(Ref ref, YamlMap config) => ref.read(provider);
 }
 
 class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
@@ -50,17 +46,21 @@ class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
   TState create(Ref ref, YamlMap config) {
     final configMap = config.cast<String, dynamic>();
     final parsedConfig = configurableProvider.fromJson(configMap);
-    return ref.watch(configurableProvider(parsedConfig));
+    return ref.read(configurableProvider(parsedConfig));
   }
 }
 
 class TaskLoader {
+  final Ref _ref;
   final ConfigLoader _configLoader;
 
   final _tasks = <_TaskConfig>[];
 
-  TaskLoader({required ConfigLoader configLoader})
-      : _configLoader = configLoader;
+  TaskLoader({
+    required Ref ref,
+    required ConfigLoader configLoader,
+  })  : _ref = ref,
+        _configLoader = configLoader;
 
   void registerTask<TState extends TaskBase>(
     TaskProvider<TState> provider,
@@ -74,11 +74,11 @@ class TaskLoader {
 
   /// @nodoc
   @internal
-  Iterable<TaskBase> loadTasks(Ref ref) sync* {
+  Iterable<TaskBase> loadTasks() sync* {
     for (final task in _tasks) {
       final taskConfig = _configLoader.loadTaskConfig(task.taskName);
       if (taskConfig != null) {
-        yield task.create(ref, taskConfig);
+        yield task.create(_ref, taskConfig);
       }
     }
   }
