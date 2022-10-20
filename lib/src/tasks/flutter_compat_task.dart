@@ -10,6 +10,10 @@ import '../util/program_runner.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the flutter compatibility task.
+///
+/// This task is not configurable and can only be enabled or disabled via the
+/// configuration.
 final flutterCompatTaskProvider = TaskProvider(
   FlutterCompatTask._taskName,
   (ref) => FlutterCompatTask(
@@ -19,19 +23,22 @@ final flutterCompatTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 class FlutterCompatTask implements RepoTask {
   static const _taskName = 'flutter-compat';
   static final _pubspecRegexp = RegExp(r'^pubspec.ya?ml$');
 
-  final ProgramRunner programRunner;
+  final ProgramRunner _programRunner;
 
-  final TaskLogger taskLogger;
+  final TaskLogger _taskLogger;
 
+  /// @nodoc
   const FlutterCompatTask({
-    required this.programRunner,
-    required this.taskLogger,
-  });
+    required ProgramRunner programRunner,
+    required TaskLogger taskLogger,
+  })  : _programRunner = programRunner,
+        _taskLogger = taskLogger;
 
   @override
   String get taskName => _taskName;
@@ -63,14 +70,14 @@ class FlutterCompatTask implements RepoTask {
 
       final tmpDir = await Directory.systemTemp.createTemp();
       try {
-        await programRunner.run(
+        await _programRunner.run(
           'flutter',
           const ['create', '--project-name', 't', '.'],
           workingDirectory: tmpDir.path,
           failOnExit: true,
           runInShell: Platform.isWindows,
         );
-        final exitCode = await programRunner.run(
+        final exitCode = await _programRunner.run(
           'flutter',
           [
             'pub',
@@ -84,14 +91,14 @@ class FlutterCompatTask implements RepoTask {
         );
 
         if (exitCode != 0) {
-          taskLogger.error(
+          _taskLogger.error(
             'Failed add ${pubspec.name} to a flutter project '
             '(exit code: $exitCode)',
           );
           return TaskResult.rejected;
         }
 
-        taskLogger.info('Package ${pubspec.name} is flutter compatible');
+        _taskLogger.info('Package ${pubspec.name} is flutter compatible');
       } finally {
         await tmpDir.delete(recursive: true);
       }

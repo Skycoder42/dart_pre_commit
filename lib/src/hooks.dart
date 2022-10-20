@@ -15,6 +15,8 @@ import 'util/program_runner.dart';
 part 'hooks.freezed.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the [Hooks] class, configurable with the
+/// [HooksConfig].
 final hooksProvider = Provider.family(
   (ref, HooksConfig config) => Hooks(
     fileResolver: ref.watch(fileResolverProvider),
@@ -27,8 +29,10 @@ final hooksProvider = Provider.family(
 );
 // coverage:ignore-end
 
+/// A configuration class for launching the [Hooks] instance.
 @freezed
 class HooksConfig with _$HooksConfig {
+  /// Default constructor
   const factory HooksConfig({
     /// Specifies, whether processing should continue on rejections.
     ///
@@ -112,9 +116,7 @@ class _RejectedException implements Exception {
 ///
 /// This is the main entrypoint of the library. The class will scan your
 /// repository for staged files and run all activated hooks on them, reporting
-/// a result. Check the documentation of the different tasks for more details
-/// on the actual supported hook operations. Check the Tasks category for a
-/// list of all tasks.
+/// a result.
 class Hooks {
   final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
@@ -123,13 +125,14 @@ class Hooks {
 
   final Logger _logger;
 
+  /// The configuration used by this instance.
   final HooksConfig config;
 
   /// Constructs a new [Hooks] instance.
   ///
-  /// The [fileResolver], [programRunner], [configLoader] [taskLoader] and
-  /// [logger] are needed by this class. Use the [hooksProvider] for an easy
-  /// initialization.
+  /// The [fileResolver], [programRunner], [configLoader], [taskLoader] and
+  /// [logger] are needed internally by this class. Use the [hooksProvider] for
+  /// an easy initialization.
   ///
   /// The [config] can be used to control custom behavior. See [HooksConfig] for
   /// more details.
@@ -148,8 +151,8 @@ class Hooks {
 
   /// Executes all enabled hooks on the current repository.
   ///
-  /// The command will run expecting [Directory.current] to be the git
-  /// repository, or a subdirectory within it, to be processed. It collects all
+  /// The command will run expecting [Directory.current] to be the dart project
+  /// root withing the enclosing git repository to be processed. It collects all
   /// staged files and then runs all enabled hooks on these files.
   ///
   /// The result is determined based on the collective result of all processed

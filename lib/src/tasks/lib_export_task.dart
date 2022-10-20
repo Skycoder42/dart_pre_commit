@@ -13,6 +13,10 @@ import '../util/logger.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the library exports task.
+///
+/// This task is not configurable and can only be enabled or disabled via the
+/// configuration.
 final libExportTaskProvider = TaskProvider(
   LibExportTask._taskName,
   (ref) => LibExportTask(
@@ -26,24 +30,29 @@ final libExportTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 class LibExportTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'lib-exports';
 
-  final TaskLogger logger;
+  final TaskLogger _logger;
 
-  final AnalysisContextCollection contextCollection;
+  final AnalysisContextCollection _contextCollection;
 
-  final LibExportLinter linter;
+  final LibExportLinter _linter;
 
-  final FileResolver fileResolver;
+  final FileResolver _fileResolver;
 
+  /// @nodoc
   LibExportTask({
-    required this.logger,
-    required this.contextCollection,
-    required this.linter,
-    required this.fileResolver,
-  });
+    required TaskLogger logger,
+    required AnalysisContextCollection contextCollection,
+    required LibExportLinter linter,
+    required FileResolver fileResolver,
+  })  : _logger = logger,
+        _contextCollection = contextCollection,
+        _linter = linter,
+        _fileResolver = fileResolver;
 
   @override
   String get taskName => _taskName;
@@ -56,11 +65,11 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    linter.contextCollection = contextCollection;
+    _linter.contextCollection = _contextCollection;
 
     final entriesList = entries.toList();
     var result = TaskResult.accepted;
-    await for (final fileResult in linter()) {
+    await for (final fileResult in _linter()) {
       final hasEntry = await _hasEntryForLocation(
         fileResult.resultLocation,
         entriesList,
@@ -69,22 +78,22 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
       fileResult.when(
         accepted: (resultLocation) {
           if (hasEntry) {
-            logger.debug(resultLocation.createLogMessage('OK'));
+            _logger.debug(resultLocation.createLogMessage('OK'));
           }
         },
         rejected: (reason, resultLocation) {
           if (hasEntry) {
-            logger.error(resultLocation.createLogMessage(reason));
+            _logger.error(resultLocation.createLogMessage(reason));
             result = result.raiseTo(TaskResult.rejected);
           }
         },
         skipped: (reason, resultLocation) {
           if (hasEntry) {
-            logger.info(resultLocation.createLogMessage(reason));
+            _logger.info(resultLocation.createLogMessage(reason));
           }
         },
         failure: (error, stackTrace, resultLocation) {
-          logger.except(
+          _logger.except(
             LinterException(resultLocation.createLogMessage(error)),
             stackTrace,
           );
@@ -100,7 +109,7 @@ class LibExportTask with PatternTaskMixin implements RepoTask {
     ResultLocation resultLocation,
     Iterable<RepoEntry> entries,
   ) async {
-    final actualLocation = await fileResolver.resolve(resultLocation.relPath);
+    final actualLocation = await _fileResolver.resolve(resultLocation.relPath);
     return entries.any((entry) => entry.file.path == actualLocation);
   }
 }

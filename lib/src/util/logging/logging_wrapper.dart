@@ -9,6 +9,7 @@ import 'package:riverpod/riverpod.dart';
 import '../logger.dart';
 
 // coverage:ignore-start
+/// @nodoc
 @internal
 final loggingWrapperProvider = Provider(
   (ref) => LoggingWrapper(

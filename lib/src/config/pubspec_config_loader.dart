@@ -8,6 +8,7 @@ import '../util/logger.dart';
 part 'pubspec_config_loader.freezed.dart';
 
 // coverage:ignore-start
+/// @nodoc
 @internal
 final pubspecConfigLoaderProvider = Provider(
   (ref) => PubspecConfigLoader(
@@ -17,29 +18,35 @@ final pubspecConfigLoaderProvider = Provider(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 @freezed
 class PubspecConfig with _$PubspecConfig {
+  /// @nodoc
   const factory PubspecConfig({
     @Default(false) bool isFlutterProject,
     @Default(true) bool isPublished,
   }) = _PubspecConfig;
 }
 
+/// @nodoc
 @internal
 class PubspecConfigLoader {
-  final FileResolver fileResolver;
-  final Logger logger;
+  final FileResolver _fileResolver;
+  final Logger _logger;
 
+  /// @nodoc
   const PubspecConfigLoader({
-    required this.fileResolver,
-    required this.logger,
-  });
+    required FileResolver fileResolver,
+    required Logger logger,
+  })  : _fileResolver = fileResolver,
+        _logger = logger;
 
+  /// @nodoc
   Future<PubspecConfig> loadPubspecConfig() async {
-    final pubspecFile = fileResolver.file('pubspec.yaml');
+    final pubspecFile = _fileResolver.file('pubspec.yaml');
     if (!pubspecFile.existsSync()) {
-      logger
+      _logger
           .warn('No pubspec.yaml file found. Skipping pubspec configuration.');
       return const PubspecConfig();
     }

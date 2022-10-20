@@ -5,9 +5,11 @@ import 'diagnostic.dart';
 part 'analyze_result.freezed.dart';
 part 'analyze_result.g.dart';
 
+/// @nodoc
 @internal
 @freezed
 class AnalyzeResult with _$AnalyzeResult {
+  /// @nodoc
   @Assert(
     'version == 1',
     'Only version 1 of the analyzer json format is supported',
@@ -17,6 +19,7 @@ class AnalyzeResult with _$AnalyzeResult {
     required List<Diagnostic> diagnostics,
   }) = _AnalyzeResult;
 
+  /// @nodoc
   factory AnalyzeResult.fromJson(Map<String, dynamic> json) =>
       _$AnalyzeResultFromJson(json);
 }

@@ -7,6 +7,7 @@ import 'package:riverpod/riverpod.dart';
 
 import 'logging/logging_wrapper.dart';
 
+/// @nodoc
 @internal
 final analysisContextCollectionProvider = Provider.family(
   (ref, List<String> includedPaths) => AnalysisContextCollection(
@@ -14,11 +15,13 @@ final analysisContextCollectionProvider = Provider.family(
   ),
 );
 
+/// @nodoc
 @internal
 final testImportLinterProvider = Provider(
   (ref) => TestImportLinter(ref.watch(loggingWrapperProvider)),
 );
 
+/// @nodoc
 @internal
 final libExportLinterProvider = Provider(
   (ref) => LibExportLinter(ref.watch(loggingWrapperProvider)),

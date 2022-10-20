@@ -7,6 +7,7 @@ import 'package:yaml/yaml.dart';
 import '../util/file_resolver.dart';
 
 // coverage:ignore-start
+/// @nodoc
 @internal
 final configLoaderProvider = Provider(
   (ref) => ConfigLoader(
@@ -15,16 +16,19 @@ final configLoaderProvider = Provider(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 class ConfigLoader {
   final FileResolver _fileResolver;
 
   late YamlMap _globalConfig;
 
+  /// @nodoc
   ConfigLoader({
     required FileResolver fileResolver,
   }) : _fileResolver = fileResolver;
 
+  /// @nodoc
   Future<bool> loadGlobalConfig([File? customConfig]) {
     if (customConfig != null) {
       return _loadCustomConfig(customConfig);
@@ -33,6 +37,7 @@ class ConfigLoader {
     }
   }
 
+  /// @nodoc
   YamlMap? loadTaskConfig(String taskName) {
     final dynamic taskConfig = _globalConfig[taskName];
     if (taskConfig == null) {
@@ -86,6 +91,7 @@ class ConfigLoader {
     }
   }
 
+  /// @nodoc
   @visibleForTesting
   YamlMap get debugGlobalConfig => _globalConfig;
 }

@@ -11,6 +11,10 @@ import '../util/logger.dart';
 import 'provider/task_provider.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the test imports task.
+///
+/// This task is not configurable and can only be enabled or disabled via the
+/// configuration.
 final testImportTaskProvider = TaskProvider(
   TestImportTask._taskName,
   (ref) => TestImportTask(
@@ -23,35 +27,41 @@ final testImportTaskProvider = TaskProvider(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 typedef AnalysisContextCollectionEntryProviderFn = AnalysisContextCollection
     Function(RepoEntry entry);
 
+/// @nodoc
 @internal
 class TestImportTask implements FileTask {
   static const _taskName = 'test-imports';
 
   final AnalysisContextCollectionEntryProviderFn
-      analysisContextCollectionProvider;
+      _analysisContextCollectionProvider;
 
-  final TaskLogger logger;
+  final TaskLogger _logger;
 
-  final TestImportLinter linter;
+  final TestImportLinter _linter;
 
   @override
   String get taskName => _taskName;
 
+  /// @nodoc
   const TestImportTask({
-    required this.analysisContextCollectionProvider,
-    required this.logger,
-    required this.linter,
-  });
+    required AnalysisContextCollectionEntryProviderFn
+        analysisContextCollectionProvider,
+    required TaskLogger logger,
+    required TestImportLinter linter,
+  })  : _analysisContextCollectionProvider = analysisContextCollectionProvider,
+        _logger = logger,
+        _linter = linter;
 
   @override
   bool canProcess(RepoEntry entry) {
     try {
-      linter.contextCollection = analysisContextCollectionProvider(entry);
-      return linter.shouldAnalyze(_normalizedAbsolutePath(entry));
+      _linter.contextCollection = _analysisContextCollectionProvider(entry);
+      return _linter.shouldAnalyze(_normalizedAbsolutePath(entry));
       // ignore: avoid_catching_errors
     } on StateError {
       return false;
@@ -60,20 +70,20 @@ class TestImportTask implements FileTask {
 
   @override
   Future<TaskResult> call(RepoEntry entry) async {
-    linter.contextCollection = analysisContextCollectionProvider(entry);
-    final result = await linter.analyzeFile(_normalizedAbsolutePath(entry));
+    _linter.contextCollection = _analysisContextCollectionProvider(entry);
+    final result = await _linter.analyzeFile(_normalizedAbsolutePath(entry));
     return result.when(
       accepted: (_) => TaskResult.accepted,
       rejected: (reason, resultLocation) {
-        logger.error(resultLocation.formatMessage(reason));
+        _logger.error(resultLocation.formatMessage(reason));
         return TaskResult.rejected;
       },
       skipped: (reason, resultLocation) {
-        logger.info(resultLocation.formatMessage(reason));
+        _logger.info(resultLocation.formatMessage(reason));
         return TaskResult.accepted;
       },
       failure: (error, stackTrace, resultLocation) {
-        logger.except(
+        _logger.except(
           LinterException(resultLocation.formatMessage(error)),
           stackTrace,
         );

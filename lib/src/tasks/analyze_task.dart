@@ -17,6 +17,26 @@ part 'analyze_task.freezed.dart';
 part 'analyze_task.g.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the analyze task.
+///
+/// The task is configurable and can be configured in the pubspec using the
+/// following options:
+///
+/// ```yaml
+/// dart_pre_commit:
+///   analyze:
+///     error-level: info # enum, optional
+///     scan-mode: all # enum, optional
+/// ```
+///
+/// The `error-level` can be one of the following:
+/// - `error`: Only fatal errors are reported
+/// - `warning`: fatal errors and warnings are reported
+/// - `info` (default): fatal errors, warnings and linter issues are reported
+///
+/// The `scan-mode` can be one of the following:
+/// - `all` (default): All files are scanned for problems
+/// - `staged`: Only staged files are scanned for problems
 final analyzeTaskProvider = TaskProvider.configurable(
   AnalyzeTask._taskName,
   AnalyzeConfig.fromJson,
@@ -29,26 +49,39 @@ final analyzeTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 enum AnalyzeErrorLevel {
+  /// @nodoc
   error(['--no-fatal-warnings']),
+
+  /// @nodoc
   warning(['--fatal-warnings']),
+
+  /// @nodoc
   info(['--fatal-warnings', '--fatal-infos']);
 
   final List<String> _params;
 
+  /// @nodoc
   const AnalyzeErrorLevel(this._params);
 }
 
+/// @nodoc
 @internal
 enum AnalysisScanMode {
+  /// @nodoc
   all,
+
+  /// @nodoc
   staged,
 }
 
+/// @nodoc
 @internal
 @freezed
 class AnalyzeConfig with _$AnalyzeConfig {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -66,28 +99,34 @@ class AnalyzeConfig with _$AnalyzeConfig {
         AnalysisScanMode scanMode,
   }) = _AnalyzeConfig;
 
+  /// @nodoc
   factory AnalyzeConfig.fromJson(Map<String, dynamic> json) =>
       _$AnalyzeConfigFromJson(json);
 }
 
+/// @nodoc
 @internal
 class AnalyzeTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'analyze';
 
-  final ProgramRunner programRunner;
+  final ProgramRunner _programRunner;
 
-  final FileResolver fileResolver;
+  final FileResolver _fileResolver;
 
-  final TaskLogger logger;
+  final TaskLogger _logger;
 
-  final AnalyzeConfig config;
+  final AnalyzeConfig _config;
 
+  /// @nodoc
   const AnalyzeTask({
-    required this.programRunner,
-    required this.fileResolver,
-    required this.logger,
-    required this.config,
-  });
+    required ProgramRunner programRunner,
+    required FileResolver fileResolver,
+    required TaskLogger logger,
+    required AnalyzeConfig config,
+  })  : _programRunner = programRunner,
+        _fileResolver = fileResolver,
+        _logger = logger,
+        _config = config;
 
   @override
   String get taskName => _taskName;
@@ -106,7 +145,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     }
 
     final int lintCnt;
-    switch (config.scanMode) {
+    switch (_config.scanMode) {
       case AnalysisScanMode.all:
         lintCnt = await _scanAll();
         break;
@@ -115,7 +154,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
         break;
     }
 
-    logger.info('$lintCnt issue(s) found.');
+    _logger.info('$lintCnt issue(s) found.');
     return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 
@@ -157,14 +196,14 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
   }
 
   Future<AnalyzeResult> _runAnalyze() async {
-    final jsonString = await programRunner
+    final jsonString = await _programRunner
         .stream(
           'dart',
           [
             'analyze',
             '--format',
             'json',
-            ...config.errorLevel._params,
+            ..._config.errorLevel._params,
           ],
           failOnExit: false,
         )
@@ -184,10 +223,10 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
 
   Future<void> _logDiagnostic(Diagnostic diagnostic, [String? path]) async {
     final actualPath =
-        path ?? await fileResolver.resolve(diagnostic.location.file);
+        path ?? await _fileResolver.resolve(diagnostic.location.file);
     final loggableDiagnostic = diagnostic.copyWith(
       location: diagnostic.location.copyWith(file: actualPath),
     );
-    logger.info('  $loggableDiagnostic');
+    _logger.info('  $loggableDiagnostic');
   }
 }

@@ -3,10 +3,12 @@ import 'package:riverpod/riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../config/config_loader.dart';
+import '../../hooks.dart';
 import '../../task_base.dart';
 import 'task_provider.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the [TaskLoader]
 final taskLoaderProvider = Provider(
   (ref) => TaskLoader(
     ref: ref,
@@ -50,23 +52,32 @@ class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
   }
 }
 
+/// A helper class to register [TaskProvider]s in the application to be used by
+/// the [Hooks] instance.
 class TaskLoader {
   final Ref _ref;
   final ConfigLoader _configLoader;
 
   final _tasks = <_TaskConfig>[];
 
+  /// Default constructor
   TaskLoader({
     required Ref ref,
     required ConfigLoader configLoader,
   })  : _ref = ref,
         _configLoader = configLoader;
 
+  /// Registers a simple, unconfigurable task provider.
+  ///
+  /// You can use the [TaskProvider] to create such providers.
   void registerTask<TState extends TaskBase>(
     TaskProvider<TState> provider,
   ) =>
       _tasks.add(_SimpleTaskConfig<TState>(provider));
 
+  /// Registers a configurable task provider.
+  ///
+  /// You can use the [TaskProvider.configurable] to create such providers.
   void registerConfigurableTask<TState extends TaskBase, TArg>(
     ConfigurableTaskProviderFamily<TState, TArg> providerFamily,
   ) =>

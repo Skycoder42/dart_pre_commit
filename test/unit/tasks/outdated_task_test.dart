@@ -67,7 +67,6 @@ void main() {
       testData<Tuple2<OutdatedLevel, String>>(
         'correctly generates and parses name',
         const [
-          Tuple2(OutdatedLevel.none, 'none'),
           Tuple2(OutdatedLevel.major, 'major'),
           Tuple2(OutdatedLevel.minor, 'minor'),
           Tuple2(OutdatedLevel.patch, 'patch'),
@@ -122,7 +121,6 @@ void main() {
       testData<Tuple2<OutdatedLevel, int>>(
         'correctly uses level to detect outdatedness',
         const [
-          Tuple2(OutdatedLevel.none, 0),
           Tuple2(OutdatedLevel.major, 1),
           Tuple2(OutdatedLevel.minor, 2),
           Tuple2(OutdatedLevel.patch, 3),

@@ -8,6 +8,7 @@ import '../logger.dart';
 import 'simple_logger.dart';
 
 // coverage:ignore-start
+/// A riverpod provider family for the [ConsoleLogger].
 final consoleLoggerProvider = Provider.family<Logger, LogLevel>(
   (ref, logLevel) => ConsoleLogger(logLevel),
 );

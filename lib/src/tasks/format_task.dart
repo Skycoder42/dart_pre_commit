@@ -9,6 +9,16 @@ part 'format_task.freezed.dart';
 part 'format_task.g.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the format task.
+///
+/// The task is configurable and can be configured in the pubspec using the
+/// following options:
+///
+/// ```yaml
+/// dart_pre_commit:
+///   format:
+///     line-length: 80 # integer, optional
+/// ```
 final formatTaskProvider = TaskProvider.configurable(
   FormatTask._taskName,
   FormatConfig.fromJson,
@@ -19,9 +29,11 @@ final formatTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @freezed
 @internal
 class FormatConfig with _$FormatConfig {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -33,22 +45,26 @@ class FormatConfig with _$FormatConfig {
     @JsonKey(name: 'line-length') int? lineLength,
   }) = _FormatConfig;
 
+  /// @nodoc
   factory FormatConfig.fromJson(Map<String, dynamic> json) =>
       _$FormatConfigFromJson(json);
 }
 
+/// @nodoc
 @internal
 class FormatTask with PatternTaskMixin implements FileTask {
   static const _taskName = 'format';
 
-  final ProgramRunner programRunner;
+  final ProgramRunner _programRunner;
 
-  final FormatConfig config;
+  final FormatConfig _config;
 
+  /// @nodoc
   const FormatTask({
-    required this.programRunner,
-    required this.config,
-  });
+    required ProgramRunner programRunner,
+    required FormatConfig config,
+  })  : _programRunner = programRunner,
+        _config = config;
 
   @override
   String get taskName => _taskName;
@@ -63,13 +79,13 @@ class FormatTask with PatternTaskMixin implements FileTask {
       'format',
       '--fix',
       '--set-exit-if-changed',
-      if (config.lineLength != null) ...[
+      if (_config.lineLength != null) ...[
         '--line-length',
-        config.lineLength!.toString()
+        _config.lineLength!.toString()
       ],
       entry.file.path,
     ];
-    final exitCode = await programRunner.run(program, arguments);
+    final exitCode = await _programRunner.run(program, arguments);
     switch (exitCode) {
       case 0:
         return TaskResult.accepted;

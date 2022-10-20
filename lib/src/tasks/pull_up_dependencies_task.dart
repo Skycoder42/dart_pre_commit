@@ -15,6 +15,19 @@ part 'pull_up_dependencies_task.freezed.dart';
 part 'pull_up_dependencies_task.g.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the pull up dependencies task.
+///
+/// The task is configurable and can be configured in the pubspec using the
+/// following options:
+///
+/// ```yaml
+/// dart_pre_commit:
+///   pull-up-dependencies:
+///     allowed: [] # list of strings, optional
+/// ```
+///
+/// The `allowed` can be a list of package names that are allowed to not be the
+/// latest version in the pubspec.yaml.
 final pullUpDependenciesTaskProvider = TaskProvider.configurable(
   PullUpDependenciesTask._taskName,
   PullUpDependenciesConfig.fromJson,
@@ -27,9 +40,11 @@ final pullUpDependenciesTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 @freezed
 class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -40,28 +55,34 @@ class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
     @Default(<String>[]) List<String> allowed,
   }) = _PullUpDependenciesConfig;
 
+  /// @nodoc
   factory PullUpDependenciesConfig.fromJson(Map<String, dynamic> json) =>
       _$PullUpDependenciesConfigFromJson(json);
 }
 
+/// @nodoc
 @internal
 class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'pull-up-dependencies';
 
-  final ProgramRunner programRunner;
+  final ProgramRunner _programRunner;
 
-  final FileResolver fileResolver;
+  final FileResolver _fileResolver;
 
-  final PullUpDependenciesConfig config;
+  final TaskLogger _logger;
 
-  final TaskLogger logger;
+  final PullUpDependenciesConfig _config;
 
+  /// @nodoc
   const PullUpDependenciesTask({
-    required this.programRunner,
-    required this.fileResolver,
-    required this.config,
-    required this.logger,
-  });
+    required ProgramRunner programRunner,
+    required FileResolver fileResolver,
+    required TaskLogger logger,
+    required PullUpDependenciesConfig config,
+  })  : _programRunner = programRunner,
+        _fileResolver = fileResolver,
+        _logger = logger,
+        _config = config;
 
   @override
   String get taskName => _taskName;
@@ -75,11 +96,11 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
     if (!await _shouldCheck(entries)) {
-      logger.debug('No staged changes for pubspec.lock, skipping');
+      _logger.debug('No staged changes for pubspec.lock, skipping');
       return TaskResult.accepted;
     }
 
-    final lockFile = fileResolver.file('pubspec.lock');
+    final lockFile = _fileResolver.file('pubspec.lock');
     final pubspecLock = checkedYamlDecode(
       await lockFile.readAsString(),
       (yaml) => PubspecLock.fromJson(Map<String, dynamic>.from(yaml!)),
@@ -88,7 +109,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
     );
     final resolvedVersions = _resolveLockVersions(pubspecLock);
 
-    final pubspecFile = fileResolver.file('pubspec.yaml');
+    final pubspecFile = _fileResolver.file('pubspec.yaml');
     final pubspec = Pubspec.parse(
       await pubspecFile.readAsString(),
       sourceUrl: pubspecFile.uri,
@@ -103,29 +124,29 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
     );
 
     if (updateCnt > 0) {
-      logger.info(
+      _logger.info(
         '=> $updateCnt dependencies can be pulled up to newer versions!',
       );
       return TaskResult.rejected;
     } else {
-      logger.debug('=> All dependencies are up to date');
+      _logger.debug('=> All dependencies are up to date');
       return TaskResult.accepted;
     }
   }
 
   Future<bool> _shouldCheck(Iterable<RepoEntry> entries) async {
-    final code = await programRunner.run('git', const [
+    final code = await _programRunner.run('git', const [
       'check-ignore',
       'pubspec.lock',
     ]);
 
     if (code == 0) {
       // file is ignored
-      logger.debug('pubspec.lock is ignored');
+      _logger.debug('pubspec.lock is ignored');
       return true;
     } else {
       // file is not ignored
-      logger.debug('pubspec.lock is not ignored, checking if staged');
+      _logger.debug('pubspec.lock is not ignored, checking if staged');
       return entries.isNotEmpty;
     }
   }
@@ -157,21 +178,21 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
           if (_checkValidRelease(resolvedVersion) &&
               minVersion != null &&
               resolvedVersion! > minVersion) {
-            if (config.allowed.contains(entry.key)) {
-              logger.warn(
+            if (_config.allowed.contains(entry.key)) {
+              _logger.warn(
                 '${entry.key}: Ignoring $versionConstraint -> $resolvedVersion',
               );
             } else {
               ++updateCtr;
-              logger
+              _logger
                   .info('${entry.key}: $versionConstraint -> $resolvedVersion');
             }
           } else {
-            logger.debug('${entry.key}: $versionConstraint OK');
+            _logger.debug('${entry.key}: $versionConstraint OK');
           }
         }
       } else {
-        logger.debug('${entry.key}: Skipping non hosted package');
+        _logger.debug('${entry.key}: Skipping non hosted package');
       }
     }
     return updateCtr;

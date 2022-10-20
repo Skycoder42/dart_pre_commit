@@ -8,7 +8,11 @@ Future<void> main(List<String> arguments) async {
   Directory.current = arguments.first;
 
   // create an IoC-Container for easier initialization of the hooks
-  final container = ProviderContainer();
+  final container = ProviderContainer(
+    overrides: [
+      loggerProvider.overrideWithProvider(simpleLoggerProvider(LogLevel.info)),
+    ],
+  );
 
   // register tasks you want to run
   await container.read(defaultTasksLoaderProvider).registerDefaultTasks();

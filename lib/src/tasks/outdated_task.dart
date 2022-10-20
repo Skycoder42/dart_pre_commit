@@ -13,6 +13,26 @@ part 'outdated_task.freezed.dart';
 part 'outdated_task.g.dart';
 
 // coverage:ignore-start
+/// A riverpod provider for the outdated task.
+///
+/// The task is configurable and can be configured in the pubspec using the
+/// following options:
+///
+/// ```yaml
+/// dart_pre_commit:
+///   outdated:
+///     level: any # enum, optional
+///     allowed: [] # list of strings, optional
+/// ```
+///
+/// The `level` can be one of the following:
+/// - `major`: only check for major package updates
+/// - `minor`: check for major and minor updates
+/// - `patch`: check for major, minor and patch updates
+/// - `any` (default): check for all updates, except pre-releases
+///
+/// The `allowed` can be a list of package names that are allowed to be outdated
+/// and thus will not cause this task to fail.
 final outdatedTaskProvider = TaskProvider.configurable(
   OutdatedTask._taskName,
   OutdatedConfig.fromJson,
@@ -24,18 +44,27 @@ final outdatedTaskProvider = TaskProvider.configurable(
 );
 // coverage:ignore-end
 
+/// @nodoc
 @internal
 enum OutdatedLevel {
-  none,
+  /// @nodoc
   major,
+
+  /// @nodoc
   minor,
+
+  /// @nodoc
   patch,
+
+  /// @nodoc
   any,
 }
 
+/// @nodoc
 @internal
 @freezed
 class OutdatedConfig with _$OutdatedConfig {
+  /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
     anyMap: true,
@@ -47,25 +76,30 @@ class OutdatedConfig with _$OutdatedConfig {
     @Default(<String>[]) List<String> allowed,
   }) = _OutdatedConfig;
 
+  /// @nodoc
   factory OutdatedConfig.fromJson(Map<String, dynamic> json) =>
       _$OutdatedConfigFromJson(json);
 }
 
+/// @nodoc
 @internal
 class OutdatedTask with PatternTaskMixin implements RepoTask {
   static const _taskName = 'outdated';
 
-  final ProgramRunner programRunner;
+  final ProgramRunner _programRunner;
 
-  final TaskLogger logger;
+  final TaskLogger _logger;
 
-  final OutdatedConfig config;
+  final OutdatedConfig _config;
 
+  /// @nodoc
   const OutdatedTask({
-    required this.programRunner,
-    required this.logger,
-    required this.config,
-  });
+    required ProgramRunner programRunner,
+    required TaskLogger logger,
+    required OutdatedConfig config,
+  })  : _programRunner = programRunner,
+        _logger = logger,
+        _config = config;
 
   @override
   String get taskName => _taskName;
@@ -78,7 +112,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    logger.debug('Checking for outdated packages...');
+    _logger.debug('Checking for outdated packages...');
     final outdated = await _collectOutdated();
 
     var outdatedCnt = 0;
@@ -86,7 +120,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
       final current = package.current?.version;
       final resolvable = package.resolvable?.version;
       if (current == null || resolvable == null) {
-        logger.warn(
+        _logger.warn(
           'Skipping:    ${package.package}: No Version information available',
         );
         continue;
@@ -94,9 +128,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
 
       var updated = false;
       final hasUpdate = resolvable > current;
-      switch (config.level) {
-        case OutdatedLevel.none:
-          break;
+      switch (_config.level) {
         case OutdatedLevel.any:
           updated = hasUpdate;
           break;
@@ -113,30 +145,33 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
           break;
       }
 
-      if (hasUpdate && config.allowed.contains(package.package)) {
-        logger.warn('Ignored:     ${package.package}: $current -> $resolvable');
+      if (hasUpdate && _config.allowed.contains(package.package)) {
+        _logger
+            .warn('Ignored:     ${package.package}: $current -> $resolvable');
       } else if (updated) {
         ++outdatedCnt;
-        logger.info('Required:    ${package.package}: $current -> $resolvable');
+        _logger
+            .info('Required:    ${package.package}: $current -> $resolvable');
       } else if (hasUpdate) {
-        logger.info('Recommended: ${package.package}: $current -> $resolvable');
+        _logger
+            .info('Recommended: ${package.package}: $current -> $resolvable');
       } else {
-        logger.debug('Up to date:  ${package.package}: $current');
+        _logger.debug('Up to date:  ${package.package}: $current');
       }
     }
 
     if (outdatedCnt > 0) {
-      logger.info(
+      _logger.info(
         'Found $outdatedCnt outdated package(s) that have to be updated',
       );
       return TaskResult.rejected;
     } else {
-      logger.debug('No required package updates found');
+      _logger.debug('No required package updates found');
       return TaskResult.accepted;
     }
   }
 
-  Future<OutdatedInfo> _collectOutdated() => programRunner
+  Future<OutdatedInfo> _collectOutdated() => _programRunner
       .stream('dart', [
         'pub',
         'outdated',
