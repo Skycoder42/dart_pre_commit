@@ -1,5 +1,0 @@
-dartdoc:
-  categories:
-    bin:
-      markdown: bin/dart_pre_commit.md
-      name: Documentation of the dart_pre_commit binary

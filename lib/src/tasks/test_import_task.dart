@@ -12,9 +12,6 @@ import 'provider/task_provider.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the test imports task.
-///
-/// This task is not configurable and can only be enabled or disabled via the
-/// configuration.
 final testImportTaskProvider = TaskProvider(
   TestImportTask._taskName,
   (ref) => TestImportTask(

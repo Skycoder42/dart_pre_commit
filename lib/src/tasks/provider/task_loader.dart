@@ -20,13 +20,22 @@ final taskLoaderProvider = Provider(
 abstract class _TaskConfig<TState extends TaskBase> {
   String get taskName;
 
+  bool get enabledByDefault;
+
   TState create(Ref ref, YamlMap config);
 }
 
-class _SimpleTaskConfig<TState extends TaskBase> extends _TaskConfig<TState> {
+class _SimpleTaskConfig<TState extends TaskBase>
+    implements _TaskConfig<TState> {
   final TaskProvider<TState> provider;
 
-  _SimpleTaskConfig(this.provider);
+  @override
+  final bool enabledByDefault;
+
+  _SimpleTaskConfig(
+    this.provider, {
+    required this.enabledByDefault,
+  });
 
   @override
   String get taskName => provider.name;
@@ -36,10 +45,16 @@ class _SimpleTaskConfig<TState extends TaskBase> extends _TaskConfig<TState> {
 }
 
 class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
-    extends _TaskConfig<TState> {
+    implements _TaskConfig<TState> {
   final ConfigurableTaskProviderFamily<TState, TArg> configurableProvider;
 
-  _ConfigurableTaskConfig(this.configurableProvider);
+  @override
+  final bool enabledByDefault;
+
+  _ConfigurableTaskConfig(
+    this.configurableProvider, {
+    required this.enabledByDefault,
+  });
 
   @override
   String get taskName => configurableProvider.name;
@@ -71,23 +86,39 @@ class TaskLoader {
   ///
   /// You can use the [TaskProvider] to create such providers.
   void registerTask<TState extends TaskBase>(
-    TaskProvider<TState> provider,
-  ) =>
-      _tasks.add(_SimpleTaskConfig<TState>(provider));
+    TaskProvider<TState> provider, {
+    bool enabledByDefault = true,
+  }) =>
+      _tasks.add(
+        _SimpleTaskConfig<TState>(
+          provider,
+          enabledByDefault: enabledByDefault,
+        ),
+      );
 
   /// Registers a configurable task provider.
   ///
   /// You can use the [TaskProvider.configurable] to create such providers.
   void registerConfigurableTask<TState extends TaskBase, TArg>(
-    ConfigurableTaskProviderFamily<TState, TArg> providerFamily,
-  ) =>
-      _tasks.add(_ConfigurableTaskConfig<TState, TArg>(providerFamily));
+    ConfigurableTaskProviderFamily<TState, TArg> providerFamily, {
+    bool enabledByDefault = true,
+  }) =>
+      _tasks.add(
+        _ConfigurableTaskConfig<TState, TArg>(
+          providerFamily,
+          enabledByDefault: enabledByDefault,
+        ),
+      );
 
   /// @nodoc
   @internal
   Iterable<TaskBase> loadTasks() sync* {
     for (final task in _tasks) {
-      final taskConfig = _configLoader.loadTaskConfig(task.taskName);
+      final taskConfig = _configLoader.loadTaskConfig(
+        task.taskName,
+        enabledByDefault: task.enabledByDefault,
+      );
+
       if (taskConfig != null) {
         yield task.create(_ref, taskConfig);
       }

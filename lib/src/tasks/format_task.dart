@@ -10,15 +10,6 @@ part 'format_task.g.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the format task.
-///
-/// The task is configurable and can be configured in the pubspec using the
-/// following options:
-///
-/// ```yaml
-/// dart_pre_commit:
-///   format:
-///     line-length: 80 # integer, optional
-/// ```
 final formatTaskProvider = TaskProvider.configurable(
   FormatTask._taskName,
   FormatConfig.fromJson,

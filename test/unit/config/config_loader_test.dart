@@ -235,6 +235,16 @@ task:
         ).toString(),
       );
 
+      test('returns null if task is disabled by default', () async {
+        when(() => mockFile.path).thenReturn('');
+        when(() => mockFile.readAsString()).thenReturnAsync('');
+
+        await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
+
+        final config = sut.loadTaskConfig('task', enabledByDefault: false);
+        expect(config, isNull);
+      });
+
       test('throws exception on invalid task configuration value', () async {
         when(() => mockFile.path).thenReturn('');
         when(() => mockFile.readAsString()).thenReturnAsync('task: 42');

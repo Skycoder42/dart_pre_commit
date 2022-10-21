@@ -16,18 +16,6 @@ part 'pull_up_dependencies_task.g.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the pull up dependencies task.
-///
-/// The task is configurable and can be configured in the pubspec using the
-/// following options:
-///
-/// ```yaml
-/// dart_pre_commit:
-///   pull-up-dependencies:
-///     allowed: [] # list of strings, optional
-/// ```
-///
-/// The `allowed` can be a list of package names that are allowed to not be the
-/// latest version in the pubspec.yaml.
 final pullUpDependenciesTaskProvider = TaskProvider.configurable(
   PullUpDependenciesTask._taskName,
   PullUpDependenciesConfig.fromJson,

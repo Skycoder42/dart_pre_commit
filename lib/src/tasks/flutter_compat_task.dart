@@ -11,9 +11,6 @@ import 'provider/task_provider.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the flutter compatibility task.
-///
-/// This task is not configurable and can only be enabled or disabled via the
-/// configuration.
 final flutterCompatTaskProvider = TaskProvider(
   FlutterCompatTask._taskName,
   (ref) => FlutterCompatTask(

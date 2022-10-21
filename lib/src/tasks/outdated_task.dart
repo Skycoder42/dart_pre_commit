@@ -14,25 +14,6 @@ part 'outdated_task.g.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the outdated task.
-///
-/// The task is configurable and can be configured in the pubspec using the
-/// following options:
-///
-/// ```yaml
-/// dart_pre_commit:
-///   outdated:
-///     level: any # enum, optional
-///     allowed: [] # list of strings, optional
-/// ```
-///
-/// The `level` can be one of the following:
-/// - `major`: only check for major package updates
-/// - `minor`: check for major and minor updates
-/// - `patch`: check for major, minor and patch updates
-/// - `any` (default): check for all updates, except pre-releases
-///
-/// The `allowed` can be a list of package names that are allowed to be outdated
-/// and thus will not cause this task to fail.
 final outdatedTaskProvider = TaskProvider.configurable(
   OutdatedTask._taskName,
   OutdatedConfig.fromJson,

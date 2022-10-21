@@ -66,6 +66,25 @@ void main() {
         verifyNoMoreInteractions(mockRef);
       });
 
+      test('registerTask passes enabledByDefault to config loader', () {
+        when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
+
+        sut.registerTask(task1Provider, enabledByDefault: false);
+
+        final tasks = sut.loadTasks();
+
+        expect(tasks, isEmpty);
+
+        verifyInOrder([
+          () => mockConfigLoader.loadTaskConfig(
+                task1Provider.name,
+                enabledByDefault: false,
+              ),
+        ]);
+        verifyNoMoreInteractions(mockConfigLoader);
+        verifyZeroInteractions(mockRef);
+      });
+
       test('returns empty list if single task is disabled', () {
         when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
 
@@ -101,6 +120,26 @@ void main() {
 
         expect(captured.name, task2Provider.name);
         expect(captured.argument, isEmpty);
+      });
+
+      test('registerConfigurableTask passes enabledByDefault to config loader',
+          () {
+        when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
+
+        sut.registerConfigurableTask(task2Provider, enabledByDefault: false);
+
+        final tasks = sut.loadTasks();
+
+        expect(tasks, isEmpty);
+
+        verifyInOrder([
+          () => mockConfigLoader.loadTaskConfig(
+                task2Provider.name,
+                enabledByDefault: false,
+              ),
+        ]);
+        verifyNoMoreInteractions(mockConfigLoader);
+        verifyZeroInteractions(mockRef);
       });
 
       test('returns single, configured task with custom config', () {

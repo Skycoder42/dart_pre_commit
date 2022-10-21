@@ -38,10 +38,10 @@ class ConfigLoader {
   }
 
   /// @nodoc
-  YamlMap? loadTaskConfig(String taskName) {
+  YamlMap? loadTaskConfig(String taskName, {bool enabledByDefault = true}) {
     final dynamic taskConfig = _globalConfig[taskName];
     if (taskConfig == null) {
-      return YamlMap();
+      return enabledByDefault ? YamlMap() : null;
     } else if (taskConfig is bool) {
       return taskConfig ? YamlMap() : null;
     } else if (taskConfig is YamlMap) {

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.0.0
+### Breaking Release
+The whole public API and command line interface has been overhauled. Please check the README on how to use the tool with
+these breaking changes. Below you can find a list of the most significant changes to the package.
+
+### Selected Changes
+- Improved configuration of all tasks
+  - Task are now all configured via the pubspec.yaml
+  - Remove most of the task-related command line arguments
+  - Analysis level and scope can now be configured for the analyze task
+  - line length can now be configured for the format task
+  - Separate allow-lists for the outdated and pull up tasks
+- Refactor lib export task to reliably handle staged files and to not run on projects not published to pub.dev
+- Revamp public API
+  - made task implementations private
+  - split library into multiple parts
+  - Provide `DartPreCommit.run` for a simple entrypoint to invoke the hooks from code
+- Hooks do not run anymore if no files for the given directory have been staged
+
 ## 3.0.2
 ### Changed
 - Update dependencies

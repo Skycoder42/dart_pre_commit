@@ -4,15 +4,15 @@ import 'package:args/args.dart';
 import 'package:dart_pre_commit/dart_pre_commit.dart';
 import 'package:riverpod/riverpod.dart';
 
-const disabledOutdatedLevel = 'disabled';
-
 /// @nodoc
 Future<void> main(List<String> args) async {
   exitCode = await _run(args);
 }
 
 Future<int> _run(List<String> args) async {
-  final parser = ArgParser()
+  final parser = ArgParser(
+    usageLineLength: stdout.hasTerminal ? stdout.terminalColumns : null,
+  )
     ..addFlag(
       'continue-on-rejected',
       abbr: 'c',
@@ -127,11 +127,11 @@ Future<int> _run(List<String> args) async {
     // run hooks and return result
     final result = await hooks();
     if (options['detailed-exit-code'] as bool) {
-      return result.index;
+      return result.exitCode;
     } else {
       return result.isSuccess ? 0 : 1;
     }
-  } on FormatException catch (e) {
+  } on ArgParserException catch (e) {
     stderr
       ..writeln('${e.message}\n')
       ..write(parser.usage);

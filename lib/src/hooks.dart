@@ -59,19 +59,27 @@ class HooksConfig with _$HooksConfig {
 /// The result of a [Hooks] call.
 enum HookResult {
   /// All is ok, nothing was modified.
-  clean,
+  clean(0),
 
   /// Files had to be fixed up, but all succeeded and only fully staged files
   /// were affected.
-  hasChanges,
+  hasChanges(1),
 
   /// Files had to be fixed up, all succeeded but partially staged files had to
   /// be modified.
-  hasUnstagedChanges,
+  hasUnstagedChanges(2),
 
   /// At least one hook detected a problem that has to be fixed manually before
   /// the commit can be accepted
-  rejected;
+  rejected(3);
+
+  /// @nodoc
+  @internal
+  final int exitCode;
+
+  /// @nodoc
+  @internal
+  const HookResult(this.exitCode);
 
   /// Returns a boolean that indicates whether the result should be treated as
   /// success or as failure.

@@ -576,13 +576,14 @@ void main() {
     });
   });
 
-  testData<Tuple2<HookResult, bool>>(
-      'HookResult returns correct success status', const [
-    Tuple2(HookResult.clean, true),
-    Tuple2(HookResult.hasChanges, true),
-    Tuple2(HookResult.hasUnstagedChanges, false),
-    Tuple2(HookResult.rejected, false),
+  testData<Tuple3<HookResult, bool, int>>(
+      'HookResult returns correct success and exit status', const [
+    Tuple3(HookResult.clean, true, 0),
+    Tuple3(HookResult.hasChanges, true, 1),
+    Tuple3(HookResult.hasUnstagedChanges, false, 2),
+    Tuple3(HookResult.rejected, false, 3),
   ], (fixture) {
     expect(fixture.item1.isSuccess, fixture.item2);
+    expect(fixture.item1.exitCode, fixture.item3);
   });
 }

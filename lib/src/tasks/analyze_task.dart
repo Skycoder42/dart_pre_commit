@@ -18,25 +18,6 @@ part 'analyze_task.g.dart';
 
 // coverage:ignore-start
 /// A riverpod provider for the analyze task.
-///
-/// The task is configurable and can be configured in the pubspec using the
-/// following options:
-///
-/// ```yaml
-/// dart_pre_commit:
-///   analyze:
-///     error-level: info # enum, optional
-///     scan-mode: all # enum, optional
-/// ```
-///
-/// The `error-level` can be one of the following:
-/// - `error`: Only fatal errors are reported
-/// - `warning`: fatal errors and warnings are reported
-/// - `info` (default): fatal errors, warnings and linter issues are reported
-///
-/// The `scan-mode` can be one of the following:
-/// - `all` (default): All files are scanned for problems
-/// - `staged`: Only staged files are scanned for problems
 final analyzeTaskProvider = TaskProvider.configurable(
   AnalyzeTask._taskName,
   AnalyzeConfig.fromJson,
