@@ -68,7 +68,7 @@ Future<void> main() async {
   await preCommitHook.writeAsString(
     '''
 #!/bin/sh
-exec dart run bin/dart_pre_commit.dart # specify custom options here
+exec dart run dart_pre_commit # specify custom options here
 ''',
   );
 
