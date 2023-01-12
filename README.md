@@ -9,7 +9,7 @@ A small collection of pre commit hooks to format and lint dart code
 - [Installation](#installation)
 - [Activation](#activation)
   * [Simple dart wrapper](#simple-dart-wrapper)
-  * [Using git_hooks](#using-git-hooks)
+  * [Using git_hooks](#using-git_hooks)
   * [Using hanzo](#using-hanzo)
 - [Configuration](#configuration)
   * [Format task](#format-task)
@@ -104,6 +104,18 @@ Future<bool> _preCommit() async {
   return result.isSuccess;
 }
 ```
+
+#### Handling the case where the git_hooks is setup in a child folder of the repository
+In cases where your project is in a child folder of the repository ie. Repo/project, when you run `DartPreCommit.run()`, it'll run from the root of your repository and hence will not be able to find `pubspec.yaml` file. To handle this case we need to direct the DartPreCommit to run its command from a child folder. To do so, you need to add the following line in the `_preCommit()` function before we invoke DartPreCommit
+
+```dart
+Future<bool> _preCommit() async {
+  Directory.current = '/project_sub_directory'; // <--- This line switches the command line execution directory to a subdirectory
+  final result = await DartPreCommit.run();
+  return result.isSuccess;
+}
+```
+
 
 ### Using hanzo
 The second example uses the [hanzo](https://pub.dev/packages/hanzo) package to
