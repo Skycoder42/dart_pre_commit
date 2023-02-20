@@ -96,7 +96,7 @@ void main(List<String> arguments) {
   final params = {
     Git.preCommit: _preCommit
   };
-  change(arguments, params);
+  GitHooks.call(arguments, params);
 }
 
 Future<bool> _preCommit() async {
