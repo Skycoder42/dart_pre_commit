@@ -1,7 +1,8 @@
 #!/bin/bash
 
 echo "::group::Install OSV-Scanner"
-go install github.com/google/osv-scanner/cmd/osv-scanner@v1
+go --version
+go install github.com/google/osv-scanner/cmd/osv-scanner@latest
 echo "${GOPATH:-$HOME/go}/bin" >> "$GITHUB_PATH"
 echo "::endgroup::"
 
