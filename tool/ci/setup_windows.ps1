@@ -1,5 +1,5 @@
 echo "::group::Install OSV-Scanner"
-go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+go install github.com/google/osv-scanner/cmd/osv-scanner@v1
 echo "$env:USERPROFILE\go" >> "$GITHUB_PATH"
 echo "::endgroup::"
 
