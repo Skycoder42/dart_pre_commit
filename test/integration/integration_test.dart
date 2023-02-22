@@ -323,4 +323,42 @@ void main() {
       ),
     );
   });
+
+  test('osv-scanner', () async {
+    await writeFile('pubspec_overrides.yaml', '''
+dependency_overrides:
+  http: 0.13.0
+''');
+    await pub(['get']);
+    await git(const ['add', 'pubspec_overrides.yaml']);
+
+    final lines = <String>[];
+    final code = await sut(
+      'osv-scanner',
+      arguments: const ['--detailed-exit-code', '-ldebug'],
+      failOnError: false,
+      onStdout: lines.add,
+    );
+    expect(code, HookResult.rejected.index);
+    expect(
+      lines,
+      allOf(
+        contains(
+          allOf(
+            startsWith('  [WRN] '),
+            contains(
+              'http@0.13.0 - GHSA-4rgh-jx4f-qfcq: '
+              'http before 0.13.3 vulnerable to header injection.',
+            ),
+          ),
+        ),
+        contains(
+          allOf(
+            startsWith('  [ERR] '),
+            endsWith('Found 1 security issues in dependencies!'),
+          ),
+        ),
+      ),
+    );
+  });
 }
