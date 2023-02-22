@@ -29,10 +29,7 @@ jobs:
     name: CD
     needs:
       - ci
-    uses: Skycoder42/dart_test_tools/.github/workflows/publish.yml@main
-    with:
-      releaseRef: refs/heads/master
-      buildRunner: true
-      publishExclude: '["lib/src/.gitignore"]'
+    uses: Skycoder42/dart_test_tools/.github/workflows/release.yml@main
     secrets:
-      PUB_DEV_CREDENTIALS: ${{ secrets.PUB_DEV_CREDENTIALS }}
+      releaseRef: refs/heads/master
+      githubToken: ${{ secrets.GH_PAT }}

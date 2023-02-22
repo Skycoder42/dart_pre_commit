@@ -1,0 +1,13 @@
+name: Continuos Deployment
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    name: Publish
+    uses: Skycoder42/dart_test_tools/.github/workflows/publish.yml@main
+    with:
+      buildRunner: true
