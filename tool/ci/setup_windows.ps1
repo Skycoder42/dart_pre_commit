@@ -1,5 +1,6 @@
 echo "::group::Install OSV-Scanner"
-scoop install osv-scanner
+go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+echo "$env:USERPROFILE\go" >> "$GITHUB_PATH"
 echo "::endgroup::"
 
 echo "::group::Install Flutter"
