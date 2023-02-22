@@ -104,7 +104,6 @@ class ProgramRunner {
     String? workingDirectory,
     bool failOnExit = false,
     bool runInShell = false,
-    bool forwardStdOut = false,
   }) async {
     Future<void>? errLog;
     try {
@@ -116,11 +115,7 @@ class ProgramRunner {
         runInShell: runInShell,
       );
       errLog = _logger.pipeStderr(process.stderr);
-      if (forwardStdOut) {
-        await _logger.pipeStderr(process.stdout);
-      } else {
-        await process.stdout.drain<void>();
-      }
+      await process.stdout.drain<void>();
 
       final exitCode = await process.exitCode;
       if (failOnExit) {

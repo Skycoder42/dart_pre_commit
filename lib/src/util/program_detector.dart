@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../util/program_runner.dart';
+import 'program_runner.dart';
 
 // coverage:ignore-start
 /// @nodoc
+@internal
 final programDetectorProvider = Provider(
   (ref) => ProgramDetector(
     programRunner: ref.watch(programRunnerProvider),
@@ -37,7 +38,6 @@ class ProgramDetector {
       await _programRunner.run(
         program,
         testArguments,
-        failOnExit: true,
         runInShell: searchInShell,
         workingDirectory: Directory.systemTemp.path,
       );

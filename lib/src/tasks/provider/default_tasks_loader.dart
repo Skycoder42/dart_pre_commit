@@ -1,8 +1,8 @@
 import 'package:riverpod/riverpod.dart';
 
-import '../../config/program_detector.dart';
 import '../../config/pubspec_config_loader.dart';
 import '../../util/logger.dart';
+import '../../util/program_detector.dart';
 import '../analyze_task.dart';
 import '../flutter_compat_task.dart';
 import '../format_task.dart';
@@ -80,7 +80,11 @@ class DefaultTasksLoader {
       ..registerConfigurableTask(outdatedTaskProvider)
       ..registerConfigurableTask(pullUpDependenciesTaskProvider);
 
-    if (await _programDetector.hasProgram(OsvScannerTask.osvScannerBinary)) {
+    final osvScannerFound = await _programDetector.hasProgram(
+      OsvScannerTask.osvScannerBinary,
+    );
+    _logger.debug('osv-scanner found in PATH: $osvScannerFound');
+    if (osvScannerFound) {
       _taskLoader.registerTask(osvScannerTaskProvider);
     }
   }

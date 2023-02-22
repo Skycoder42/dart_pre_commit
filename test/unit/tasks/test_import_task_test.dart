@@ -58,7 +58,7 @@ void main() {
       when(() => mockAccProvider.call(any())).thenReturn(fakeContext);
 
       sut = TestImportTask(
-        analysisContextCollectionProvider: mockAccProvider,
+        analysisContextCollectionProvider: mockAccProvider.call,
         logger: mockLogger,
         linter: mockLinter,
       );
