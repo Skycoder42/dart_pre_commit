@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 4.0.0
-### Breaking Release
-The whole public API and command line interface has been overhauled. Please check the README on how to use the tool with
-these breaking changes. Below you can find a list of the most significant changes to the package.
+## [4.1.0] - 2023-02-22
+### Added
+- `osv-scanner` Task to automatically check for dependencies with security issues
+  - Runs automatically, if the `osv-scanner` binary can be found
+  - Scans the `pubspec.lock` to check if any of the dependencies has a know vulnerability
 
+## [4.0.0] - 2022-10-21
 ### Selected Changes
 - Improved configuration of all tasks
   - Task are now all configured via the pubspec.yaml
@@ -23,48 +25,50 @@ these breaking changes. Below you can find a list of the most significant change
   - Provide `DartPreCommit.run` for a simple entrypoint to invoke the hooks from code
 - Hooks do not run anymore if no files for the given directory have been staged
 
-## 3.0.2
+## [3.0.2] - 2022-07-19
 ### Changed
 - Update dependencies
 
-## 3.0.1
+## [3.0.1] - 2022-05-20
 ### Changed
 - Update min dart SDK to 2.17.0, update dependencies
 
-## 3.0.0
+## [3.0.0] - 2022-03-04
 ### Added
 - `FlutterCompatTask`: Checks if a dart project can be added to a newly created flutter project. Useful to ensure that
 no package versions are required that are then what flutter currently supports
 - `TestImportTask`: Checks if any test files import library exports instead of sources
 - `LibExportTask`: Checks if all src files that contain package public definitions are exported somewhere in lib
+
 ### Changed
-- Use dart_test_tools for CI/CD, code analysis and testing
+- Use dart\_test\_tools for CI/CD, code analysis and testing
 - Enable all checks by default
 - Add support for a configuration part in the pubspec.yaml
   - For now, dependencies can be whitelisted for the outdated/pull-up tasks
 - Updated dependencies
+
 ### Removed
 - fix imports task
 - library imports task
 - nullsafety task
 
-## 2.3.3
+## [2.3.3] - 2021-12-06
 ### Changed
 - Dependency updates
 
-## 2.3.2
+## [2.3.2] - 2021-07-01
 ### Fixed
 - The `analyze` task was not working anymore, as the output format of
 `dart analyze` has changed. The task was now adjusted to handle the new format
 only
 
-## 2.3.1
+## [2.3.1] - 2021-05-07
 ### Fixed
 - The `library-imports` can now be properly ignored by adding
 `// dart_pre_commit:ignore-library-import` before the line where the import
 happens
 
-## 2.3.0
+## [2.3.0] - 2021-04-30
 ### Added
 - New Task `library-imports` (#12)
   - Scans the source files (files under `lib/src`) and test files
@@ -72,10 +76,11 @@ happens
   library, the task rejects
   - Top-Level libraries are dart files under `lib`, except those placed in
   `lib/src`
+
 ### Changed
 - Change Mocking framework to mocktail
 
-## 2.2.0
+## [2.2.0] - 2021-04-29
 ### Added
 - Basic Interface to create custom file and repository based tasks (#6)
 - Made all tasks and helper classes public (#5)
@@ -83,6 +88,7 @@ happens
 - Outdated task: Checks if any packages can be updated (#7)
 - Nullsafe task: Checks if any packages can be updated to a nullsafe version (#7)
 - `--[no-]ansi` CLI option to explicitly enable/disable rich logging (#10)
+
 ### Changed
 - Migrated package to nullsafety
 - Refactored Hooks API to allow custom hooks
@@ -101,9 +107,7 @@ happens
 - Improved status icons
 - Added `refresh` parameter to logger interface
 - Updated dependencies
-### Removed
-- Hooks.create was removed, use the provider instead
-- TaskException was removed in favor of normal exceptions
+
 ### Fixed
 - pull-up-dependencies now works in subdirs (#8)
 - pull-up-dependencies now correctly handles nullsafety releases
@@ -111,51 +115,64 @@ happens
   - this includes comments before, after or between the import and the
   semicolon, as well as `as/show/hide` statements, that fall into a new line
 
-## 1.1.4
+### Removed
+- Hooks.create was removed, use the provider instead
+- TaskException was removed in favor of normal exceptions
+
+## [1.1.4] - 2020-12-10
 ### Fixed
 - Include pubspec.yaml into analysis step
 - Skip `dart analyze`, if no files are to be analyzed
 
-## 1.1.3
+## [1.1.3] - 2020-12-08
 ### Fixed
 - fix-imports now works for imports with trailing comments (#2)
 
-## 1.1.2
+## [1.1.2] - 2020-12-04
 ### Fixed
 - Fixed problem with repositories where the dart project folder beeing scanned
 is not the the git root folder
 
-## 1.1.1
+## [1.1.1] - 2020-10-22
 ### Fixed
 - Fixed bug that caused a crash in `--check-pull-up` if dependencies declared in
 the `pubspec.yaml` are missing in `pubspec.lock` (#1)
 
-## 1.1.0
+## [1.1.0] - 2020-10-19
 ### Added
 - Support for check if the version of dart dependencies can be pulled up to a
 higher version from the lockfile
 
-## 1.0.2
+## [1.0.2] - 2020-10-09
 ### Fixed
 - Fixed bug where the tool tried to format deleted files
 
-## 1.0.1
+## [1.0.1] - 2020-10-07
 ### Fixed
 - `dart analyze` now treats lint infos as errors
 - Replace legacy dart tools in README
 - Add missing await in program runner
 
-## 1.0.0
+## [1.0.0] - 2020-10-07
 ### Added
+- Initial release
 - Automatic deployment
 
-## 0.1.0
-- Initial release
-
-## Unreleased
-### Added
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Security
+[4.1.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v4.0.0...v4.1.0
+[4.0.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v3.0.2...v4.0.0
+[3.0.2]: https://github.com/Skycoder42/dart_pre_commit/compare/v3.0.1...v3.0.2
+[3.0.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v2.3.3...v3.0.0
+[2.3.3]: https://github.com/Skycoder42/dart_pre_commit/compare/v2.3.2...v2.3.3
+[2.3.2]: https://github.com/Skycoder42/dart_pre_commit/compare/v2.3.1...v2.3.2
+[2.3.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v2.3.0...v2.3.1
+[2.3.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.1.4...v2.2.0
+[1.1.4]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.1.3...v1.1.4
+[1.1.3]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.0.2...v1.1.0
+[1.0.2]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/Skycoder42/dart_pre_commit/releases/tag/v1.0.0
