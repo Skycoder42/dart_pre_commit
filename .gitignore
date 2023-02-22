@@ -26,4 +26,5 @@ coverage/
 coverage_badge.svg
 
 # generated files
-*.mocks.dart
+*.freezed.dart
+*.g.dart
