@@ -25,9 +25,9 @@ jobs:
       integrationTestPaths: test/integration
       integrationTestSetup: >-
         {
-          "linux": "dart run tool/ci_install_flutter.dart",
-          "windows": "dart run tool/ci_install_flutter.dart",
-          "macos": "dart run tool/ci_install_flutter.dart"
+          "linux": "bash tool/ci/setup_linux.sh",
+          "macos": "bash tool/ci/setup_macos.sh",
+          "windows": "powershell run tool/ci/setup_windows.ps1"
         }
 
   cd:
