@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "::group::Install OSV-Scanner"
-go install github.com/google/osv-scanner/cmd/osv-scanner@v1
+brew install osv-scanner
 echo "::endgroup::"
 
 echo "::group::Install Flutter"

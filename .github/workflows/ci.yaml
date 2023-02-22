@@ -22,7 +22,7 @@ jobs:
         {
           "linux": "bash tool/ci/setup_linux.sh",
           "macos": "bash tool/ci/setup_macos.sh",
-          "windows": "powershell run tool/ci/setup_windows.ps1"
+          "windows": "powershell tool/ci/setup_windows.ps1"
         }
 
   cd:
