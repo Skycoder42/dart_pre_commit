@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 
 echo "::group::Install OSV-Scanner"
 go version
