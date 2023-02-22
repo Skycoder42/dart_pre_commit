@@ -113,7 +113,7 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
   String get taskName => _taskName;
 
   @override
-  Pattern get filePattern => RegExp(r'^(?:pubspec.ya?ml|.*\.dart)$');
+  Pattern get filePattern => RegExp(r'^(?:pubspec\.ya?ml|.*\.dart)$');
 
   @override
   bool get callForEmptyEntries => false;

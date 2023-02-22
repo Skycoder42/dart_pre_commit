@@ -1,11 +1,13 @@
 import 'package:riverpod/riverpod.dart';
 
+import '../../config/program_detector.dart';
 import '../../config/pubspec_config_loader.dart';
 import '../../util/logger.dart';
 import '../analyze_task.dart';
 import '../flutter_compat_task.dart';
 import '../format_task.dart';
 import '../lib_export_task.dart';
+import '../osv_scanner_task.dart';
 import '../outdated_task.dart';
 import '../pull_up_dependencies_task.dart';
 import '../test_import_task.dart';
@@ -16,6 +18,7 @@ import 'task_loader.dart';
 final defaultTasksLoaderProvider = Provider(
   (ref) => DefaultTasksLoader(
     pubspecConfigLoader: ref.watch(pubspecConfigLoaderProvider),
+    programDetector: ref.watch(programDetectorProvider),
     taskLoader: ref.watch(taskLoaderProvider),
     logger: ref.watch(loggerProvider),
   ),
@@ -26,15 +29,18 @@ final defaultTasksLoaderProvider = Provider(
 /// this package in the [TaskLoader].
 class DefaultTasksLoader {
   final PubspecConfigLoader _pubspecConfigLoader;
+  final ProgramDetector _programDetector;
   final TaskLoader _taskLoader;
   final Logger _logger;
 
   /// Default constructor.
   const DefaultTasksLoader({
     required PubspecConfigLoader pubspecConfigLoader,
+    required ProgramDetector programDetector,
     required TaskLoader taskLoader,
     required Logger logger,
   })  : _pubspecConfigLoader = pubspecConfigLoader,
+        _programDetector = programDetector,
         _taskLoader = taskLoader,
         _logger = logger;
 
@@ -73,5 +79,9 @@ class DefaultTasksLoader {
     _taskLoader
       ..registerConfigurableTask(outdatedTaskProvider)
       ..registerConfigurableTask(pullUpDependenciesTaskProvider);
+
+    if (await _programDetector.hasProgram(OsvScannerTask.osvScannerBinary)) {
+      _taskLoader.registerTask(osvScannerTaskProvider);
+    }
   }
 }
