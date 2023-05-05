@@ -28,3 +28,5 @@ coverage_badge.svg
 # generated files
 *.freezed.dart
 *.g.dart
+
+custom_lint.log

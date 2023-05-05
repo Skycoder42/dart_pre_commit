@@ -10,9 +10,7 @@ jobs:
     name: CI
     uses: Skycoder42/dart_test_tools/.github/workflows/dart.yml@main
     with:
-      platforms: '["linux","windows","macos"]'
       buildRunner: true
-      extendedAnalyzerArgs: --linter test-import # Do not run the lib-export linter
       unitTestPaths: test/unit
       coverageExclude: >-
         "**/*.g.dart"

@@ -140,7 +140,7 @@ environment:
 dependencies:
   meta: ^1.2.0
   mobx: 1.1.0
-  rxdart: 0.27.0
+  image: 4.0.0
   dart_pre_commit:
     path: ${Directory.current.path}
 
@@ -266,7 +266,7 @@ void main() {
       'outdated',
       arguments: const ['--detailed-exit-code'],
       config: const <String, dynamic>{
-        'allowed': ['rxdart'],
+        'allowed': ['image'],
       },
       failOnError: false,
       onStdout: lines.add,
@@ -279,7 +279,7 @@ void main() {
           startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
         ),
         contains(
-          startsWith('  [WRN] Ignored:     rxdart: 0.27.0 -> '),
+          startsWith('  [WRN] Ignored:     image: 4.0.0 -> '),
         ),
       ]),
     );

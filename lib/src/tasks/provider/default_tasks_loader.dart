@@ -4,13 +4,12 @@ import '../../config/pubspec_config_loader.dart';
 import '../../util/logger.dart';
 import '../../util/program_detector.dart';
 import '../analyze_task.dart';
+import '../custom_lint_task.dart';
 import '../flutter_compat_task.dart';
 import '../format_task.dart';
-import '../lib_export_task.dart';
 import '../osv_scanner_task.dart';
 import '../outdated_task.dart';
 import '../pull_up_dependencies_task.dart';
-import '../test_import_task.dart';
 import 'task_loader.dart';
 
 // coverage:ignore-start
@@ -48,13 +47,10 @@ class DefaultTasksLoader {
   ///
   /// This will register the following task providers with the [TaskLoader]:
   /// - [formatTaskProvider]
-  /// - [testImportTaskProvider]
+  /// - [customLintTaskProvider]
   /// - [analyzeTaskProvider]
   /// - [outdatedTaskProvider]
   /// - [pullUpDependenciesTaskProvider]
-  ///
-  /// If the project has it's `publish_to` unset or set to anything but `none`,
-  /// the [libExportTaskProvider] is added as well.
   ///
   /// If the project is not a flutter project, the [flutterCompatTaskProvider]
   /// is added as well.
@@ -65,12 +61,8 @@ class DefaultTasksLoader {
 
     _taskLoader
       ..registerConfigurableTask(formatTaskProvider)
-      ..registerTask(testImportTaskProvider)
-      ..registerConfigurableTask(analyzeTaskProvider);
-
-    if (pubspecConfig.isPublished) {
-      _taskLoader.registerTask(libExportTaskProvider);
-    }
+      ..registerConfigurableTask(analyzeTaskProvider)
+      ..registerTask(customLintTaskProvider);
 
     if (!pubspecConfig.isFlutterProject) {
       _taskLoader.registerTask(flutterCompatTaskProvider);

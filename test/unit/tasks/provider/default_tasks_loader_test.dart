@@ -2,13 +2,11 @@ import 'package:dart_pre_commit/src/config/pubspec_config_loader.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
-import 'package:dart_pre_commit/src/tasks/lib_export_task.dart';
 import 'package:dart_pre_commit/src/tasks/osv_scanner_task.dart';
 import 'package:dart_pre_commit/src/tasks/outdated_task.dart';
 import 'package:dart_pre_commit/src/tasks/provider/default_tasks_loader.dart';
 import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
-import 'package:dart_pre_commit/src/tasks/test_import_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_detector.dart';
 import 'package:dart_test_tools/test.dart';
@@ -47,7 +45,7 @@ void main() {
 
     group('registerDefaultTasks', () {
       test('registers minimal tasks if extra configs do not apply', () async {
-        when(() => mockPubspecConfigLoader.loadPubspecConfig()).thenReturnAsync(
+        when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
           const PubspecConfig(isFlutterProject: true, isPublished: false),
         );
         when(() => mockProgramDetector.hasProgram(any()))
@@ -56,9 +54,8 @@ void main() {
         await sut.registerDefaultTasks();
 
         verifyInOrder([
-          () => mockPubspecConfigLoader.loadPubspecConfig(),
+          mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
-          () => mockTaskLoader.registerTask(testImportTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
@@ -70,7 +67,7 @@ void main() {
       });
 
       test('registers all tasks if extra configs do apply', () async {
-        when(() => mockPubspecConfigLoader.loadPubspecConfig()).thenReturnAsync(
+        when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
           const PubspecConfig(isFlutterProject: false, isPublished: true),
         );
         when(() => mockProgramDetector.hasProgram(any())).thenReturnAsync(true);
@@ -78,11 +75,9 @@ void main() {
         await sut.registerDefaultTasks();
 
         verifyInOrder([
-          () => mockPubspecConfigLoader.loadPubspecConfig(),
+          mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
-          () => mockTaskLoader.registerTask(testImportTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
-          () => mockTaskLoader.registerTask(libExportTaskProvider),
           () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader

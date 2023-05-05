@@ -1,6 +1,8 @@
-include: package:dart_test_tools/analysis_options_package.yaml
+include: package:dart_test_tools/package.yaml
 
 analyzer:
+  plugins:
+    - custom_lint
   exclude:
     - "**.freezed.dart"
     - "**.g.dart"
