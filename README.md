@@ -25,7 +25,7 @@ A small collection of pre commit hooks to format and lint dart code
     + [Options](#options-3)
 - [Documentation](#documentation)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+<small><i><a href='https://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ## Features
 - Provides multiple built in hooks to run on staged files

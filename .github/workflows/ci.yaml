@@ -22,6 +22,7 @@ jobs:
           "macos": "bash tool/ci/setup_macos.sh",
           "windows": "bash tool/ci/setup_windows.sh"
         }
+      panaScoreThreshold: 10
 
   cd:
     name: CD
