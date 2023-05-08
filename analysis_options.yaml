@@ -6,6 +6,8 @@ analyzer:
   exclude:
     - "**.freezed.dart"
     - "**.g.dart"
+  errors:
+    included_file_warning: ignore
 
 linter:
   rules:

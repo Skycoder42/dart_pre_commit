@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_lambdas
+
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/config/config_loader.dart';
