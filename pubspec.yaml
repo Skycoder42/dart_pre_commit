@@ -36,7 +36,7 @@ dev_dependencies:
   cider: ^0.1.5
   coverage: ^1.6.3
   custom_lint: ^0.3.4
-  dart_test_tools: ^5.0.0
+  dart_test_tools: ^5.0.1
   freezed: ^2.3.3
   json_serializable: ^6.6.2
   mocktail: ^0.3.0

@@ -85,12 +85,12 @@ void main() {
   }) async {
     final knownTasks = [
       'format',
-      'test-imports',
       'analyze',
+      'custom-lint',
       'flutter-compat',
       'outdated',
       'pull-up-dependencies',
-      'lib-exports',
+      'osv-scanner',
     ];
     final configEditor = YamlEditor('_placeholder: null');
     for (final task in knownTasks) {
@@ -146,8 +146,16 @@ dependencies:
 
 dev_dependencies:
   lint: null
+  custom_lint: null
+  dart_test_tools: '>=5.0.0'
 ''',
     );
+
+    await writeFile('analysis_options.yaml', '''
+analyzer:
+  plugins:
+    - custom_lint
+''');
 
     await writeFile(
       'bin/format.dart',
@@ -285,11 +293,11 @@ void main() {
     );
   });
 
-  test('test-imports', () async {
+  test('custom-lint', () async {
     final lines = <String>[];
     await git(const ['add', 'test/test.dart']);
     final code = await sut(
-      'test-imports',
+      'custom-lint',
       arguments: const ['--detailed-exit-code', '-ldebug'],
       failOnError: false,
       onStdout: lines.add,
@@ -297,28 +305,12 @@ void main() {
     expect(code, HookResult.rejected.index);
     expect(
       lines,
-      contains(
-        startsWith('  [ERR] Found self import that is not from src: import '),
-      ),
-    );
-  });
-
-  test('lib-exports', () async {
-    final lines = <String>[];
-    await git(const ['add', 'lib']);
-    final code = await sut(
-      'lib-exports',
-      arguments: const ['--detailed-exit-code', '-ldebug'],
-      failOnError: false,
-      onStdout: lines.add,
-    );
-    expect(code, HookResult.rejected.index);
-    expect(
-      lines,
-      contains(
-        allOf(
-          startsWith('  [ERR] '),
-          endsWith('Source file is not exported anywhere'),
+      allOf(
+        contains(
+          '  [INF]   lib/src/analyze.dart:1:6 • The library contains public symbols, but is not exported in any of the package library files. • src_library_not_exported',
+        ),
+        contains(
+          '  [INF]   test/test.dart:1:8 • Libraries in lib/src, test or tool should not import package library files from lib. • no_self_package_imports',
         ),
       ),
     );

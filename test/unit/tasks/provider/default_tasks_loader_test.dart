@@ -1,5 +1,6 @@
 import 'package:dart_pre_commit/src/config/pubspec_config_loader.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
+import 'package:dart_pre_commit/src/tasks/custom_lint_task.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/tasks/osv_scanner_task.dart';
@@ -57,6 +58,7 @@ void main() {
           mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
+          () => mockTaskLoader.registerTask(customLintTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
               .registerConfigurableTask(pullUpDependenciesTaskProvider),
@@ -78,6 +80,7 @@ void main() {
           mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
+          () => mockTaskLoader.registerTask(customLintTaskProvider),
           () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
