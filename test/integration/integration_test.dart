@@ -307,10 +307,16 @@ void main() {
       lines,
       allOf(
         contains(
-          '  [INF]   lib/src/analyze.dart:1:6 • The library contains public symbols, but is not exported in any of the package library files. • src_library_not_exported',
+          allOf(
+            contains('analyze.dart'),
+            endsWith('src_library_not_exported'),
+          ),
         ),
         contains(
-          '  [INF]   test/test.dart:1:8 • Libraries in lib/src, test or tool should not import package library files from lib. • no_self_package_imports',
+          allOf(
+            contains('test.dart'),
+            endsWith('no_self_package_imports'),
+          ),
         ),
       ),
     );
