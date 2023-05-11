@@ -135,7 +135,7 @@ name: test_project
 version: 0.0.1
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: ^3.0.0
 
 dependencies:
   meta: ^1.2.0
