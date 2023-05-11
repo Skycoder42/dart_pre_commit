@@ -17,7 +17,7 @@ class TaskProvider<State extends TaskBase> extends Provider<State> {
   /// Default constructor.
   TaskProvider(
     String name,
-    super.create, {
+    super._createFn, {
     super.dependencies,
     super.from,
     super.argument,

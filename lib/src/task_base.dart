@@ -26,7 +26,7 @@ enum TaskResult {
 /// **Important:** Do *not* implement this class directly, instead user either
 /// [FileTask] or [RepoTask], as one of these to is expected by [Hooks]. This
 /// class only exists to perform common operations on all types of tasks.
-abstract class TaskBase {
+abstract interface class TaskBase {
   /// Returns the user-visible name of the task.
   String get taskName;
 
@@ -52,7 +52,7 @@ abstract class TaskBase {
 /// the same order they have been added to [Hooks]. Only then will the next file
 /// be processed in the same manner. All [FileTask]s are always run before any
 /// [RepoTask].
-abstract class FileTask extends TaskBase {
+abstract interface class FileTask extends TaskBase {
   /// Executes the task on the given [entry].
   ///
   /// **Important:** This function should run without side effects, i.e. the
@@ -97,7 +97,7 @@ abstract class FileTask extends TaskBase {
 /// tasks that can process a file, all tasks are called in order, each with all
 /// files that match the task. All [RepoTask]s are always run after any
 /// [FileTask].
-abstract class RepoTask extends TaskBase {
+abstract interface class RepoTask extends TaskBase {
   /// Specifies, whether the task should still be executed, even if no files
   /// match.
   ///

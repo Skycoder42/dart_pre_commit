@@ -17,7 +17,7 @@ final taskLoaderProvider = Provider(
 );
 // coverage:ignore-end
 
-abstract class _TaskConfig<TState extends TaskBase> {
+abstract interface class _TaskConfig<TState extends TaskBase> {
   String get taskName;
 
   bool get enabledByDefault;

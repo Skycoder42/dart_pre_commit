@@ -325,7 +325,7 @@ void main() {
           logger: mockLogger,
           programRunner: mockRunner,
           fileResolver: mockResolver,
-          config: const AnalyzeConfig(scanMode: AnalysisScanMode.all),
+          config: const AnalyzeConfig(),
         );
       });
 

@@ -129,10 +129,8 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     switch (_config.scanMode) {
       case AnalysisScanMode.all:
         lintCnt = await _scanAll();
-        break;
       case AnalysisScanMode.staged:
         lintCnt = await _scanStaged(entriesList);
-        break;
     }
 
     _logger.info('$lintCnt issue(s) found.');

@@ -242,16 +242,12 @@ class Hooks {
     switch (hookResult) {
       case HookResult.clean:
         message = 'Accepted file ${entry.file.path}';
-        break;
       case HookResult.hasChanges:
         message = 'Fixed up ${entry.file.path}';
-        break;
       case HookResult.hasUnstagedChanges:
         message = 'Fixed up partially staged file ${entry.file.path}';
-        break;
       case HookResult.rejected:
         message = 'Rejected file ${entry.file.path}';
-        break;
     }
     _logger.updateStatus(
       status: hookResult._toStatus(),
@@ -299,17 +295,13 @@ class Hooks {
     switch (hookResult) {
       case HookResult.clean:
         message = 'Completed ${task.taskName}';
-        break;
       case HookResult.hasChanges:
         message = 'Completed ${task.taskName}, fixed up some files';
-        break;
       case HookResult.hasUnstagedChanges:
         message =
             'Completed ${task.taskName}, fixed up some partially staged files';
-        break;
       case HookResult.rejected:
         message = 'Completed ${task.taskName}, found problems';
-        break;
     }
     _logger.updateStatus(
       status: hookResult._toStatus(),

@@ -68,7 +68,7 @@ enum LogLevel {
 /// This can be used to log messages in a task context, without the extended
 /// status logic. This class is typically not implemented directly, instead
 /// implement [Logger] and implement the methods there.
-abstract class TaskLogger {
+abstract interface class TaskLogger {
   /// Logs a message with [LogLevel.debug].
   void debug(String message);
 
@@ -92,7 +92,7 @@ abstract class TaskLogger {
 ///
 /// Extends the [TaskLogger] and provides the status methods that are used by
 /// [Hooks] in addition to the normal log methods.
-abstract class Logger implements TaskLogger {
+abstract interface class Logger implements TaskLogger {
   /// The current [LogLevel] level of the logger.
   ///
   /// Based on this level, different log messages may or may not be visible. The

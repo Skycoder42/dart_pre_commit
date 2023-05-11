@@ -112,7 +112,6 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
       switch (_config.level) {
         case OutdatedLevel.any:
           updated = hasUpdate;
-          break;
         case OutdatedLevel.patch:
           updated = updated || resolvable.patch > current.patch;
           continue minor;
@@ -123,7 +122,6 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
         major:
         case OutdatedLevel.major:
           updated = updated || resolvable.major > current.major;
-          break;
       }
 
       if (hasUpdate && _config.allowed.contains(package.package)) {
