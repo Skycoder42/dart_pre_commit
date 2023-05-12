@@ -138,9 +138,9 @@ environment:
   sdk: ^3.0.0
 
 dependencies:
-  meta: ^1.2.0
-  mobx: 1.1.0
+  meta: ^1.8.0
   image: 4.0.0
+  mobx: 2.1.0
   dart_pre_commit:
     path: ${Directory.current.path}
 
@@ -221,7 +221,7 @@ void main() {
     expect(
       lines,
       contains(
-        '  [INF]   info - lib${separator}src${separator}analyze.dart:2:7 - '
+        '  [INF]   warning - lib${separator}src${separator}analyze.dart:2:7 - '
         "The value of the local variable 'x' isn't used. Try removing the "
         'variable or using it. - unused_local_variable',
       ),
@@ -263,7 +263,7 @@ void main() {
       onStdout: lines.add,
     );
     expect(code, HookResult.rejected.index);
-    expect(lines, contains(startsWith('  [INF] meta: ^1.2.0 -> 1.')));
+    expect(lines, contains(startsWith('  [INF] meta: ^1.8.0 -> 1.')));
   });
 
   test('outdated', () async {
@@ -279,18 +279,18 @@ void main() {
       failOnError: false,
       onStdout: lines.add,
     );
-    expect(code, HookResult.rejected.index);
     expect(
       lines,
       allOf([
         contains(
-          startsWith('  [INF] Required:    mobx: 1.1.0 -> '),
+          startsWith('  [INF] Required:    mobx: 2.1.0 -> '),
         ),
         contains(
           startsWith('  [WRN] Ignored:     image: 4.0.0 -> '),
         ),
       ]),
     );
+    expect(code, HookResult.rejected.index);
   });
 
   test('custom-lint', () async {
