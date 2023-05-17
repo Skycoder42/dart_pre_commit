@@ -27,5 +27,5 @@
 			"omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions"
 		}
 	},
-	"postCreateCommand": "flutter config --no-analytics && dart --disable-analytics && dart run ./tool/setup_hooks.dart"
+	"postCreateCommand": "dart run ./tool/setup_hooks.dart"
 }
