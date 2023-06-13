@@ -47,13 +47,14 @@ class DefaultTasksLoader {
   ///
   /// This will register the following task providers with the [TaskLoader]:
   /// - [formatTaskProvider]
-  /// - [customLintTaskProvider]
   /// - [analyzeTaskProvider]
+  /// - [customLintTaskProvider] (only if `custom_lint` is installed as dev
+  /// dependency)
+  /// - [flutterCompatTaskProvider] (only if not a flutter package)
   /// - [outdatedTaskProvider]
   /// - [pullUpDependenciesTaskProvider]
-  ///
-  /// If the project is not a flutter project, the [flutterCompatTaskProvider]
-  /// is added as well.
+  /// - [osvScannerTaskProvider] (only if the `osv-scanner` binary is found in
+  /// the path)
   Future<void> registerDefaultTasks() async {
     final pubspecConfig = await _pubspecConfigLoader.loadPubspecConfig();
 
@@ -61,8 +62,11 @@ class DefaultTasksLoader {
 
     _taskLoader
       ..registerConfigurableTask(formatTaskProvider)
-      ..registerConfigurableTask(analyzeTaskProvider)
-      ..registerTask(customLintTaskProvider);
+      ..registerConfigurableTask(analyzeTaskProvider);
+
+    if (pubspecConfig.hasCustomLintDependency) {
+      _taskLoader.registerTask(customLintTaskProvider);
+    }
 
     if (!pubspecConfig.isFlutterProject) {
       _taskLoader.registerTask(flutterCompatTaskProvider);

@@ -26,6 +26,7 @@ class PubspecConfig with _$PubspecConfig {
   const factory PubspecConfig({
     @Default(false) bool isFlutterProject,
     @Default(true) bool isPublished,
+    @Default(false) bool hasCustomLintDependency,
   }) = _PubspecConfig;
 }
 
@@ -57,6 +58,8 @@ class PubspecConfigLoader {
     return PubspecConfig(
       isFlutterProject: pubspec.dependencies.containsKey('flutter'),
       isPublished: pubspec.publishTo != 'none',
+      hasCustomLintDependency:
+          pubspec.devDependencies.containsKey('custom_lint'),
     );
   }
 }

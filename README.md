@@ -64,7 +64,7 @@ import 'dart:io';
 
 Future<void> main() async {
   final preCommitHook = File('.git/hooks/pre-commit');
-  await preCommitHook.parent.create(recursive: true);
+  await preCommitHook.parent.create();
   await preCommitHook.writeAsString(
     '''
 #!/bin/sh
@@ -82,12 +82,12 @@ exec dart run dart_pre_commit # specify custom options here
 ```
 
 ### Using git_hooks
-The first example uses the [git_hooks](https://pub.dev/packages/git_hooks) package to activate the hook. Take the
+The second example uses the [git_hooks](https://pub.dev/packages/git_hooks) package to activate the hook. Take the
 following steps to activate the hook:
 
 1. Add `git_hooks` as dev dependency to your project
-2. Run `dart pub run git_hooks create` to initialize and activate git hooks for your project
-3. Modify `git_hooks.dart` to look like the following:
+2. Follow the installation instructions here: https://pub.dev/packages/git_hooks#create-files-in-githooks
+3. Modify `bin/git_hooks.dart` to look like the following:
 ```dart
 import "package:dart_pre_commit/dart_pre_commit.dart";
 import "package:git_hooks/git_hooks.dart";
@@ -115,25 +115,6 @@ Future<bool> _preCommit() async {
   return result.isSuccess;
 }
 ```
-
-
-### Using hanzo
-The second example uses the [hanzo](https://pub.dev/packages/hanzo) package to
-activate the hook. Take the following steps to activate the hook:
-
-1. Add `hanzo` as dev_dependency to your project
-2. Run `dart pub run hanzo install` to initialize and activate git hooks for your
-project
-3. Create a file named `./tool/pre_commit.dart` as follows:
-```dart
-import "package:dart_pre_commit/dart_pre_commit.dart";
-
-void main() {
-  final result = await DartPreCommit.run();
-  exitCode = result.isSuccess ? 0 : 1;
-}
-```
-4. Run `dart pub run hanzo -i pre_commit`
 
 ## Configuration
 The tool follows the zero config principle - this means you can run it without having to configure anything. However,
@@ -217,6 +198,18 @@ Values for `error-level`:
 Values for `scan-mode`:
 - `all` (default): All files are scanned for problems
 - `staged`: Only staged files are scanned for problems
+
+### Custom Lint Task
+**Task-ID:** `custom-lint`<br/>
+**Configurable:** No<br/>
+**Enabled**: Only if `custom_lint` is installed as direct (dev) dependency<br/>
+
+This tasks runs the [custom_lint](https://pub.dev/packages/custom_lint) tool on your project to run additional,
+customized lints, if you have any. This can be very useful, especially for framework packages like riverpod, but also
+simpler ones like equatable.
+
+**Pro-Hint:** You can use this customized pub.dev search query to find linter plugins for your packages:
+https://pub.dev/packages?q=dependency%3Acustom_lint_builder
 
 ### Library Exports Task
 **Task-ID:** `lib-exports`<br/>
