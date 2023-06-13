@@ -9,20 +9,22 @@ A small collection of pre commit hooks to format and lint dart code
 - [Installation](#installation)
 - [Activation](#activation)
   * [Simple dart wrapper](#simple-dart-wrapper)
-  * [Using git_hooks](#using-git_hooks)
-  * [Using hanzo](#using-hanzo)
+  * [Using git_hooks](#using-git-hooks)
+    + [Handling the case where the git_hooks is setup in a child folder of the repository](#handling-the-case-where-the-git-hooks-is-setup-in-a-child-folder-of-the-repository)
 - [Configuration](#configuration)
   * [Format task](#format-task)
     + [Options](#options)
   * [Test Imports Task](#test-imports-task)
   * [Analyze Task](#analyze-task)
     + [Options](#options-1)
+  * [Custom Lint Task](#custom-lint-task)
   * [Library Exports Task](#library-exports-task)
   * [Flutter Compatibility Task](#flutter-compatibility-task)
   * [Outdated Task](#outdated-task)
     + [Options](#options-2)
   * [Pull Up Dependencies Task](#pull-up-dependencies-task)
     + [Options](#options-3)
+  * [OSV-Scanner Task](#osv-scanner-task)
 - [Documentation](#documentation)
 
 <small><i><a href='https://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
@@ -106,11 +108,14 @@ Future<bool> _preCommit() async {
 ```
 
 #### Handling the case where the git_hooks is setup in a child folder of the repository
-In cases where your project is in a child folder of the repository ie. Repo/project, when you run `DartPreCommit.run()`, it'll run from the root of your repository and hence will not be able to find `pubspec.yaml` file. To handle this case we need to direct the DartPreCommit to run its command from a child folder. To do so, you need to add the following line in the `_preCommit()` function before we invoke DartPreCommit
+In cases where your project is in a child folder of the repository ie. Repo/project, when you run `DartPreCommit.run()`,
+it'll run from the root of your repository and hence will not be able to find `pubspec.yaml` file. To handle this case
+we need to direct the DartPreCommit to run its command from a child folder. To do so, you need to add the following line
+in the `_preCommit()` function before we invoke DartPreCommit:
 
 ```dart
 Future<bool> _preCommit() async {
-  Directory.current = '/project_sub_directory'; // <--- This line switches the command line execution directory to a subdirectory
+  Directory.current = '/project_sub_directory'; // <--- This line switches the scan directory to a subdirectory
   final result = await DartPreCommit.run();
   return result.isSuccess;
 }
@@ -264,6 +269,14 @@ always runs, otherwise it only runs if changes to the lockfile have been staged.
  Option    | Type           | Default | Description
 -----------|----------------|---------|-------------
  `allowed` | `List<String>` | `[]`    | A list of packages that are allowed to not be pulled up, even if their version constrains imply it. Can be useful to keep backwards compatibility.
+
+### OSV-Scanner Task
+**Task-ID:** `osv-scanner`<br/>
+**Configurable:** No<br/>
+**Enabled**: Only if the `osv-scanner` binary is found in your PATH<br/>
+
+When enabled, the `pubspec.lock` file is analyzed by the [OSV-Scanner](https://github.com/google/osv-scanner) for known
+vulnerabilities in dependent packages. The task will fail in case such dependencies are found.
 
 ## Documentation
 The documentation is available at

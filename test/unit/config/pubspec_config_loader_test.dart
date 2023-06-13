@@ -51,6 +51,7 @@ void main() {
 
         expect(result.isFlutterProject, isFalse);
         expect(result.isPublished, isTrue);
+        expect(result.hasCustomLintDependency, isFalse);
       });
 
       test('returns default data if entries are not found in pubspec',
@@ -70,6 +71,7 @@ void main() {
 
         expect(result.isFlutterProject, isFalse);
         expect(result.isPublished, isTrue);
+        expect(result.hasCustomLintDependency, isFalse);
       });
 
       test('returns custom data if entries are found in pubspec', () async {
@@ -82,6 +84,9 @@ publish_to: none
 dependencies:
   flutter:
     sdk: flutter
+
+dev_dependencies:
+  custom_lint:
 ''');
 
         final result = await sut.loadPubspecConfig();
@@ -95,6 +100,7 @@ dependencies:
 
         expect(result.isFlutterProject, isTrue);
         expect(result.isPublished, isFalse);
+        expect(result.hasCustomLintDependency, isTrue);
       });
     });
   });

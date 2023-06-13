@@ -58,7 +58,6 @@ void main() {
           mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
-          () => mockTaskLoader.registerTask(customLintTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
               .registerConfigurableTask(pullUpDependenciesTaskProvider),
@@ -70,7 +69,7 @@ void main() {
 
       test('registers all tasks if extra configs do apply', () async {
         when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
-          const PubspecConfig(),
+          const PubspecConfig(hasCustomLintDependency: true),
         );
         when(() => mockProgramDetector.hasProgram(any())).thenReturnAsync(true);
 
