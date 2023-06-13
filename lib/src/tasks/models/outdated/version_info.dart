@@ -15,7 +15,7 @@ class VersionInfo with _$VersionInfo {
       fromJson: VersionInfo._versionFromJson,
       toJson: VersionInfo._versionToJson,
     )
-        required Version? version,
+    required Version? version,
     bool? nullSafety,
   }) = _VersionInfo;
 

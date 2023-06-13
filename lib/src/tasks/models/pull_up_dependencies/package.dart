@@ -22,7 +22,7 @@ class Package with _$Package {
       toJson: Package._versionToJson,
       fromJson: Package._versionFromJson,
     )
-        required Version version,
+    required Version version,
   }) = _Package;
 
   /// @nodoc

@@ -73,11 +73,11 @@ class AnalyzeConfig with _$AnalyzeConfig {
     // ignore: invalid_annotation_target
     @JsonKey(name: 'error-level')
     @Default(AnalyzeErrorLevel.info)
-        AnalyzeErrorLevel errorLevel,
+    AnalyzeErrorLevel errorLevel,
     // ignore: invalid_annotation_target
     @JsonKey(name: 'scan-mode')
     @Default(AnalysisScanMode.all)
-        AnalysisScanMode scanMode,
+    AnalysisScanMode scanMode,
   }) = _AnalyzeConfig;
 
   /// @nodoc

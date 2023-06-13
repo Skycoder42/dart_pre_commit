@@ -46,6 +46,10 @@ class LoggingWrapper implements logging.Logger {
   logging.Level get level => logging.Level.ALL;
 
   @override
+  Stream<logging.Level?> get onLevelChanged =>
+      Stream.fromFuture(Completer<logging.Level?>().future);
+
+  @override
   set level(logging.Level? level) {}
 
   @override
