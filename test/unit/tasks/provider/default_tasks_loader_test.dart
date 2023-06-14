@@ -85,7 +85,7 @@ void main() {
           () => mockTaskLoader
               .registerConfigurableTask(pullUpDependenciesTaskProvider),
           () => mockProgramDetector.hasProgram(OsvScannerTask.osvScannerBinary),
-          () => mockTaskLoader.registerTask(osvScannerTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(osvScannerTaskProvider),
         ]);
         verifyNoMoreInteractions(mockPubspecConfigLoader);
         verifyNoMoreInteractions(mockTaskLoader);

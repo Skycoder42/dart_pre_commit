@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
@@ -11,16 +11,44 @@ import 'models/osv_scanner/package_info.dart';
 import 'models/osv_scanner/vulnerability.dart';
 import 'provider/task_provider.dart';
 
+part 'osv_scanner_task.freezed.dart';
+part 'osv_scanner_task.g.dart';
+
 // coverage:ignore-start
 /// A riverpod provider for the osv scanner task.
-final osvScannerTaskProvider = TaskProvider(
+final osvScannerTaskProvider = TaskProvider.configurable(
   OsvScannerTask._taskName,
-  (ref) => OsvScannerTask(
+  OsvScannerConfig.fromJson,
+  (ref, config) => OsvScannerTask(
     programRunner: ref.watch(programRunnerProvider),
     taskLogger: ref.watch(taskLoggerProvider),
+    config: config,
   ),
 );
 // coverage:ignore-end
+
+/// @nodoc
+@internal
+@freezed
+class OsvScannerConfig with _$OsvScannerConfig {
+  /// @nodoc
+  // ignore: invalid_annotation_target
+  @JsonSerializable(
+    anyMap: true,
+    checked: true,
+    disallowUnrecognizedKeys: true,
+  )
+  const factory OsvScannerConfig({
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'lockfile-only') @Default(true) bool lockfileOnly,
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'config') String? configFile,
+  }) = _OsvScannerConfig;
+
+  /// @nodoc
+  factory OsvScannerConfig.fromJson(Map<String, dynamic> json) =>
+      _$OsvScannerConfigFromJson(json);
+}
 
 /// @nodoc
 @internal
@@ -32,13 +60,16 @@ class OsvScannerTask implements RepoTask {
 
   final ProgramRunner _programRunner;
   final TaskLogger _taskLogger;
+  final OsvScannerConfig _config;
 
   /// @nodoc
   const OsvScannerTask({
     required ProgramRunner programRunner,
     required TaskLogger taskLogger,
+    required OsvScannerConfig config,
   })  : _programRunner = programRunner,
-        _taskLogger = taskLogger;
+        _taskLogger = taskLogger,
+        _config = config;
 
   @override
   String get taskName => _taskName;
@@ -54,7 +85,19 @@ class OsvScannerTask implements RepoTask {
     final osvScannerJson = await _programRunner
         .stream(
           osvScannerBinary,
-          const ['--lockfile', 'pubspec.lock', '--json'],
+          [
+            '--json',
+            ...switch (_config.configFile) {
+              final String path => ['--config', path],
+              _ => [],
+            },
+            '--lockfile',
+            'pubspec.lock',
+            if (!_config.lockfileOnly) ...[
+              '--recursive',
+              '.',
+            ],
+          ],
           failOnExit: false,
         )
         .transform(json.decoder)

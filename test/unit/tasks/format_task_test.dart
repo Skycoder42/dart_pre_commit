@@ -4,7 +4,6 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import '../global_mocks.dart';
 
@@ -12,18 +11,18 @@ class MockProgramRunner extends Mock implements ProgramRunner {}
 
 void main() {
   group('$FormatConfig', () {
-    testData<Tuple2<Map<String, dynamic>, FormatConfig>>(
+    testData<(Map<String, dynamic>, FormatConfig)>(
       'correctly converts from json',
       [
-        const Tuple2(<String, dynamic>{}, FormatConfig()),
-        const Tuple2(<String, dynamic>{'line-length': null}, FormatConfig()),
-        const Tuple2(
+        const (<String, dynamic>{}, FormatConfig()),
+        const (<String, dynamic>{'line-length': null}, FormatConfig()),
+        const (
           <String, dynamic>{'line-length': 42},
           FormatConfig(lineLength: 42),
         ),
       ],
       (fixture) {
-        expect(FormatConfig.fromJson(fixture.item1), fixture.item2);
+        expect(FormatConfig.fromJson(fixture.$1), fixture.$2);
       },
     );
   });
@@ -51,20 +50,20 @@ void main() {
       expect(sut.taskName, 'format');
     });
 
-    testData<Tuple2<String, bool>>(
+    testData<(String, bool)>(
       'matches only dart/pubspec.yaml files',
       const [
-        Tuple2('test1.dart', true),
-        Tuple2('test/path2.dart', true),
-        Tuple2('test3.g.dart', true),
-        Tuple2('test4.dart.g', false),
-        Tuple2('test5_dart', false),
-        Tuple2('test6.dat', false),
+        ('test1.dart', true),
+        ('test/path2.dart', true),
+        ('test3.g.dart', true),
+        ('test4.dart.g', false),
+        ('test5_dart', false),
+        ('test6.dat', false),
       ],
       (fixture) {
         expect(
-          sut.filePattern.matchAsPrefix(fixture.item1),
-          fixture.item2 ? isNotNull : isNull,
+          sut.filePattern.matchAsPrefix(fixture.$1),
+          fixture.$2 ? isNotNull : isNull,
         );
       },
     );

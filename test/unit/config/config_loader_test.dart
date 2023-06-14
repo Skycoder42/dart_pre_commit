@@ -7,7 +7,6 @@ import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 class MockFileResolver extends Mock implements FileResolver {}
 
@@ -203,14 +202,14 @@ key2: 2
     });
 
     group('loadTaskConfig', () {
-      testData<Tuple2<String, Matcher>>(
+      testData<(String, Matcher)>(
         'returns correct map for given config',
         [
-          const Tuple2('', isEmpty),
-          const Tuple2('other: false', isEmpty),
-          const Tuple2('task: false', isNull),
-          const Tuple2('task: true', isEmpty),
-          Tuple2(
+          const ('', isEmpty),
+          const ('other: false', isEmpty),
+          const ('task: false', isNull),
+          const ('task: true', isEmpty),
+          (
             '''
 task:
   key1: value1
@@ -224,16 +223,16 @@ task:
         ],
         (fixture) async {
           when(() => mockFile.path).thenReturn('');
-          when(() => mockFile.readAsString()).thenReturnAsync(fixture.item1);
+          when(() => mockFile.readAsString()).thenReturnAsync(fixture.$1);
 
           await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
 
           final config = sut.loadTaskConfig('task');
-          expect(config, fixture.item2);
+          expect(config, fixture.$2);
         },
-        dataToString: (t) => Tuple2(
-          t.item1,
-          t.item2.describe(StringDescription()),
+        dataToString: (t) => (
+          t.$1,
+          t.$2.describe(StringDescription()),
         ).toString(),
       );
 

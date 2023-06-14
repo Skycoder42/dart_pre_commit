@@ -81,7 +81,7 @@ class DefaultTasksLoader {
     );
     _logger.debug('osv-scanner found in PATH: $osvScannerFound');
     if (osvScannerFound) {
-      _taskLoader.registerTask(osvScannerTaskProvider);
+      _taskLoader.registerConfigurableTask(osvScannerTaskProvider);
     }
   }
 }

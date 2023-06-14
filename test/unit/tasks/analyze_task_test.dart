@@ -11,7 +11,6 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import '../global_mocks.dart';
 
@@ -125,11 +124,11 @@ const minimalAnalyzeResult = AnalyzeResult(
 
 void main() {
   group('$AnalyzeConfig', () {
-    testData<Tuple2<Map<String, dynamic>, AnalyzeConfig>>(
+    testData<(Map<String, dynamic>, AnalyzeConfig)>(
       'correctly converts from json',
       [
-        const Tuple2(<String, dynamic>{}, AnalyzeConfig()),
-        const Tuple2(
+        const (<String, dynamic>{}, AnalyzeConfig()),
+        const (
           <String, dynamic>{
             'error-level': 'warning',
             'scan-mode': 'staged',
@@ -141,7 +140,7 @@ void main() {
         ),
       ],
       (fixture) {
-        expect(AnalyzeConfig.fromJson(fixture.item1), fixture.item2);
+        expect(AnalyzeConfig.fromJson(fixture.$1), fixture.$2);
       },
     );
   });
@@ -192,34 +191,34 @@ void main() {
       expect(sut.callForEmptyEntries, false);
     });
 
-    testData<Tuple2<String, bool>>(
+    testData<(String, bool)>(
       'matches only dart/pubspec.yaml files',
       const [
-        Tuple2('test1.dart', true),
-        Tuple2('test/path2.dart', true),
-        Tuple2('test3.g.dart', true),
-        Tuple2('test4.dart.g', false),
-        Tuple2('test5_dart', false),
-        Tuple2('test6.dat', false),
-        Tuple2('pubspec.yaml', true),
-        Tuple2('pubspec.yml', true),
-        Tuple2('pubspec.lock', false),
-        Tuple2('path/pubspec.yaml', false),
+        ('test1.dart', true),
+        ('test/path2.dart', true),
+        ('test3.g.dart', true),
+        ('test4.dart.g', false),
+        ('test5_dart', false),
+        ('test6.dat', false),
+        ('pubspec.yaml', true),
+        ('pubspec.yml', true),
+        ('pubspec.lock', false),
+        ('path/pubspec.yaml', false),
       ],
       (fixture) {
         expect(
-          sut.filePattern.matchAsPrefix(fixture.item1),
-          fixture.item2 ? isNotNull : isNull,
+          sut.filePattern.matchAsPrefix(fixture.$1),
+          fixture.$2 ? isNotNull : isNull,
         );
       },
     );
 
-    testData<Tuple2<AnalyzeErrorLevel, List<String>>>(
+    testData<(AnalyzeErrorLevel, List<String>)>(
       'Runs dart analyze with correct arguments',
       const [
-        Tuple2(AnalyzeErrorLevel.error, ['--no-fatal-warnings']),
-        Tuple2(AnalyzeErrorLevel.warning, ['--fatal-warnings']),
-        Tuple2(
+        (AnalyzeErrorLevel.error, ['--no-fatal-warnings']),
+        (AnalyzeErrorLevel.warning, ['--fatal-warnings']),
+        (
           AnalyzeErrorLevel.info,
           ['--fatal-warnings', '--fatal-infos'],
         ),
@@ -229,7 +228,7 @@ void main() {
           logger: mockLogger,
           programRunner: mockRunner,
           fileResolver: mockResolver,
-          config: AnalyzeConfig(errorLevel: fixture.item1),
+          config: AnalyzeConfig(errorLevel: fixture.$1),
         );
 
         final result = await sut([
@@ -240,7 +239,7 @@ void main() {
         verify(
           () => mockRunner.stream(
             'dart',
-            ['analyze', '--format', 'json', ...fixture.item2],
+            ['analyze', '--format', 'json', ...fixture.$2],
             failOnExit: false,
           ),
         );

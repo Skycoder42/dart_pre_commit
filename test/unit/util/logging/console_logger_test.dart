@@ -5,7 +5,6 @@ import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 const eraseLine = '\r\x1B[2K';
 const newLine = '\n';
@@ -37,15 +36,15 @@ void main() {
       expect(output.toString(), cleanLine('test'));
     });
 
-    testData<Tuple2<TaskStatus, String>>('prints status', const [
-      Tuple2(TaskStatus.scanning, '🔎 '),
-      Tuple2(TaskStatus.clean, '✅ '),
-      Tuple2(TaskStatus.hasChanges, '✏️ '),
-      Tuple2(TaskStatus.hasUnstagedChanges, '⚠️ '),
-      Tuple2(TaskStatus.rejected, '❌ '),
+    testData<(TaskStatus, String)>('prints status', const [
+      (TaskStatus.scanning, '🔎 '),
+      (TaskStatus.clean, '✅ '),
+      (TaskStatus.hasChanges, '✏️ '),
+      (TaskStatus.hasUnstagedChanges, '⚠️ '),
+      (TaskStatus.rejected, '❌ '),
     ], (fixture) {
-      sut.updateStatus(message: 'test', status: fixture.item1);
-      expect(output.toString(), contains(fixture.item2));
+      sut.updateStatus(message: 'test', status: fixture.$1);
+      expect(output.toString(), contains(fixture.$2));
     });
 
     test('prints detail', () {
@@ -61,28 +60,28 @@ void main() {
       expect(output.toString(), cleanLine('test${italic(' test')}'));
     });
 
-    testData<Tuple5<String?, TaskStatus?, String?, bool, String>>(
+    testData<(String?, TaskStatus?, String?, bool, String)>(
         'update and clear use old state correctly', [
-      Tuple5('msg', null, null, false, '🔎 msg${italic(' test2')}'),
-      Tuple5(
+      ('msg', null, null, false, '🔎 msg${italic(' test2')}'),
+      (
         null,
         TaskStatus.clean,
         null,
         false,
         '✅ test1${italic(' test2')}',
       ),
-      Tuple5(null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, null, false, '✅ msg${italic(' test2')}'),
-      Tuple5('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', false, '✅ test1${italic(' dtl')}'),
-      Tuple5('msg', TaskStatus.clean, 'dtl', false, '✅ msg${italic(' dtl')}'),
-      const Tuple5('msg', null, null, true, 'msg'),
-      const Tuple5(null, TaskStatus.clean, null, true, '✅ '),
-      Tuple5(null, null, 'dtl', true, italic(' dtl')),
-      const Tuple5('msg', TaskStatus.clean, null, true, '✅ msg'),
-      Tuple5('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
-      Tuple5(null, TaskStatus.clean, 'dtl', true, '✅ ${italic(' dtl')}'),
-      Tuple5(
+      (null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
+      ('msg', TaskStatus.clean, null, false, '✅ msg${italic(' test2')}'),
+      ('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
+      (null, TaskStatus.clean, 'dtl', false, '✅ test1${italic(' dtl')}'),
+      ('msg', TaskStatus.clean, 'dtl', false, '✅ msg${italic(' dtl')}'),
+      const ('msg', null, null, true, 'msg'),
+      const (null, TaskStatus.clean, null, true, '✅ '),
+      (null, null, 'dtl', true, italic(' dtl')),
+      const ('msg', TaskStatus.clean, null, true, '✅ msg'),
+      ('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
+      (null, TaskStatus.clean, 'dtl', true, '✅ ${italic(' dtl')}'),
+      (
         'msg',
         TaskStatus.clean,
         'dtl',
@@ -97,14 +96,14 @@ void main() {
           detail: 'test2',
         )
         ..updateStatus(
-          message: fixture.item1,
-          status: fixture.item2,
-          detail: fixture.item3,
-          clear: fixture.item4,
+          message: fixture.$1,
+          status: fixture.$2,
+          detail: fixture.$3,
+          clear: fixture.$4,
         );
       expect(
         output.toString(),
-        cleanLine('🔎 test1${italic(' test2')}') + cleanLine(fixture.item5),
+        cleanLine('🔎 test1${italic(' test2')}') + cleanLine(fixture.$5),
       );
     });
   });
@@ -115,28 +114,28 @@ void main() {
   });
 
   group('task logging', () {
-    testData<Tuple3<void Function(ConsoleLogger), int, String>>(
+    testData<(void Function(ConsoleLogger), int, String)>(
       'prints log message',
       [
-        Tuple3((l) => l.debug('debug'), 32, 'debug'),
-        Tuple3((l) => l.info('info'), 34, 'info'),
-        Tuple3((l) => l.warn('warn'), 33, 'warn'),
-        Tuple3((l) => l.error('error'), 31, 'error'),
-        Tuple3((l) => l.except(Exception('error')), 35, 'Exception: error'),
-        Tuple3(
+        ((l) => l.debug('debug'), 32, 'debug'),
+        ((l) => l.info('info'), 34, 'info'),
+        ((l) => l.warn('warn'), 33, 'warn'),
+        ((l) => l.error('error'), 31, 'error'),
+        ((l) => l.except(Exception('error')), 35, 'Exception: error'),
+        (
           (l) => l.except(Exception('error'), StackTrace.empty),
           35,
           'Exception: error\n',
         ),
       ],
       (fixture) {
-        fixture.item1(sut);
+        fixture.$1(sut);
         expect(
           output.toString(),
           startsWith(
             cleanLine(
-              '${beginColor(fixture.item2)}    '
-              '${fixture.item3}$endColor$newLine',
+              '${beginColor(fixture.$2)}    '
+              '${fixture.$3}$endColor$newLine',
             ),
           ),
         );
@@ -168,29 +167,32 @@ void main() {
     });
 
     testData<
-        Tuple3<LogLevel, void Function(ConsoleLogger)?,
-            void Function(ConsoleLogger)?>>(
+        (
+          LogLevel,
+          void Function(ConsoleLogger)?,
+          void Function(ConsoleLogger)?
+        )>(
       'honors log level',
       [
-        Tuple3(LogLevel.debug, null, (l) => l.debug('')),
-        Tuple3(LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
-        Tuple3(LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
-        Tuple3(LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
-        Tuple3(
+        (LogLevel.debug, null, (l) => l.debug('')),
+        (LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
+        (LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
+        (LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
+        (
           LogLevel.except,
           (l) => l.error(''),
           (l) => l.except(Exception()),
         ),
-        Tuple3(LogLevel.nothing, (l) => l.except(Exception()), null),
+        (LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {
-        sut = ConsoleLogger(fixture.item1);
+        sut = ConsoleLogger(fixture.$1);
 
-        fixture.item2?.call(sut);
+        fixture.$2?.call(sut);
         expect(output.toString(), isEmpty);
 
-        if (fixture.item3 != null) {
-          fixture.item3!(sut);
+        if (fixture.$3 != null) {
+          fixture.$3!(sut);
           expect(output.toString(), isNotEmpty);
         }
       },

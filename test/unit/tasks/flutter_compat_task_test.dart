@@ -11,7 +11,6 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import '../global_mocks.dart';
 
@@ -70,11 +69,11 @@ void main() {
         },
       );
 
-      testData<Tuple2<String, bool>>(
+      testData<(String, bool)>(
         'Does only match non flutter pubspec',
         const [
-          Tuple2('not_flutter', true),
-          Tuple2('flutter', false),
+          ('not_flutter', true),
+          ('flutter', false),
         ],
         (fixture) {
           when(() => mockFile.path).thenReturn('pubspec.yaml');
@@ -83,11 +82,11 @@ void main() {
             '''
 name: name
 dependencies:
-  ${fixture.item1}: null
+  ${fixture.$1}: null
 ''',
           );
 
-          expect(sut.canProcess(mockRepoEntry), fixture.item2);
+          expect(sut.canProcess(mockRepoEntry), fixture.$2);
 
           verifyInOrder([
             () => mockFile.path,

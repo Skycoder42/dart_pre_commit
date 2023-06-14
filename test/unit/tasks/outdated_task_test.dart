@@ -11,7 +11,6 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
@@ -19,11 +18,11 @@ class MockTaskLogger extends Mock implements TaskLogger {}
 
 void main() {
   group('$OutdatedConfig', () {
-    testData<Tuple2<Map<String, dynamic>, OutdatedConfig>>(
+    testData<(Map<String, dynamic>, OutdatedConfig)>(
       'correctly converts from json',
       [
-        const Tuple2(<String, dynamic>{}, OutdatedConfig()),
-        const Tuple2(
+        const (<String, dynamic>{}, OutdatedConfig()),
+        const (
           <String, dynamic>{
             'level': 'minor',
             'allowed': ['a', 'beta'],
@@ -35,7 +34,7 @@ void main() {
         ),
       ],
       (fixture) {
-        expect(OutdatedConfig.fromJson(fixture.item1), fixture.item2);
+        expect(OutdatedConfig.fromJson(fixture.$1), fixture.$2);
       },
     );
   });
@@ -64,17 +63,17 @@ void main() {
     });
 
     group('OutdatedLevel', () {
-      testData<Tuple2<OutdatedLevel, String>>(
+      testData<(OutdatedLevel, String)>(
         'correctly generates and parses name',
         const [
-          Tuple2(OutdatedLevel.major, 'major'),
-          Tuple2(OutdatedLevel.minor, 'minor'),
-          Tuple2(OutdatedLevel.patch, 'patch'),
-          Tuple2(OutdatedLevel.any, 'any'),
+          (OutdatedLevel.major, 'major'),
+          (OutdatedLevel.minor, 'minor'),
+          (OutdatedLevel.patch, 'patch'),
+          (OutdatedLevel.any, 'any'),
         ],
         (fixture) {
-          expect(fixture.item1.name, fixture.item2);
-          expect(OutdatedLevel.values.byName(fixture.item2), fixture.item1);
+          expect(fixture.$1.name, fixture.$2);
+          expect(OutdatedLevel.values.byName(fixture.$2), fixture.$1);
         },
       );
 
@@ -118,13 +117,13 @@ void main() {
         );
       });
 
-      testData<Tuple2<OutdatedLevel, int>>(
+      testData<(OutdatedLevel, int)>(
         'correctly uses level to detect outdatedness',
         const [
-          Tuple2(OutdatedLevel.major, 1),
-          Tuple2(OutdatedLevel.minor, 2),
-          Tuple2(OutdatedLevel.patch, 3),
-          Tuple2(OutdatedLevel.any, 4),
+          (OutdatedLevel.major, 1),
+          (OutdatedLevel.minor, 2),
+          (OutdatedLevel.patch, 3),
+          (OutdatedLevel.any, 4),
         ],
         (fixture) async {
           whenRunner([
@@ -155,19 +154,19 @@ void main() {
             ),
           ]);
 
-          final sut = createSut(fixture.item1);
+          final sut = createSut(fixture.$1);
           final res = await sut(const []);
 
           expect(
             res,
-            fixture.item2 == 0 ? TaskResult.accepted : TaskResult.rejected,
+            fixture.$2 == 0 ? TaskResult.accepted : TaskResult.rejected,
           );
-          if (fixture.item2 == 0) {
+          if (fixture.$2 == 0) {
             verify(() => mockLogger.debug('No required package updates found'));
           } else {
             verify(
               () => mockLogger.info(
-                'Found ${fixture.item2} outdated package(s) '
+                'Found ${fixture.$2} outdated package(s) '
                 'that have to be updated',
               ),
             );

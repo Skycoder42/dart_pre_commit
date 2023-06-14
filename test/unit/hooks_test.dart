@@ -14,7 +14,6 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import 'global_mocks.dart';
 
@@ -351,9 +350,9 @@ void main() {
       verifyNever(() => mockRunner.stream('git', ['add', 'a.dart']));
     });
 
-    testData<Tuple2<bool, int>>('returns rejected on task rejected', const [
-      Tuple2(false, 1),
-      Tuple2(true, 2),
+    testData<(bool, int)>('returns rejected on task rejected', const [
+      (false, 1),
+      (true, 2),
     ], (fixture) async {
       when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
@@ -365,11 +364,11 @@ void main() {
       when(() => mockFileTask(any()))
           .thenAnswer((_) async => TaskResult.rejected);
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
-      final sut = createSut(continueOnRejected: fixture.item1);
+      final sut = createSut(continueOnRejected: fixture.$1);
 
       final result = await sut();
       expect(result, HookResult.rejected);
-      verify(() => mockFileTask(any())).called(fixture.item2);
+      verify(() => mockFileTask(any())).called(fixture.$2);
     });
 
     test('calls all tasks', () async {
@@ -502,18 +501,18 @@ void main() {
       verifyNever(() => mockRunner.stream('git', ['add', 'a.dart']));
     });
 
-    testData<Tuple3<Iterable<String>?, bool, int>>(
+    testData<(Iterable<String>?, bool, int)>(
         'returns rejected on task rejected', const [
-      Tuple3(['a.dart'], false, 1),
-      Tuple3(['a.dart'], true, 2),
-      Tuple3(null, false, 1),
-      Tuple3(null, true, 2),
+      (['a.dart'], false, 1),
+      (['a.dart'], true, 2),
+      (null, false, 1),
+      (null, true, 2),
     ], (fixture) async {
-      if (fixture.item1 != null) {
+      if (fixture.$1 != null) {
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer(
-          (_) => Stream.fromIterable(fixture.item1!),
+          (_) => Stream.fromIterable(fixture.$1!),
         );
       } else {
         when(
@@ -526,36 +525,36 @@ void main() {
           .thenAnswer((_) async => TaskResult.rejected);
       when(() => mockTaskLoader.loadTasks())
           .thenReturn([mockRepoTask, mockRepoTask]);
-      final sut = createSut(continueOnRejected: fixture.item2);
+      final sut = createSut(continueOnRejected: fixture.$2);
 
       final result = await sut();
       expect(result, HookResult.rejected);
-      verify(() => mockRepoTask(any())).called(fixture.item3);
+      verify(() => mockRepoTask(any())).called(fixture.$3);
     });
   });
 
   group('mixed tasks', () {
-    testData<Tuple3<TaskResult, TaskResult, HookResult>>(
+    testData<(TaskResult, TaskResult, HookResult)>(
       'reports correct results',
       const [
-        Tuple3(TaskResult.accepted, TaskResult.accepted, HookResult.clean),
-        Tuple3(TaskResult.accepted, TaskResult.modified, HookResult.hasChanges),
-        Tuple3(TaskResult.modified, TaskResult.accepted, HookResult.hasChanges),
-        Tuple3(TaskResult.modified, TaskResult.rejected, HookResult.rejected),
-        Tuple3(TaskResult.rejected, TaskResult.modified, HookResult.rejected),
+        (TaskResult.accepted, TaskResult.accepted, HookResult.clean),
+        (TaskResult.accepted, TaskResult.modified, HookResult.hasChanges),
+        (TaskResult.modified, TaskResult.accepted, HookResult.hasChanges),
+        (TaskResult.modified, TaskResult.rejected, HookResult.rejected),
+        (TaskResult.rejected, TaskResult.modified, HookResult.rejected),
       ],
       (fixture) async {
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-        when(() => mockFileTask(any())).thenAnswer((i) async => fixture.item1);
-        when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.item2);
+        when(() => mockFileTask(any())).thenAnswer((i) async => fixture.$1);
+        when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.$2);
         when(() => mockTaskLoader.loadTasks())
             .thenReturn([mockRepoTask, mockFileTask]);
         final sut = createSut(continueOnRejected: true);
 
         final result = await sut();
-        expect(result, fixture.item3);
+        expect(result, fixture.$3);
         verify(() => mockFileTask(any()));
         verify(() => mockRepoTask(any()));
       },
@@ -578,14 +577,14 @@ void main() {
     });
   });
 
-  testData<Tuple3<HookResult, bool, int>>(
+  testData<(HookResult, bool, int)>(
       'HookResult returns correct success and exit status', const [
-    Tuple3(HookResult.clean, true, 0),
-    Tuple3(HookResult.hasChanges, true, 1),
-    Tuple3(HookResult.hasUnstagedChanges, false, 2),
-    Tuple3(HookResult.rejected, false, 3),
+    (HookResult.clean, true, 0),
+    (HookResult.hasChanges, true, 1),
+    (HookResult.hasUnstagedChanges, false, 2),
+    (HookResult.rejected, false, 3),
   ], (fixture) {
-    expect(fixture.item1.isSuccess, fixture.item2);
-    expect(fixture.item1.exitCode, fixture.item3);
+    expect(fixture.$1.isSuccess, fixture.$2);
+    expect(fixture.$1.exitCode, fixture.$3);
   });
 }

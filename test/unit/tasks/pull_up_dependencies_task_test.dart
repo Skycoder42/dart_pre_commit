@@ -10,7 +10,6 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import '../global_mocks.dart';
 
@@ -27,11 +26,11 @@ class MockFileResolver extends Mock implements FileResolver {}
 
 void main() {
   group('$PullUpDependenciesConfig', () {
-    testData<Tuple2<Map<String, dynamic>, PullUpDependenciesConfig>>(
+    testData<(Map<String, dynamic>, PullUpDependenciesConfig)>(
       'correctly converts from json',
       [
-        const Tuple2(<String, dynamic>{}, PullUpDependenciesConfig()),
-        const Tuple2(
+        const (<String, dynamic>{}, PullUpDependenciesConfig()),
+        const (
           <String, dynamic>{
             'allowed': ['a', 'beta'],
           },
@@ -39,7 +38,7 @@ void main() {
         ),
       ],
       (fixture) {
-        expect(PullUpDependenciesConfig.fromJson(fixture.item1), fixture.item2);
+        expect(PullUpDependenciesConfig.fromJson(fixture.$1), fixture.$2);
       },
     );
   });
@@ -69,19 +68,19 @@ void main() {
       expect(sut.callForEmptyEntries, true);
     });
 
-    testData<Tuple2<String, bool>>(
+    testData<(String, bool)>(
       'matches only dart/pubspec.yaml files',
       const [
-        Tuple2('pubspec.yaml', false),
-        Tuple2('pubspec.yml', false),
-        Tuple2('pubspec.lock', true),
-        Tuple2('pubspec.yaml.lock', false),
-        Tuple2('path/pubspec.lock', false),
+        ('pubspec.yaml', false),
+        ('pubspec.yml', false),
+        ('pubspec.lock', true),
+        ('pubspec.yaml.lock', false),
+        ('path/pubspec.lock', false),
       ],
       (fixture) {
         expect(
-          sut.filePattern.matchAsPrefix(fixture.item1),
-          fixture.item2 ? isNotNull : isNull,
+          sut.filePattern.matchAsPrefix(fixture.$1),
+          fixture.$2 ? isNotNull : isNull,
         );
       },
     );

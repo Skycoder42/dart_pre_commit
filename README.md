@@ -272,11 +272,17 @@ always runs, otherwise it only runs if changes to the lockfile have been staged.
 
 ### OSV-Scanner Task
 **Task-ID:** `osv-scanner`<br/>
-**Configurable:** No<br/>
+**Configurable:** Yes<br/>
 **Enabled**: Only if the `osv-scanner` binary is found in your PATH<br/>
 
 When enabled, the `pubspec.lock` file is analyzed by the [OSV-Scanner](https://github.com/google/osv-scanner) for known
 vulnerabilities in dependent packages. The task will fail in case such dependencies are found.
+
+#### Options
+ Option          | Type      | Default | Description
+-----------------|-----------|---------|-------------
+ `lockfile-only` | `bool`    | `true`  | If set to true, then only the pubspec.lock itself is scanned. Otherwise, the whole source folder is scanned.
+ `config`        | `String?` | `null`  | If specified, the config file path will be passed to the osv scanner. Otherwise, the scanner tries to auto-detect the configuration.
 
 ## Documentation
 The documentation is available at

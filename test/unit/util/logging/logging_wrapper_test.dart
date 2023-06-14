@@ -4,7 +4,6 @@ import 'package:dart_test_tools/test.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 class MockTaskLogger extends Mock implements TaskLogger {}
 
@@ -37,17 +36,17 @@ void main() {
       expect(sut.children, isEmpty);
     });
 
-    testData<Tuple2<String, void Function(String)>>(
+    testData<(String, void Function(String))>(
       'logs debug messages',
       [
-        Tuple2('CONFIG', (m) => sut.config(m)),
-        Tuple2('FINE', (m) => sut.fine(m)),
-        Tuple2('FINER', (m) => sut.finer(m)),
-        Tuple2('FINEST', (m) => sut.finest(m)),
+        ('CONFIG', (m) => sut.config(m)),
+        ('FINE', (m) => sut.fine(m)),
+        ('FINER', (m) => sut.finer(m)),
+        ('FINEST', (m) => sut.finest(m)),
       ],
       (fixture) {
-        fixture.item2(fixture.item1);
-        verify(() => mockTaskLogger.debug(fixture.item1));
+        fixture.$2(fixture.$1);
+        verify(() => mockTaskLogger.debug(fixture.$1));
       },
     );
 
@@ -68,32 +67,32 @@ void main() {
       },
     );
 
-    testData<Tuple2<Level, void Function(String)>>(
+    testData<(Level, void Function(String))>(
       'log should log according to level',
       [
-        Tuple2(Level.ALL, mockTaskLogger.debug),
-        Tuple2(Level.FINEST, mockTaskLogger.debug),
-        Tuple2(Level.FINER, mockTaskLogger.debug),
-        Tuple2(Level.FINE, mockTaskLogger.debug),
-        Tuple2(Level.CONFIG, mockTaskLogger.debug),
-        Tuple2(Level.INFO, mockTaskLogger.info),
-        Tuple2(Level.WARNING, mockTaskLogger.warn),
-        Tuple2(Level.SEVERE, mockTaskLogger.error),
-        Tuple2(
+        (Level.ALL, mockTaskLogger.debug),
+        (Level.FINEST, mockTaskLogger.debug),
+        (Level.FINER, mockTaskLogger.debug),
+        (Level.FINE, mockTaskLogger.debug),
+        (Level.CONFIG, mockTaskLogger.debug),
+        (Level.INFO, mockTaskLogger.info),
+        (Level.WARNING, mockTaskLogger.warn),
+        (Level.SEVERE, mockTaskLogger.error),
+        (
           Level.SHOUT,
           (m) => mockTaskLogger.except(
-            any(
-              that: isA<LoggingWrapperException>()
-                  .having((e) => e.message, 'message', m),
-            ),
-            any(that: isNull),
-          ),
+                any(
+                  that: isA<LoggingWrapperException>()
+                      .having((e) => e.message, 'message', m),
+                ),
+                any(that: isNull),
+              ),
         ),
       ],
       (fixture) {
         const message = 'test-message';
-        sut.log(fixture.item1, message);
-        verify(() => fixture.item2(message));
+        sut.log(fixture.$1, message);
+        verify(() => fixture.$2(message));
       },
     );
 

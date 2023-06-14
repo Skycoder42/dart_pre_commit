@@ -10,6 +10,7 @@ import 'package:dart_pre_commit/src/tasks/models/osv_scanner/vulnerability.dart'
 import 'package:dart_pre_commit/src/tasks/osv_scanner_task.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
+import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -88,6 +89,7 @@ void main() {
       sut = OsvScannerTask(
         programRunner: mockRunner,
         taskLogger: mockLogger,
+        config: const OsvScannerConfig(),
       );
     });
 
@@ -109,21 +111,65 @@ void main() {
       );
     });
 
-    test('runs osv-scanner with correct arguments', () async {
-      final result = await sut(const []);
-
-      expect(result, TaskResult.accepted);
-      verify(
-        () => mockRunner.stream(
-          'osv-scanner',
-          const ['--lockfile', 'pubspec.lock', '--json'],
-          failOnExit: false,
+    testData<({OsvScannerConfig config, List<String> args})>(
+      'runs osv-scanner with correct arguments',
+      const [
+        (
+          config: OsvScannerConfig(),
+          args: ['--json', '--lockfile', 'pubspec.lock'],
         ),
-      );
+        (
+          config: OsvScannerConfig(lockfileOnly: false),
+          args: ['--json', '--lockfile', 'pubspec.lock', '--recursive', '.'],
+        ),
+        (
+          config: OsvScannerConfig(configFile: 'test.toml'),
+          args: [
+            '--json',
+            '--config',
+            'test.toml',
+            '--lockfile',
+            'pubspec.lock',
+          ],
+        ),
+        (
+          config: OsvScannerConfig(
+            configFile: 'test.toml',
+            lockfileOnly: false,
+          ),
+          args: [
+            '--json',
+            '--config',
+            'test.toml',
+            '--lockfile',
+            'pubspec.lock',
+            '--recursive',
+            '.',
+          ],
+        ),
+      ],
+      (fixture) async {
+        sut = OsvScannerTask(
+          programRunner: mockRunner,
+          taskLogger: mockLogger,
+          config: fixture.config,
+        );
 
-      verifyNoMoreInteractions(mockRunner);
-      verifyZeroInteractions(mockLogger);
-    });
+        final result = await sut(const []);
+
+        expect(result, TaskResult.accepted);
+        verify(
+          () => mockRunner.stream(
+            'osv-scanner',
+            fixture.args,
+            failOnExit: false,
+          ),
+        );
+
+        verifyNoMoreInteractions(mockRunner);
+        verifyZeroInteractions(mockLogger);
+      },
+    );
 
     test('collects vulnerabilities for package', () async {
       when(
