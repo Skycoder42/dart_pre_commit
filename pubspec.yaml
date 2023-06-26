@@ -34,7 +34,7 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.4.5
   coverage: ^1.6.3
-  custom_lint: ^0.4.0
+  custom_lint: ">=0.4.0 <0.6.0"
   dart_test_tools: ^5.1.2
   freezed: ^2.3.5
   json_serializable: ^6.7.0
