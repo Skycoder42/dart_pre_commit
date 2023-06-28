@@ -309,13 +309,13 @@ void main() {
         contains(
           allOf(
             contains('analyze.dart'),
-            endsWith('src_library_not_exported'),
+            endsWith('src_library_not_exported • INFO'),
           ),
         ),
         contains(
           allOf(
             contains('test.dart'),
-            endsWith('no_self_package_imports'),
+            endsWith('no_self_package_imports • INFO'),
           ),
         ),
       ),
