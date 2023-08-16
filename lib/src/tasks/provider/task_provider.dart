@@ -53,7 +53,7 @@ class ConfigurableTaskProviderFamily<State extends TaskBase, Arg>
   ConfigurableTaskProviderFamily(
     String name,
     this.fromJson,
-    super.create, {
+    super._createFn, {
     super.dependencies,
   }) : super(name: name);
 
