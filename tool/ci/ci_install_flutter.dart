@@ -24,7 +24,7 @@ Future<void> main(List<String> args) async {
       '1',
       '-b',
       branch,
-      toolPath
+      toolPath,
     ]);
     final flutterBin = File(
       '$toolPath/bin/flutter${Platform.isWindows ? '.bat' : ''}',

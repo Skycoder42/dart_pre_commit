@@ -72,7 +72,7 @@ class FormatTask with PatternTaskMixin implements FileTask {
       '--set-exit-if-changed',
       if (_config.lineLength != null) ...[
         '--line-length',
-        _config.lineLength!.toString()
+        _config.lineLength!.toString(),
       ],
       entry.file.path,
     ];

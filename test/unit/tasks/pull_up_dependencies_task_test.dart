@@ -143,7 +143,7 @@ packages:
         verifyInOrder([
           () => mockLogger
               .debug('pubspec.lock is not ignored, checking if staged'),
-          () => mockLogger.debug('=> All dependencies are up to date')
+          () => mockLogger.debug('=> All dependencies are up to date'),
         ]);
         verifyNever(() => mockLogger.info(any()));
       });

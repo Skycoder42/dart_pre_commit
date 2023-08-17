@@ -196,7 +196,7 @@ void main() {
               'package_b@2.0.0 - vuln-id-3: This is a not so serious issue. '
               '(See https://github.com/advisories/vuln-id-3)',
             ),
-        () => mockLogger.error('Found 3 security issues in dependencies!')
+        () => mockLogger.error('Found 3 security issues in dependencies!'),
       ]);
 
       verifyNoMoreInteractions(mockLogger);

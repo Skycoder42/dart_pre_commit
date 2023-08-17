@@ -32,7 +32,7 @@ void main() {
     },
     onPlatform: const <String, dynamic>{
       'windows':
-          Skip('Creating symbolic links requires admin permission on windows')
+          Skip('Creating symbolic links requires admin permission on windows'),
     },
   );
 
@@ -68,7 +68,7 @@ void main() {
     },
     onPlatform: const <String, dynamic>{
       'windows':
-          Skip('Creating symbolic links requires admin permission on windows')
+          Skip('Creating symbolic links requires admin permission on windows'),
     },
   );
 

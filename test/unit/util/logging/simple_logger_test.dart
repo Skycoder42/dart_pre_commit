@@ -196,7 +196,7 @@ void main() {
   test('pipeStderr pipes errors to sink', () async {
     final errStream = Stream.fromIterable([
       [1, 2, 3],
-      [4, 5]
+      [4, 5],
     ]);
 
     await sut.pipeStderr(errStream);
