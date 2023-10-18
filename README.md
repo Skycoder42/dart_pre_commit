@@ -9,8 +9,9 @@ A small collection of pre commit hooks to format and lint dart code
 - [Installation](#installation)
 - [Activation](#activation)
   * [Simple dart wrapper](#simple-dart-wrapper)
-  * [Using git_hooks](#using-git-hooks)
-    + [Handling the case where the git_hooks is setup in a child folder of the repository](#handling-the-case-where-the-git-hooks-is-setup-in-a-child-folder-of-the-repository)
+  * [When using FVM](#when-using-fvm)
+  * [Using git_hooks](#using-git_hooks)
+    + [Handling the case where the git_hooks is setup in a child folder of the repository](#handling-the-case-where-the-git_hooks-is-setup-in-a-child-folder-of-the-repository)
 - [Configuration](#configuration)
   * [Format task](#format-task)
     + [Options](#options)
@@ -71,6 +72,37 @@ Future<void> main() async {
     '''
 #!/bin/sh
 exec dart run dart_pre_commit # specify custom options here
+''',
+  );
+
+  if (!Platform.isWindows) {
+    final result = await Process.run('chmod', ['a+x', preCommitHook.path]);
+    stdout.write(result.stdout);
+    stderr.write(result.stderr);
+    exitCode = result.exitCode;
+  }
+}
+```
+
+### When using FVM
+When using [FVM](https://fvm.app/), you may want to adjust the dart script from above to run `dart_pre_commit` via FVM:
+
+```dart
+import 'dart:io';
+
+Future<void> main() async {
+  // Add this part
+  final useFvm = !arguments.contains('--no-fvm');
+  final command = useFvm
+      ? 'fvm dart run dart_pre_commit'
+      : 'dart run dart_pre_commit';
+
+  final preCommitHook = File('.git/hooks/pre-commit');
+  await preCommitHook.parent.create();
+  await preCommitHook.writeAsString(
+    '''
+#!/bin/sh
+exec $command # use the previously selected command here
 ''',
   );
 
