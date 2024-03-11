@@ -326,6 +326,8 @@ void main() {
   });
 
   test('osv-scanner', () async {
+    printOnFailure('Using PATH: ${Platform.environment['PATH']}');
+
     await writeFile('pubspec_overrides.yaml', '''
 dependency_overrides:
   http: 0.13.0
