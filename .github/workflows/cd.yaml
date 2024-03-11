@@ -12,5 +12,4 @@ jobs:
     permissions:
       id-token: write
     with:
-      environment: pub-deploy
       buildRunner: true
