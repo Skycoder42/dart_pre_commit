@@ -115,9 +115,12 @@ void main() {
       failOnError: failOnError,
       onStdout: onStdout != null
           ? (s) => s
-              .transform(utf8.decoder)
-              .transform(const LineSplitter())
-              .listen(onStdout)
+                  .transform(utf8.decoder)
+                  .transform(const LineSplitter())
+                  .map((line) {
+                print('OUT: $line');
+                return line;
+              }).listen(onStdout)
           : null,
     );
   }
