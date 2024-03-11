@@ -21,6 +21,10 @@ final programRunnerProvider = Provider(
 
 /// @nodoc
 @internal
+typedef ExitCodeHandlerCb = void Function(int exitCode);
+
+/// @nodoc
+@internal
 class ProgramExitException implements Exception {
   /// @nodoc
   final int exitCode;
@@ -71,6 +75,7 @@ class ProgramRunner {
     String? workingDirectory,
     bool failOnExit = true,
     bool runInShell = false,
+    ExitCodeHandlerCb? exitCodeHandler,
   }) async* {
     Future<void>? errLog;
     try {
@@ -85,12 +90,16 @@ class ProgramRunner {
       yield* process.stdout
           .transform(utf8.decoder)
           .transform(const LineSplitter());
+
+      final processExitCode = await process.exitCode;
+      _logger.debug('$program finished with exit code: $processExitCode');
+      if (exitCodeHandler != null) {
+        exitCodeHandler(processExitCode);
+      }
       if (failOnExit) {
-        final exitCode = await process.exitCode;
-        if (exitCode != 0) {
-          throw ProgramExitException(exitCode, program, arguments);
+        if (processExitCode != 0) {
+          throw ProgramExitException(processExitCode, program, arguments);
         }
-        _logger.debug('$program finished with exit code: $exitCode');
       }
     } finally {
       await errLog;
@@ -117,15 +126,15 @@ class ProgramRunner {
       errLog = _logger.pipeStderr(process.stderr);
       await process.stdout.drain<void>();
 
-      final exitCode = await process.exitCode;
+      final processExitCode = await process.exitCode;
+      _logger.debug('$program finished with exit code: $processExitCode');
       if (failOnExit) {
-        if (exitCode != 0) {
-          throw ProgramExitException(exitCode, program, arguments);
+        if (processExitCode != 0) {
+          throw ProgramExitException(processExitCode, program, arguments);
         }
-        _logger.debug('$program finished with exit code: $exitCode');
       }
 
-      return exitCode;
+      return processExitCode;
     } finally {
       await errLog;
     }

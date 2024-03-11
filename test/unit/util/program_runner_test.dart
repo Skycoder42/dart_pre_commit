@@ -72,6 +72,7 @@ void main() {
   Stream<String> runStream(
     List<String> args, {
     bool failOnExit = true,
+    ExitCodeHandlerCb? handler,
     String? workingDirectory,
   }) =>
       Platform.isWindows
@@ -79,12 +80,14 @@ void main() {
               'cmd',
               ['/c', ...args],
               failOnExit: failOnExit,
+              exitCodeHandler: handler,
               workingDirectory: workingDirectory,
             )
           : sut.stream(
               'bash',
               ['-c', ...args],
               failOnExit: failOnExit,
+              exitCodeHandler: handler,
               workingDirectory: workingDirectory,
             );
 
@@ -153,6 +156,27 @@ void main() {
         'echo a && echo b && false',
       ];
       final stream = runStream(args, failOnExit: false);
+      expect(
+        stream,
+        emitsInOrder(<dynamic>[
+          startsWith('a'),
+          startsWith('b'),
+          emitsDone,
+        ]),
+      );
+    });
+
+    test('Reports exit code via callback', () async {
+      const args = [
+        'echo a && echo b && exit 42',
+      ];
+      final stream = runStream(
+        args,
+        failOnExit: false,
+        handler: expectAsync1<void, int>((exitCode) {
+          expect(exitCode, 42);
+        }),
+      );
       expect(
         stream,
         emitsInOrder(<dynamic>[

@@ -1,8 +1,6 @@
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path/path.dart' as path;
 
 import '../repo_entry.dart';
 import '../task_base.dart';
@@ -50,16 +48,6 @@ enum AnalyzeErrorLevel {
 
 /// @nodoc
 @internal
-enum AnalysisScanMode {
-  /// @nodoc
-  all,
-
-  /// @nodoc
-  staged,
-}
-
-/// @nodoc
-@internal
 @freezed
 class AnalyzeConfig with _$AnalyzeConfig {
   /// @nodoc
@@ -74,10 +62,6 @@ class AnalyzeConfig with _$AnalyzeConfig {
     @JsonKey(name: 'error-level')
     @Default(AnalyzeErrorLevel.info)
     AnalyzeErrorLevel errorLevel,
-    // ignore: invalid_annotation_target
-    @JsonKey(name: 'scan-mode')
-    @Default(AnalysisScanMode.all)
-    AnalysisScanMode scanMode,
   }) = _AnalyzeConfig;
 
   /// @nodoc
@@ -120,61 +104,23 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    final entriesList = entries.toList();
-    if (entriesList.isEmpty) {
-      throw ArgumentError('must not be empty', 'entries');
-    }
-
-    final int lintCnt;
-    switch (_config.scanMode) {
-      case AnalysisScanMode.all:
-        lintCnt = await _scanAll();
-      case AnalysisScanMode.staged:
-        lintCnt = await _scanStaged(entriesList);
-    }
-
-    _logger.info('$lintCnt issue(s) found.');
-    return lintCnt > 0 ? TaskResult.rejected : TaskResult.accepted;
+    final exitCode = await _scanAll();
+    return exitCode != 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 
   Future<int> _scanAll() async {
-    final result = await _runAnalyze();
+    final (exitCode, result) = await _runAnalyze();
     var lintCnt = 0;
     for (final diagnostic in result.diagnostics) {
       await _logDiagnostic(diagnostic);
       ++lintCnt;
     }
-    return lintCnt;
+    _logger.info('$lintCnt issue(s) found.');
+    return exitCode;
   }
 
-  Future<int> _scanStaged(List<RepoEntry> entries) async {
-    final lints = HashMap<String, List<Diagnostic>>(
-      equals: path.equals,
-      hashCode: path.hash,
-    );
-    for (final entry in entries) {
-      lints[entry.file.path] = <Diagnostic>[];
-    }
-
-    final result = await _runAnalyze();
-    for (final diagnostic in result.diagnostics) {
-      lints[diagnostic.location.file]?.add(diagnostic);
-    }
-
-    var lintCnt = 0;
-    for (final entry in lints.entries) {
-      if (entry.value.isNotEmpty) {
-        for (final lint in entry.value) {
-          ++lintCnt;
-          await _logDiagnostic(lint, entry.key);
-        }
-      }
-    }
-
-    return lintCnt;
-  }
-
-  Future<AnalyzeResult> _runAnalyze() async {
+  Future<(int, AnalyzeResult)> _runAnalyze() async {
+    var exitCode = -1;
     final jsonString = await _programRunner
         .stream(
           'dart',
@@ -185,18 +131,20 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
             ..._config.errorLevel._params,
           ],
           failOnExit: false,
+          exitCodeHandler: (e) => exitCode = e,
         )
-        .firstWhere(
+        .singleWhere(
           (line) => line.trimLeft().startsWith('{'),
           orElse: () => '',
         );
 
     if (jsonString.isEmpty) {
-      return const AnalyzeResult(version: 1, diagnostics: []);
+      return (exitCode, const AnalyzeResult(version: 1, diagnostics: []));
     }
 
-    return AnalyzeResult.fromJson(
-      json.decode(jsonString) as Map<String, dynamic>,
+    return (
+      exitCode,
+      AnalyzeResult.fromJson(json.decode(jsonString) as Map<String, dynamic>)
     );
   }
 

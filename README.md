@@ -219,23 +219,17 @@ import 'package:my_app/my_app.dart';  // OK
 **Configurable:** Yes<br/>
 **Enabled**: Always<br/>
 
-This tasks checks all files for static analysis issues. Internally, this runs `dart analyze` to check for problems. It
-can either scan the whole project or only staged files.
+This tasks checks all files for static analysis issues. Internally, this runs `dart analyze` to check for problems.
 
 #### Options
  Option        | Type   | Default | Description
 ---------------|--------|---------|-------------
  `error-level` | `enum` | `info`  | The severity level that should cause the task to reject the commit. See possible values below.
- `scan-mode`   | `enum` | `all`   | The scan mode of the task which defines what files are scanned. See possible values below.
 
 Values for `error-level`:
 - `error`: Only fatal errors are reported
 - `warning`: fatal errors and warnings are reported
 - `info`: fatal errors, warnings and linter issues are reported
-
-Values for `scan-mode`:
-- `all` (default): All files are scanned for problems
-- `staged`: Only staged files are scanned for problems
 
 ### Custom Lint Task
 **Task-ID:** `custom-lint`<br/>
