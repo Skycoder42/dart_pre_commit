@@ -22,16 +22,13 @@ class FakeFile extends Fake implements File {
   FakeFile(this.path, {bool exists = true}) : _exists = exists;
 }
 
-class FakeEntry extends Fake implements RepoEntry {
-  @override
-  final FakeFile file;
-
-  @override
-  final bool partiallyStaged;
-
-  FakeEntry(
-    String path, {
-    this.partiallyStaged = false,
-    bool exists = true,
-  }) : file = FakeFile(path, exists: exists);
-}
+RepoEntry fakeEntry(
+  String path, {
+  bool partiallyStaged = false,
+  bool exists = true,
+}) =>
+    RepoEntry(
+      file: FakeFile(path, exists: exists),
+      partiallyStaged: partiallyStaged,
+      gitRoot: Directory.systemTemp,
+    );

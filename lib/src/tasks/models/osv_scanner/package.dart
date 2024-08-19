@@ -9,7 +9,7 @@ part 'package.g.dart';
 /// @nodoc
 @internal
 @freezed
-class Package with _$Package {
+sealed class Package with _$Package {
   /// @nodoc
   const factory Package({
     required PackageInfo package,

@@ -8,7 +8,7 @@ part 'osv_scanner_result.g.dart';
 /// @nodoc
 @internal
 @freezed
-class OsvScannerResult with _$OsvScannerResult {
+sealed class OsvScannerResult with _$OsvScannerResult {
   /// @nodoc
   const factory OsvScannerResult({
     required List<Result> results,

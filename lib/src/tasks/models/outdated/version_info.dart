@@ -7,7 +7,7 @@ part 'version_info.g.dart';
 /// @nodoc
 @freezed
 @internal
-class VersionInfo with _$VersionInfo {
+sealed class VersionInfo with _$VersionInfo {
   /// @nodoc
   const factory VersionInfo({
     // ignore: invalid_annotation_target

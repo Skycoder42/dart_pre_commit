@@ -30,14 +30,16 @@ class FakeDirectory extends Fake implements Directory {
   FakeDirectory(this.path);
 }
 
-class MockRepoEntry extends Mock implements RepoEntry {}
-
 void main() {
   group('$FlutterCompatTask', () {
     final mockProgramRunner = MockProgramRunner();
     final mockTaskLogger = MockTaskLogger();
     final mockFile = MockFile();
-    final mockRepoEntry = MockRepoEntry();
+    final mockRepoEntry = RepoEntry(
+      file: mockFile,
+      partiallyStaged: false,
+      gitRoot: Directory.systemTemp,
+    );
 
     late FlutterCompatTask sut;
 
@@ -45,9 +47,6 @@ void main() {
       reset(mockProgramRunner);
       reset(mockTaskLogger);
       reset(mockFile);
-      reset(mockRepoEntry);
-
-      when(() => mockRepoEntry.file).thenReturn(mockFile);
 
       sut = FlutterCompatTask(
         programRunner: mockProgramRunner,
@@ -65,7 +64,7 @@ void main() {
         'does not match non pubspec files',
         const ['pubspec.yarml', 'pubspec.lock'],
         (fixture) {
-          expect(sut.canProcess(FakeEntry(fixture)), isFalse);
+          expect(sut.canProcess(fakeEntry(fixture)), isFalse);
         },
       );
 
@@ -130,9 +129,7 @@ dependencies:
           await sut.call([mockRepoEntry]);
 
           verifyInOrder([
-            () => mockRepoEntry.file,
             () => mockFile.readAsString(),
-            () => mockRepoEntry.file,
             () => mockFile.uri,
             () => mockProgramRunner.run(
                   'flutter',

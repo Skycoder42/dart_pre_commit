@@ -10,3 +10,4 @@ analyzer:
 linter:
   rules:
     avoid_types_on_closure_parameters: false
+    document_ignores: false

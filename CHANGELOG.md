@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.3.0] - 2024-03-11
+## [5.3.1] - 2024-08-19
+### Changed
+- Updated dependencies
+- Updated min dart sdk to `3.5.0`
 
+## [5.3.0] - 2024-03-11
 ### Changed
 - Updated dependencies
 - Updated min dart sdk to `3.3.0`
@@ -210,6 +214,7 @@ higher version from the lockfile
 - Initial release
 - Automatic deployment
 
+[5.3.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.2.1...v5.3.0
 [5.2.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.2.0+1...v5.2.1
 [5.2.0+1]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.2.0...v5.2.0+1

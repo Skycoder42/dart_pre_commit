@@ -120,7 +120,6 @@ abstract interface class RepoTask extends TaskBase {
 /// A mixin for [TaskBase] that implements [TaskBase.canProcess] based on a
 /// [filePattern].
 mixin PatternTaskMixin implements TaskBase {
-  // ignore: comment_references
   /// The pattern that the [RepoEntry.file] is matched against.
   Pattern get filePattern;
 

@@ -273,13 +273,13 @@ void main() {
         );
 
         final result = await sut([
-          FakeEntry('a.dart'),
-          FakeEntry('a-a-a.dart'),
-          FakeEntry('b/b.dart'),
-          FakeEntry('c/c/d.dart'),
-          FakeEntry('pubspec.yaml'),
-          FakeEntry('b/a.js'),
-          FakeEntry('pipeline.yaml'),
+          fakeEntry('a.dart'),
+          fakeEntry('a-a-a.dart'),
+          fakeEntry('b/b.dart'),
+          fakeEntry('c/c/d.dart'),
+          fakeEntry('pubspec.yaml'),
+          fakeEntry('b/a.js'),
+          fakeEntry('pipeline.yaml'),
         ]);
         expect(result, TaskResult.accepted);
         verifyInOrder([
@@ -297,7 +297,7 @@ void main() {
       test('fails if only exit code is set', () async {
         whenRunnerStream(Stream.value(json.encode(minimalAnalyzeResult)), 1);
 
-        final result = await sut([FakeEntry('a.dart')]);
+        final result = await sut([fakeEntry('a.dart')]);
         expect(result, TaskResult.rejected);
         verifyInOrder([
           () => mockLogger.info('  error - o.dart:0:0 - o - O'),
@@ -309,7 +309,7 @@ void main() {
       test('succeeds if no lints are found at all', () async {
         whenRunnerStream(Stream.fromIterable(['line1', 'line2', 'line3']));
 
-        final result = await sut([FakeEntry('a.dart')]);
+        final result = await sut([fakeEntry('a.dart')]);
         expect(result, TaskResult.accepted);
         verify(() => mockLogger.info(any())).called(1);
       });

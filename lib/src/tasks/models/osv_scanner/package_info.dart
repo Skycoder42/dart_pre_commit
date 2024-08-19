@@ -6,7 +6,7 @@ part 'package_info.g.dart';
 /// @nodoc
 @internal
 @freezed
-class PackageInfo with _$PackageInfo {
+sealed class PackageInfo with _$PackageInfo {
   /// @nodoc
   const factory PackageInfo({
     required String name,

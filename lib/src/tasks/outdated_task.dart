@@ -44,7 +44,7 @@ enum OutdatedLevel {
 /// @nodoc
 @internal
 @freezed
-class OutdatedConfig with _$OutdatedConfig {
+sealed class OutdatedConfig with _$OutdatedConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

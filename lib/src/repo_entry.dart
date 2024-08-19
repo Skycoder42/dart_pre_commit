@@ -6,7 +6,7 @@ part 'repo_entry.freezed.dart';
 
 /// Describes a file in the repository to be analyzed.
 @freezed
-class RepoEntry with _$RepoEntry {
+sealed class RepoEntry with _$RepoEntry {
   /// Creates a new repo entry.
   const factory RepoEntry({
     /// The file in the local file system that this entry represents.

@@ -131,7 +131,7 @@ packages:
       test('processes packages if lockfile is unstaged', () async {
         when(() => mockRunner.run(any(), any())).thenAnswer((i) async => 1);
 
-        final result = await sut([FakeEntry('pubspec.lock')]);
+        final result = await sut([fakeEntry('pubspec.lock')]);
 
         expect(result, TaskResult.accepted);
         verify(

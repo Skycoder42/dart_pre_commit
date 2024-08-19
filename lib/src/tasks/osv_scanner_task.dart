@@ -30,7 +30,7 @@ final osvScannerTaskProvider = TaskProvider.configurable(
 /// @nodoc
 @internal
 @freezed
-class OsvScannerConfig with _$OsvScannerConfig {
+sealed class OsvScannerConfig with _$OsvScannerConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

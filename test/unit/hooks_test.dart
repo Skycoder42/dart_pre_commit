@@ -57,7 +57,7 @@ void main() {
       );
 
   setUpAll(() {
-    registerFallbackValue(FakeEntry(''));
+    registerFallbackValue(fakeEntry(''));
   });
 
   setUp(() async {

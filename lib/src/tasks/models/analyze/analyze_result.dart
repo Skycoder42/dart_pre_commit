@@ -8,7 +8,7 @@ part 'analyze_result.g.dart';
 /// @nodoc
 @internal
 @freezed
-class AnalyzeResult with _$AnalyzeResult {
+sealed class AnalyzeResult with _$AnalyzeResult {
   /// @nodoc
   @Assert(
     'version == 1',

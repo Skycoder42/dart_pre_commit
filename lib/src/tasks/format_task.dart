@@ -23,7 +23,7 @@ final formatTaskProvider = TaskProvider.configurable(
 /// @nodoc
 @freezed
 @internal
-class FormatConfig with _$FormatConfig {
+sealed class FormatConfig with _$FormatConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

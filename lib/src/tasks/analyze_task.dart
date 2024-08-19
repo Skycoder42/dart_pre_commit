@@ -49,7 +49,7 @@ enum AnalyzeErrorLevel {
 /// @nodoc
 @internal
 @freezed
-class AnalyzeConfig with _$AnalyzeConfig {
+sealed class AnalyzeConfig with _$AnalyzeConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

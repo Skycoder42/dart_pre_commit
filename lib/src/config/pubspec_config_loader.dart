@@ -21,7 +21,7 @@ final pubspecConfigLoaderProvider = Provider(
 /// @nodoc
 @internal
 @freezed
-class PubspecConfig with _$PubspecConfig {
+sealed class PubspecConfig with _$PubspecConfig {
   /// @nodoc
   const factory PubspecConfig({
     @Default(false) bool isFlutterProject,

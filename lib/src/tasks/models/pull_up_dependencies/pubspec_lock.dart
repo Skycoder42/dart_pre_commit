@@ -8,7 +8,7 @@ part 'pubspec_lock.g.dart';
 /// @nodoc
 @internal
 @freezed
-class PubspecLock with _$PubspecLock {
+sealed class PubspecLock with _$PubspecLock {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

@@ -31,7 +31,7 @@ final hooksProvider = Provider.family(
 
 /// A configuration class for launching the [Hooks] instance.
 @freezed
-class HooksConfig with _$HooksConfig {
+sealed class HooksConfig with _$HooksConfig {
   /// Default constructor
   const factory HooksConfig({
     /// Specifies, whether processing should continue on rejections.

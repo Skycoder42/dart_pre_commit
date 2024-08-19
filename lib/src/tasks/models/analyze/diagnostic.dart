@@ -54,7 +54,7 @@ enum DiagnosticType {
 /// @nodoc
 @internal
 @freezed
-class Diagnostic with _$Diagnostic {
+sealed class Diagnostic with _$Diagnostic {
   const Diagnostic._();
 
   /// @nodoc

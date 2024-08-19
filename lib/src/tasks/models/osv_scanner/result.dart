@@ -8,7 +8,7 @@ part 'result.g.dart';
 /// @nodoc
 @internal
 @freezed
-class Result with _$Result {
+sealed class Result with _$Result {
   /// @nodoc
   const factory Result({
     required List<Package> packages,

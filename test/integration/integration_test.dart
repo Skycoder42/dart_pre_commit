@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 @Timeout(Duration(minutes: 1))
-library integration_test;
+library;
 
 import 'dart:async';
 import 'dart:convert';

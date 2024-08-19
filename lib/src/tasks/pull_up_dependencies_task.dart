@@ -31,7 +31,7 @@ final pullUpDependenciesTaskProvider = TaskProvider.configurable(
 /// @nodoc
 @internal
 @freezed
-class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
+sealed class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(
@@ -93,7 +93,6 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       await lockFile.readAsString(),
       (yaml) => PubspecLock.fromJson(Map<String, dynamic>.from(yaml!)),
       sourceUrl: lockFile.uri,
-      allowNull: false,
     );
     final resolvedVersions = _resolveLockVersions(pubspecLock);
 

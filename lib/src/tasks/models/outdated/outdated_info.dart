@@ -8,7 +8,7 @@ part 'outdated_info.g.dart';
 /// @nodoc
 @freezed
 @internal
-class OutdatedInfo with _$OutdatedInfo {
+sealed class OutdatedInfo with _$OutdatedInfo {
   /// @nodoc
   const factory OutdatedInfo({
     required List<PackageInfo> packages,

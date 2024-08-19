@@ -6,7 +6,7 @@ part 'location.g.dart';
 /// @nodoc
 @internal
 @freezed
-class RangePosition with _$RangePosition {
+sealed class RangePosition with _$RangePosition {
   /// @nodoc
   const factory RangePosition({
     required int offset,
@@ -22,7 +22,7 @@ class RangePosition with _$RangePosition {
 /// @nodoc
 @internal
 @freezed
-class Range with _$Range {
+sealed class Range with _$Range {
   /// @nodoc
   const factory Range({
     required RangePosition start,
@@ -36,7 +36,7 @@ class Range with _$Range {
 /// @nodoc
 @internal
 @freezed
-class Location with _$Location {
+sealed class Location with _$Location {
   const Location._();
 
   /// @nodoc

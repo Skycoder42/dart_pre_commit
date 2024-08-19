@@ -7,7 +7,7 @@ part 'package.g.dart';
 /// @nodoc
 @internal
 @freezed
-class Package with _$Package {
+sealed class Package with _$Package {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(

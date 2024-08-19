@@ -5,7 +5,7 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-import '../global_mocks.dart';
+import '../global_mocks.dart' as mocks;
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
@@ -28,7 +28,7 @@ void main() {
   });
 
   group('$FormatTask', () {
-    final fakeEntry = FakeEntry('mock.dart');
+    final fakeEntry = mocks.fakeEntry('mock.dart');
 
     final mockRunner = MockProgramRunner();
 
