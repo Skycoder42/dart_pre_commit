@@ -65,7 +65,7 @@ class DefaultTasksLoader {
       ..registerConfigurableTask(analyzeTaskProvider);
 
     if (pubspecConfig.hasCustomLintDependency) {
-      _taskLoader.registerTask(customLintTaskProvider);
+      _taskLoader.registerConfigurableTask(customLintTaskProvider);
     }
 
     if (!pubspecConfig.isFlutterProject) {

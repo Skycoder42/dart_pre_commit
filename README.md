@@ -225,8 +225,8 @@ Values for `error-level`:
 
 ### Custom Lint Task
 **Task-ID:** `custom-lint`<br/>
-**Configurable:** No<br/>
-**Enabled**: Only if `custom_lint` is installed as direct (dev) dependency<br/>
+**Configurable:** Yes<br/>
+**Enabled**: Only if `custom_lint` is installed as direct dev dependency<br/>
 
 This tasks runs the [custom_lint](https://pub.dev/packages/custom_lint) tool on your project to run additional,
 customized lints, if you have any. This can be very useful, especially for framework packages like riverpod, but also
@@ -234,6 +234,17 @@ simpler ones like equatable.
 
 **Pro-Hint:** You can use this customized pub.dev search query to find linter plugins for your packages:
 https://pub.dev/packages?q=dependency%3Acustom_lint_builder
+
+#### Options
+ Option                  | Type   | Default | Description
+-------------------------|--------|---------|-------------
+ `error-level`           | `enum` | `info`  | The severity level that should cause the task to reject the commit. See possible values below.
+ `ignore-unstaged-files` | `bool` | `false` | If set to `true`, analysis errors in unstaged files will be reported, but will not cause the task to fail.
+
+Values for `error-level`:
+- `error`: Only fatal errors are reported
+- `warning`: fatal errors and warnings are reported
+- `info`: fatal errors, warnings and linter issues are reported
 
 ### Flutter Compatibility Task
 **Task-ID:** `flutter-compat`<br/>

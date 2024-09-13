@@ -310,16 +310,16 @@ void main() {
       lines,
       allOf(
         contains(
-          allOf(
-            contains('analyze.dart'),
-            endsWith('src_library_not_exported • INFO'),
-          ),
+          '  [INF]   info - lib${separator}src${separator}analyze.dart:1:6 - '
+          'The library contains public symbols, but is not exported in any of '
+          'the package library files. Exports the library from the package or '
+          'make all top level elements non-public. - src_library_not_exported',
         ),
         contains(
-          allOf(
-            contains('test.dart'),
-            endsWith('no_self_package_imports • INFO'),
-          ),
+          '  [INF]   info - test${separator}test.dart:1:8 - Libraries in '
+          'lib/src, test or tool should not import package library files from '
+          'lib. Import the library from the src folder instead. - '
+          'no_self_package_imports',
         ),
       ),
     );

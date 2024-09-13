@@ -79,7 +79,7 @@ void main() {
           mockPubspecConfigLoader.loadPubspecConfig,
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
-          () => mockTaskLoader.registerTask(customLintTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(customLintTaskProvider),
           () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
           () => mockTaskLoader
