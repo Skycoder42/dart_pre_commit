@@ -99,6 +99,7 @@ void main() {
         .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
 
     when(() => mockConfigLoader.loadGlobalConfig(any())).thenReturnAsync(true);
+    when(() => mockConfigLoader.loadExcludedFiles()).thenReturn(const []);
   });
 
   group('config', () {
@@ -281,6 +282,48 @@ void main() {
       verify(
         () => mockLogger.updateStatus(
           message: 'Scanning subdir${separator}b.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verifyNever(
+        () => mockLogger.updateStatus(
+          message: any(named: 'message'),
+          status: any(named: 'status'),
+          refresh: any(named: 'refresh'),
+        ),
+      );
+    });
+
+    test('skips excluded files', () async {
+      when(() => mockConfigLoader.loadExcludedFiles()).thenReturn([
+        'b.dart',
+        'c.dart',
+      ]);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+        (_) => Stream.fromIterable(const [
+          'a.dart',
+          'b.dart',
+          'sub/c.dart',
+        ]),
+      );
+      when(() => mockTaskLoader.loadTasks()).thenReturn([]);
+
+      final sut = createSut();
+
+      final result = await sut();
+      expect(result, HookResult.clean);
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning a.dart...',
+          status: TaskStatus.scanning,
+          refresh: any(named: 'refresh'),
+        ),
+      );
+      verify(
+        () => mockLogger.updateStatus(
+          message: 'Scanning sub${separator}c.dart...',
           status: TaskStatus.scanning,
           refresh: any(named: 'refresh'),
         ),

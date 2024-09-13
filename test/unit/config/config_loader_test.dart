@@ -255,5 +255,45 @@ task:
         expect(() => sut.loadTaskConfig('task'), throwsException);
       });
     });
+
+    group('loadExcludedFiles', () {
+      testData<(String, Matcher)>(
+        'returns correct list for given config',
+        [
+          const ('', isEmpty),
+          ('exclude: file1.txt', equals(['file1.txt'])),
+          (
+            '''
+exclude:
+  - file1.txt
+  - file2.txt
+''',
+            equals(['file1.txt', 'file2.txt']),
+          ),
+        ],
+        (fixture) async {
+          when(() => mockFile.path).thenReturn('');
+          when(() => mockFile.readAsString()).thenReturnAsync(fixture.$1);
+
+          await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
+
+          final config = sut.loadExcludedFiles();
+          expect(config, fixture.$2);
+        },
+        dataToString: (t) => (
+          t.$1,
+          t.$2.describe(StringDescription()),
+        ).toString(),
+      );
+
+      test('throws exception on invalid exclude configuration value', () async {
+        when(() => mockFile.path).thenReturn('');
+        when(() => mockFile.readAsString()).thenReturnAsync('exclude: 42');
+
+        await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
+
+        expect(() => sut.loadExcludedFiles(), throwsException);
+      });
+    });
   });
 }

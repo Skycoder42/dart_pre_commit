@@ -365,10 +365,14 @@ class Hooks {
       '--name-only',
       '--cached',
     ]);
+    final excludedFiles = _configLoader.loadExcludedFiles();
 
     await for (final path in stagedChanges) {
       final file = _fileResolver.file(path);
       if (!file.existsSync()) {
+        continue;
+      }
+      if (excludedFiles.contains(path)) {
         continue;
       }
       yield RepoEntry(

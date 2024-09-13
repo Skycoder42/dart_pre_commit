@@ -162,6 +162,7 @@ in your `pubspec.yaml` below the `dart_pre_commit` key, but it is also possible 
 The configuration uses the following pattern:
 ```yaml
 dart_pre_commit:
+  exclude: null # special key
   task_1: null
   task_2: false
   task_3: true
@@ -185,6 +186,11 @@ The default tasks and their options, if they have any, are defined follows. Howe
 custom tasks with customized configurations.
 
 The tool also accepts some command line arguments. Run `dart_pre_commit --help` to get more information on them.
+
+One special key is the `exclude` key. If specified, it can either be a simple string or a list of strings, representing
+the relative paths of files of that package to be excluded from the analysis. **Important:** This does NOT mean these
+files will not have any impact on the results, it only means that they are not detected as staged. That leads to per
+file tasks not being executed on those files and may or may not influence the behavior of repository tasks.
 
 ### Format task
 **Task-ID:** `format`<br/>

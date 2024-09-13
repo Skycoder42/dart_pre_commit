@@ -19,6 +19,8 @@ final configLoaderProvider = Provider(
 /// @nodoc
 @internal
 class ConfigLoader {
+  static const _excludedFilesKey = 'exclude';
+
   final FileResolver _fileResolver;
 
   late YamlMap _globalConfig;
@@ -37,20 +39,36 @@ class ConfigLoader {
     }
   }
 
+  List<String> loadExcludedFiles() {
+    final excludedFiles = _globalConfig[_excludedFilesKey];
+    return switch (excludedFiles) {
+      null => const [],
+      String() => [excludedFiles],
+      YamlList() => excludedFiles.cast<String>(),
+      _ => throw Exception(
+          'Invalid configuration for $_excludedFilesKey - '
+          'value must be null, string or a list of strings',
+        )
+    };
+  }
+
   /// @nodoc
   YamlMap? loadTaskConfig(String taskName, {bool enabledByDefault = true}) {
     final dynamic taskConfig = _globalConfig[taskName];
-    if (taskConfig == null) {
-      return enabledByDefault ? YamlMap() : null;
-    } else if (taskConfig is bool) {
-      return taskConfig ? YamlMap() : null;
-    } else if (taskConfig is YamlMap) {
-      return taskConfig;
-    } else {
-      throw Exception(
-        'Invalid configuration for $taskName - '
-        'value must be null, boolean or a configuration map',
-      );
+    switch (taskConfig) {
+      case null when enabledByDefault:
+      case true:
+        return YamlMap();
+      case null:
+      case false:
+        return null;
+      case YamlMap():
+        return taskConfig;
+      default:
+        throw Exception(
+          'Invalid configuration for $taskName - '
+          'value must be null, boolean or a configuration map',
+        );
     }
   }
 
@@ -77,17 +95,18 @@ class ConfigLoader {
   }
 
   bool _parseConfig(String name, dynamic config) {
-    if (config == null) {
-      _globalConfig = YamlMap();
-      return true;
-    } else if (config is bool) {
-      _globalConfig = YamlMap();
-      return config;
-    } else if (config is YamlMap) {
-      _globalConfig = config;
-      return true;
-    } else {
-      throw Exception('$name must be null, a boolean or a configuration map');
+    switch (config) {
+      case null || true:
+        _globalConfig = YamlMap();
+        return true;
+      case false:
+        _globalConfig = YamlMap();
+        return false;
+      case YamlMap():
+        _globalConfig = config;
+        return true;
+      default:
+        throw Exception('$name must be null, a boolean or a configuration map');
     }
   }
 
