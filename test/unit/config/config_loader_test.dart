@@ -256,19 +256,19 @@ task:
       });
     });
 
-    group('loadExcludedFiles', () {
+    group('loadExcludePatterns', () {
       testData<(String, Matcher)>(
         'returns correct list for given config',
         [
           const ('', isEmpty),
-          ('exclude: file1.txt', equals(['file1.txt'])),
+          ('exclude: file1.txt', equals([RegExp('file1.txt')])),
           (
             '''
 exclude:
   - file1.txt
   - file2.txt
 ''',
-            equals(['file1.txt', 'file2.txt']),
+            equals([RegExp('file1.txt'), RegExp('file2.txt')]),
           ),
         ],
         (fixture) async {
@@ -277,7 +277,7 @@ exclude:
 
           await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
 
-          final config = sut.loadExcludedFiles();
+          final config = sut.loadExcludePatterns();
           expect(config, fixture.$2);
         },
         dataToString: (t) => (
@@ -292,7 +292,7 @@ exclude:
 
         await expectLater(sut.loadGlobalConfig(mockFile), completion(isTrue));
 
-        expect(() => sut.loadExcludedFiles(), throwsException);
+        expect(() => sut.loadExcludePatterns(), throwsException);
       });
     });
   });

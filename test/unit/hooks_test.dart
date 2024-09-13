@@ -99,7 +99,7 @@ void main() {
         .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
 
     when(() => mockConfigLoader.loadGlobalConfig(any())).thenReturnAsync(true);
-    when(() => mockConfigLoader.loadExcludedFiles()).thenReturn(const []);
+    when(() => mockConfigLoader.loadExcludePatterns()).thenReturn(const []);
   });
 
   group('config', () {
@@ -296,9 +296,9 @@ void main() {
     });
 
     test('skips excluded files', () async {
-      when(() => mockConfigLoader.loadExcludedFiles()).thenReturn([
-        'b.dart',
-        'c.dart',
+      when(() => mockConfigLoader.loadExcludePatterns()).thenReturn([
+        RegExp(r'b\.dart'),
+        RegExp(r'.*c\.dart$'),
       ]);
       when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
           .thenAnswer(
@@ -317,13 +317,6 @@ void main() {
       verify(
         () => mockLogger.updateStatus(
           message: 'Scanning a.dart...',
-          status: TaskStatus.scanning,
-          refresh: any(named: 'refresh'),
-        ),
-      );
-      verify(
-        () => mockLogger.updateStatus(
-          message: 'Scanning sub${separator}c.dart...',
           status: TaskStatus.scanning,
           refresh: any(named: 'refresh'),
         ),

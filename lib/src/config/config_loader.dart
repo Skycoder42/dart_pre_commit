@@ -39,12 +39,12 @@ class ConfigLoader {
     }
   }
 
-  List<String> loadExcludedFiles() {
+  List<RegExp> loadExcludePatterns() {
     final excludedFiles = _globalConfig[_excludedFilesKey];
     return switch (excludedFiles) {
       null => const [],
-      String() => [excludedFiles],
-      YamlList() => excludedFiles.cast<String>(),
+      String() => [RegExp(excludedFiles)],
+      YamlList() => excludedFiles.cast<String>().map(RegExp.new).toList(),
       _ => throw Exception(
           'Invalid configuration for $_excludedFilesKey - '
           'value must be null, string or a list of strings',

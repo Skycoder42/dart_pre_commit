@@ -187,10 +187,14 @@ custom tasks with customized configurations.
 
 The tool also accepts some command line arguments. Run `dart_pre_commit --help` to get more information on them.
 
-One special key is the `exclude` key. If specified, it can either be a simple string or a list of strings, representing
-the relative paths of files of that package to be excluded from the analysis. **Important:** This does NOT mean these
-files will not have any impact on the results, it only means that they are not detected as staged. That leads to per
-file tasks not being executed on those files and may or may not influence the behavior of repository tasks.
+One special key is the `exclude` key. If specified, it can either be a simple string or a list of strings, each
+treated as a **Regular Expression** to match staged files against. If any staged file is matched by any of those
+patterns, it will be excluded. Path are tested relative to the scanned dart project root.
+
+**Important:** This does NOT mean these files will not have any impact on the results, it only means that they are not
+detected as staged. That leads to per file tasks not being executed on those files and may or may not influence the
+behavior of repository tasks. For example, the `analyze` task will still report errors for these files, unless
+`ignore-unstaged-files` is set to `true`.
 
 ### Format task
 **Task-ID:** `format`<br/>
