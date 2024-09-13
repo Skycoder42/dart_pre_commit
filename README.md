@@ -205,21 +205,6 @@ the `dart format` command to accomplish this.
 ---------------|--------|---------|-------------
  `line-length` | `int?` | `null`  | The line length the formatter should use. If unset, the recommended default for dart (currently 80) is used.
 
-### Test Imports Task
-**Task-ID:** `test-imports`<br/>
-**Configurable:** No<br/>
-**Enabled**: Always<br/>
-
-This task scans all `test` files to ensure they only import `src` libraries. For integration tests or in cases, where
-sources are purposefully not placed below `src`, you can ignore those imports as follows:
-
-```dart
-import 'package:my_app/src/src.dart';  // OK
-import 'package:my_app/my_app.dart';  // NOT OK
-// ignore: test_library_import
-import 'package:my_app/my_app.dart';  // OK
-```
-
 ### Analyze Task
 **Task-ID:** `analyze`<br/>
 **Configurable:** Yes<br/>
@@ -228,9 +213,10 @@ import 'package:my_app/my_app.dart';  // OK
 This tasks checks all files for static analysis issues. Internally, this runs `dart analyze` to check for problems.
 
 #### Options
- Option        | Type   | Default | Description
----------------|--------|---------|-------------
- `error-level` | `enum` | `info`  | The severity level that should cause the task to reject the commit. See possible values below.
+ Option                  | Type   | Default | Description
+-------------------------|--------|---------|-------------
+ `error-level`           | `enum` | `info`  | The severity level that should cause the task to reject the commit. See possible values below.
+ `ignore-unstaged-files` | `bool` | `false` | If set to `true`, analysis errors in unstaged files will be reported, but will not cause the task to fail.
 
 Values for `error-level`:
 - `error`: Only fatal errors are reported
@@ -248,14 +234,6 @@ simpler ones like equatable.
 
 **Pro-Hint:** You can use this customized pub.dev search query to find linter plugins for your packages:
 https://pub.dev/packages?q=dependency%3Acustom_lint_builder
-
-### Library Exports Task
-**Task-ID:** `lib-exports`<br/>
-**Configurable:** No<br/>
-**Enabled**: Only if `publish_to` is not set to `none`<br/>
-
-Scans all staged `src` files and checks if all files, that define at least one public top level element (internal or
-visibleFor* elements do not count), are exported publicly in at least one file directly below the `lib` directory.
 
 ### Flutter Compatibility Task
 **Task-ID:** `flutter-compat`<br/>

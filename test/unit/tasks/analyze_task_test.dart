@@ -313,6 +313,63 @@ void main() {
         expect(result, TaskResult.accepted);
         verify(() => mockLogger.info(any())).called(1);
       });
+
+      test('succeeds if none of the files are staged and option is enabled',
+          () async {
+        sut = AnalyzeTask(
+          logger: mockLogger,
+          programRunner: mockRunner,
+          fileResolver: mockResolver,
+          config: const AnalyzeConfig(ignoreUnstagedFiles: true),
+        );
+
+        whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
+
+        final result = await sut(const []);
+        expect(result, TaskResult.accepted);
+        verifyInOrder([
+          () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
+          () => mockLogger
+              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
+          () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
+          () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
+          () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
+          () => mockLogger
+              .info('5 issue(s) found, but none are in staged files.'),
+        ]);
+        verifyNever(() => mockLogger.info(any()));
+      });
+
+      test('fails if some of the files are staged and option is enabled',
+          () async {
+        sut = AnalyzeTask(
+          logger: mockLogger,
+          programRunner: mockRunner,
+          fileResolver: mockResolver,
+          config: const AnalyzeConfig(ignoreUnstagedFiles: true),
+        );
+
+        whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
+
+        final result = await sut([
+          fakeEntry('a.dart'),
+          fakeEntry('a-a-a.dart'),
+          fakeEntry('b/b.dart'),
+          fakeEntry('c/c/d.dart'),
+        ]);
+        expect(result, TaskResult.rejected);
+        verifyInOrder([
+          () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
+          () => mockLogger
+              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
+          () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
+          () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
+          () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
+          () => mockLogger
+              .info('5 issue(s) found, 2 of those are in unstaged files.'),
+        ]);
+        verifyNever(() => mockLogger.info(any()));
+      });
     });
   });
 }

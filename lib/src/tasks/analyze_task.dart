@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:path/path.dart' as path;
 
 import '../repo_entry.dart';
 import '../task_base.dart';
@@ -62,6 +63,10 @@ sealed class AnalyzeConfig with _$AnalyzeConfig {
     @JsonKey(name: 'error-level')
     @Default(AnalyzeErrorLevel.info)
     AnalyzeErrorLevel errorLevel,
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'ignore-unstaged-files')
+    @Default(false)
+    bool ignoreUnstagedFiles,
   }) = _AnalyzeConfig;
 
   /// @nodoc
@@ -104,18 +109,35 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
-    final exitCode = await _scanAll();
+    final exitCode = await _scanAll(entries.toList());
     return exitCode != 0 ? TaskResult.rejected : TaskResult.accepted;
   }
 
-  Future<int> _scanAll() async {
+  Future<int> _scanAll(List<RepoEntry> entries) async {
     final (exitCode, result) = await _runAnalyze();
     var lintCnt = 0;
+    var ignoreCnt = 0;
     for (final diagnostic in result.diagnostics) {
       await _logDiagnostic(diagnostic);
       ++lintCnt;
+
+      if (_shouldIgnore(diagnostic, entries)) {
+        ++ignoreCnt;
+        continue;
+      }
     }
-    _logger.info('$lintCnt issue(s) found.');
+
+    if (ignoreCnt > 0 && ignoreCnt == lintCnt) {
+      _logger.info('$lintCnt issue(s) found, but none are in staged files.');
+      return 0;
+    } else if (ignoreCnt > 0) {
+      _logger.info(
+        '$lintCnt issue(s) found, $ignoreCnt of those are in unstaged files.',
+      );
+    } else {
+      _logger.info('$lintCnt issue(s) found.');
+    }
+
     return exitCode;
   }
 
@@ -145,6 +167,15 @@ class AnalyzeTask with PatternTaskMixin implements RepoTask {
     return (
       exitCode,
       AnalyzeResult.fromJson(json.decode(jsonString) as Map<String, dynamic>)
+    );
+  }
+
+  bool _shouldIgnore(Diagnostic diagnostic, List<RepoEntry> entries) {
+    if (!_config.ignoreUnstagedFiles) {
+      return false;
+    }
+    return !entries.any(
+      (e) => path.equals(e.file.path, diagnostic.location.file),
     );
   }
 

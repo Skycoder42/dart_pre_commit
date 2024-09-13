@@ -3,6 +3,7 @@
     "compat",
     "outdatedness",
     "toplevel",
+    "unstaged",
     "yarml"
   ]
 }
