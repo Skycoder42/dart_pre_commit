@@ -30,7 +30,7 @@ void main() {
     String program,
     List<String> arguments, {
     bool failOnError = true,
-    Function(Stream<List<int>>)? onStdout,
+    void Function(Stream<List<int>>)? onStdout,
   }) async {
     print('\$ $program ${arguments.join(' ')}');
     final proc = await Process.start(
@@ -64,7 +64,7 @@ void main() {
   Future<int> pub(
     List<String> arguments, {
     bool failOnError = true,
-    Function(Stream<List<int>>)? onStdout,
+    void Function(Stream<List<int>>)? onStdout,
   }) async =>
       run(
         'dart',
@@ -81,7 +81,7 @@ void main() {
     List<String>? arguments,
     Map<String, dynamic>? config,
     bool failOnError = true,
-    Function(String)? onStdout,
+    void Function(String)? onStdout,
   }) async {
     final knownTasks = [
       'format',
