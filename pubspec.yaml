@@ -15,7 +15,7 @@ executables:
   dart_pre_commit: dart_pre_commit
 
 dependencies:
-  analyzer: ^6.11.0
+  analyzer: '>=6.11.0 <8.0.0'
   args: ^2.6.0
   checked_yaml: ^2.0.3
   console: ^4.1.0
