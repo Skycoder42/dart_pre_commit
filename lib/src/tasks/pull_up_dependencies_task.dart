@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:checked_yaml/checked_yaml.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
@@ -9,6 +13,7 @@ import '../util/file_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
+import 'models/pull_up_dependencies/workspace.dart';
 import 'provider/task_provider.dart';
 
 part 'pull_up_dependencies_task.freezed.dart';
@@ -88,7 +93,11 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       return TaskResult.accepted;
     }
 
-    final lockFile = _fileResolver.file('pubspec.lock');
+    final lockFile = await _findWorkspaceLockfile();
+    if (lockFile == null) {
+      return TaskResult.rejected;
+    }
+
     final pubspecLock = checkedYamlDecode(
       await lockFile.readAsString(),
       (yaml) => PubspecLock.fromJson(Map<String, dynamic>.from(yaml!)),
@@ -136,6 +145,31 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       _logger.debug('pubspec.lock is not ignored, checking if staged');
       return entries.isNotEmpty;
     }
+  }
+
+  Future<File?> _findWorkspaceLockfile() async {
+    final workspace = await _programRunner
+        .stream(
+          'dart',
+          ['pub', 'workspace', 'list', '--json'],
+          runInShell: true,
+        )
+        .transform(json.decoder)
+        .cast<Map<String, dynamic>>()
+        .map(Workspace.fromJson)
+        .single;
+
+    for (final package in workspace.packages) {
+      final lockFile =
+          _fileResolver.file(path.join(package.path, 'pubspec.lock'));
+      if (lockFile.existsSync()) {
+        _logger.debug('Detected workspace lockfile as: ${lockFile.path}');
+        return lockFile;
+      }
+    }
+
+    _logger.error('Failed to find pubspec.lock in workspace');
+    return null;
   }
 
   Map<String, Version> _resolveLockVersions(PubspecLock pubspecLock) {

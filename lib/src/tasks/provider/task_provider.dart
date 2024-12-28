@@ -73,7 +73,7 @@ class ConfigurableTaskProviderBuilder {
     String name,
     ArgFromJson<Arg> fromJson,
     // ignore: invalid_use_of_internal_member
-    FamilyCreate<State, ProviderRef<State>, Arg> create, {
+    FamilyCreate<State, Ref<State>, Arg> create, {
     List<ProviderOrFamily>? dependencies,
   }) =>
       ConfigurableTaskProviderFamily(
