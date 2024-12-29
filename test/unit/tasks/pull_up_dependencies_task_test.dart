@@ -11,6 +11,7 @@ import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 import '../global_mocks.dart';
@@ -112,9 +113,10 @@ name: pull_up
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           // ignore: discarded_futures
           when(() => res.readAsString()).thenAnswer(
@@ -199,8 +201,10 @@ name: pull_up
           return res;
         });
 
-        when(() => mockResolver.file(any(that: endsWith('/pubspec.lock'))))
-            .thenAnswer((i) {
+        when(
+          () => mockResolver
+              .file(any(that: endsWith('${path.separator}pubspec.lock'))),
+        ).thenAnswer((i) {
           final [String path] = i.positionalArguments;
           final res = MockFile();
           when(() => res.path).thenReturn(path);
@@ -241,10 +245,10 @@ packages:
                 ['pub', 'workspace', 'list', '--json'],
                 runInShell: true,
               ),
-          () => mockResolver.file('/test/not/pubspec.lock'),
-          () => mockResolver.file('/test/found1/pubspec.lock'),
+          () => mockResolver.file('/test/not${path.separator}pubspec.lock'),
+          () => mockResolver.file('/test/found1${path.separator}pubspec.lock'),
           () => mockLogger.debug(
-                'Detected workspace lockfile as: /test/found1/pubspec.lock',
+                'Detected workspace lockfile as: /test/found1${path.separator}pubspec.lock',
               ),
           () => mockResolver.file('pubspec.yaml'),
           () => mockLogger.debug('=> All dependencies are up to date'),
@@ -299,9 +303,9 @@ packages:
                 ['pub', 'workspace', 'list', '--json'],
                 runInShell: true,
               ),
-          () => mockResolver.file('/test/pubspec.lock'),
-          () => mockResolver.file('/test/not1/pubspec.lock'),
-          () => mockResolver.file('/test/not2/pubspec.lock'),
+          () => mockResolver.file('/test${path.separator}pubspec.lock'),
+          () => mockResolver.file('/test/not1${path.separator}pubspec.lock'),
+          () => mockResolver.file('/test/not2${path.separator}pubspec.lock'),
           () => mockLogger.error('Failed to find pubspec.lock in workspace'),
         ]);
         verifyNever(() => mockResolver.file(any()));
@@ -343,9 +347,10 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -401,9 +406,10 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -450,9 +456,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -481,9 +488,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -515,9 +523,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -553,9 +562,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -596,9 +606,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+            .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
           when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
