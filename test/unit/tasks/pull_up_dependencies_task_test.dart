@@ -1,8 +1,10 @@
 // ignore_for_file: unnecessary_lambdas
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/task_base.dart';
+import 'package:dart_pre_commit/src/tasks/models/pull_up_dependencies/workspace.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
@@ -86,7 +88,19 @@ void main() {
     );
 
     group('check if task runs', () {
+      const testWorkspace = Workspace([
+        WorkspacePackage(name: 'test', path: '/test'),
+      ]);
+
       setUp(() {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            runInShell: any(named: 'runInShell'),
+          ),
+        ).thenStream(Stream.value(json.encode(testWorkspace)));
+
         when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
           final res = MockFile();
           // ignore: discarded_futures
@@ -98,8 +112,10 @@ name: pull_up
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           // ignore: discarded_futures
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -170,8 +186,142 @@ packages:
       });
     });
 
-    group('task operation', () {
+    group('workspace resolution', () {
       setUp(() {
+        when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
+          final res = MockFile();
+          // ignore: discarded_futures
+          when(() => res.readAsString()).thenAnswer(
+            (i) async => '''
+name: pull_up
+''',
+          );
+          return res;
+        });
+
+        when(() => mockResolver.file(any(that: endsWith('/pubspec.lock'))))
+            .thenAnswer((i) {
+          final [String path] = i.positionalArguments;
+          final res = MockFile();
+          when(() => res.path).thenReturn(path);
+          when(() => res.existsSync()).thenReturn(path.contains('found'));
+          // ignore: discarded_futures
+          when(() => res.readAsString()).thenAnswer(
+            (i) async => '''
+packages:
+''',
+          );
+          return res;
+        });
+
+        // ignore: discarded_futures
+        when(() => mockRunner.run(any(), any())).thenReturnAsync(0);
+      });
+
+      test('uses first workspace package with existing lockfile', () async {
+        const testWorkspace = Workspace([
+          WorkspacePackage(name: 'test1', path: '/test/not'),
+          WorkspacePackage(name: 'test2', path: '/test/found1'),
+          WorkspacePackage(name: 'test3', path: '/test/found2'),
+        ]);
+
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            runInShell: any(named: 'runInShell'),
+          ),
+        ).thenStream(Stream.value(json.encode(testWorkspace)));
+
+        final result = await sut([]);
+        expect(result, TaskResult.accepted);
+        verifyInOrder([
+          () => mockRunner.stream(
+                'dart',
+                ['pub', 'workspace', 'list', '--json'],
+                runInShell: true,
+              ),
+          () => mockResolver.file('/test/not/pubspec.lock'),
+          () => mockResolver.file('/test/found1/pubspec.lock'),
+          () => mockLogger.debug(
+                'Detected workspace lockfile as: /test/found1/pubspec.lock',
+              ),
+          () => mockResolver.file('pubspec.yaml'),
+          () => mockLogger.debug('=> All dependencies are up to date'),
+        ]);
+        verifyNever(() => mockResolver.file(any()));
+      });
+
+      test('rejects if workspace is empty', () async {
+        const testWorkspace = Workspace([]);
+
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            runInShell: any(named: 'runInShell'),
+          ),
+        ).thenStream(Stream.value(json.encode(testWorkspace)));
+
+        final result = await sut([]);
+        expect(result, TaskResult.rejected);
+        verifyInOrder([
+          () => mockRunner.stream(
+                'dart',
+                ['pub', 'workspace', 'list', '--json'],
+                runInShell: true,
+              ),
+          () => mockLogger.error('Failed to find pubspec.lock in workspace'),
+        ]);
+        verifyNever(() => mockResolver.file(any()));
+      });
+
+      test('rejects if workspace has no lockfiles', () async {
+        const testWorkspace = Workspace([
+          WorkspacePackage(name: 'test1', path: '/test'),
+          WorkspacePackage(name: 'test2', path: '/test/not1'),
+          WorkspacePackage(name: 'test3', path: '/test/not2'),
+        ]);
+
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            runInShell: any(named: 'runInShell'),
+          ),
+        ).thenStream(Stream.value(json.encode(testWorkspace)));
+
+        final result = await sut([]);
+        expect(result, TaskResult.rejected);
+        verifyInOrder([
+          () => mockRunner.stream(
+                'dart',
+                ['pub', 'workspace', 'list', '--json'],
+                runInShell: true,
+              ),
+          () => mockResolver.file('/test/pubspec.lock'),
+          () => mockResolver.file('/test/not1/pubspec.lock'),
+          () => mockResolver.file('/test/not2/pubspec.lock'),
+          () => mockLogger.error('Failed to find pubspec.lock in workspace'),
+        ]);
+        verifyNever(() => mockResolver.file(any()));
+      });
+    });
+
+    group('task operation', () {
+      const testWorkspace = Workspace([
+        WorkspacePackage(name: 'test', path: '/test'),
+      ]);
+
+      setUp(() {
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            runInShell: any(named: 'runInShell'),
+          ),
+        ).thenStream(Stream.value(json.encode(testWorkspace)));
+
         // ignore: discarded_futures
         when(() => mockRunner.run(any(), any())).thenAnswer((i) async => 0);
       });
@@ -193,8 +343,10 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -249,8 +401,10 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -296,8 +450,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -325,8 +481,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -357,8 +515,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -393,8 +553,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -434,8 +596,10 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('pubspec.lock')).thenAnswer((i) {
+        when(() => mockResolver.file('/test/pubspec.lock')).thenAnswer((i) {
           final res = MockFile();
+          when(() => res.path).thenReturn('/test/pubspec.lock');
+          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
