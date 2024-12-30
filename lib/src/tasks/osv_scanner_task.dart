@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
+import '../util/lockfile_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/osv_scanner/osv_scanner_result.dart';
@@ -21,6 +23,7 @@ final osvScannerTaskProvider = TaskProvider.configurable(
   OsvScannerConfig.fromJson,
   (ref, config) => OsvScannerTask(
     programRunner: ref.watch(programRunnerProvider),
+    lockfileResolver: ref.watch(lockfileResolverProvider),
     taskLogger: ref.watch(taskLoggerProvider),
     config: config,
   ),
@@ -59,15 +62,18 @@ class OsvScannerTask implements RepoTask {
   static const osvScannerBinary = 'osv-scanner';
 
   final ProgramRunner _programRunner;
+  final LockfileResolver _lockfileResolver;
   final TaskLogger _taskLogger;
   final OsvScannerConfig _config;
 
   /// @nodoc
   const OsvScannerTask({
     required ProgramRunner programRunner,
+    required LockfileResolver lockfileResolver,
     required TaskLogger taskLogger,
     required OsvScannerConfig config,
   })  : _programRunner = programRunner,
+        _lockfileResolver = lockfileResolver,
         _taskLogger = taskLogger,
         _config = config;
 
@@ -82,17 +88,24 @@ class OsvScannerTask implements RepoTask {
 
   @override
   Future<TaskResult> call(Iterable<RepoEntry> entries) async {
+    final lockfile = await _lockfileResolver.findWorkspaceLockfile();
+    if (lockfile == null && _config.lockfileOnly) {
+      return TaskResult.rejected;
+    }
+
     final osvScannerJson = await _programRunner
         .stream(
           osvScannerBinary,
           [
             '--json',
-            ...switch (_config.configFile) {
-              final String path => ['--config', path],
-              _ => [],
-            },
-            '--lockfile',
-            'pubspec.lock',
+            if (_config.configFile case final String path) ...[
+              '--config',
+              path,
+            ],
+            if (lockfile case File(path: final path)) ...[
+              '--lockfile',
+              path,
+            ],
             if (!_config.lockfileOnly) ...[
               '--recursive',
               '.',

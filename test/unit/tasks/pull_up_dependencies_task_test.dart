@@ -1,17 +1,15 @@
 // ignore_for_file: unnecessary_lambdas
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/task_base.dart';
-import 'package:dart_pre_commit/src/tasks/models/pull_up_dependencies/workspace.dart';
 import 'package:dart_pre_commit/src/tasks/pull_up_dependencies_task.dart';
 import 'package:dart_pre_commit/src/util/file_resolver.dart';
+import 'package:dart_pre_commit/src/util/lockfile_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 import '../global_mocks.dart';
@@ -26,6 +24,8 @@ class MockTaskLogger extends Mock implements TaskLogger {}
 class MockProgramRunner extends Mock implements ProgramRunner {}
 
 class MockFileResolver extends Mock implements FileResolver {}
+
+class MockLockfileResolver extends Mock implements LockfileResolver {}
 
 void main() {
   group('$PullUpDependenciesConfig', () {
@@ -50,6 +50,7 @@ void main() {
     final mockLogger = MockTaskLogger();
     final mockRunner = MockProgramRunner();
     final mockResolver = MockFileResolver();
+    final mockLockfileResolver = MockLockfileResolver();
 
     late PullUpDependenciesTask sut;
 
@@ -57,11 +58,13 @@ void main() {
       reset(mockLogger);
       reset(mockRunner);
       reset(mockResolver);
+      reset(mockLockfileResolver);
 
       sut = PullUpDependenciesTask(
         logger: mockLogger,
         programRunner: mockRunner,
         fileResolver: mockResolver,
+        lockfileResolver: mockLockfileResolver,
         config: const PullUpDependenciesConfig(),
       );
     });
@@ -89,22 +92,9 @@ void main() {
     );
 
     group('check if task runs', () {
-      const testWorkspace = Workspace([
-        WorkspacePackage(name: 'test', path: '/test'),
-      ]);
-
-      setUp(() {
-        when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            runInShell: any(named: 'runInShell'),
-          ),
-        ).thenStream(Stream.value(json.encode(testWorkspace)));
-
+      setUp(() async {
         when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
           final res = MockFile();
-          // ignore: discarded_futures
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 name: pull_up
@@ -113,18 +103,15 @@ name: pull_up
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
-          // ignore: discarded_futures
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
 ''',
           );
-          return res;
+          return Future.value(res);
         });
       });
 
@@ -188,145 +175,8 @@ packages:
       });
     });
 
-    group('workspace resolution', () {
-      setUp(() {
-        when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
-          final res = MockFile();
-          // ignore: discarded_futures
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
-name: pull_up
-''',
-          );
-          return res;
-        });
-
-        when(
-          () => mockResolver
-              .file(any(that: endsWith('${path.separator}pubspec.lock'))),
-        ).thenAnswer((i) {
-          final [String path] = i.positionalArguments;
-          final res = MockFile();
-          when(() => res.path).thenReturn(path);
-          when(() => res.existsSync()).thenReturn(path.contains('found'));
-          // ignore: discarded_futures
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
-packages:
-''',
-          );
-          return res;
-        });
-
-        // ignore: discarded_futures
-        when(() => mockRunner.run(any(), any())).thenReturnAsync(0);
-      });
-
-      test('uses first workspace package with existing lockfile', () async {
-        const testWorkspace = Workspace([
-          WorkspacePackage(name: 'test1', path: '/test/not'),
-          WorkspacePackage(name: 'test2', path: '/test/found1'),
-          WorkspacePackage(name: 'test3', path: '/test/found2'),
-        ]);
-
-        when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            runInShell: any(named: 'runInShell'),
-          ),
-        ).thenStream(Stream.value(json.encode(testWorkspace)));
-
-        final result = await sut([]);
-        expect(result, TaskResult.accepted);
-        verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
-          () => mockResolver.file('/test/not${path.separator}pubspec.lock'),
-          () => mockResolver.file('/test/found1${path.separator}pubspec.lock'),
-          () => mockLogger.debug(
-                'Detected workspace lockfile as: /test/found1${path.separator}pubspec.lock',
-              ),
-          () => mockResolver.file('pubspec.yaml'),
-          () => mockLogger.debug('=> All dependencies are up to date'),
-        ]);
-        verifyNever(() => mockResolver.file(any()));
-      });
-
-      test('rejects if workspace is empty', () async {
-        const testWorkspace = Workspace([]);
-
-        when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            runInShell: any(named: 'runInShell'),
-          ),
-        ).thenStream(Stream.value(json.encode(testWorkspace)));
-
-        final result = await sut([]);
-        expect(result, TaskResult.rejected);
-        verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
-          () => mockLogger.error('Failed to find pubspec.lock in workspace'),
-        ]);
-        verifyNever(() => mockResolver.file(any()));
-      });
-
-      test('rejects if workspace has no lockfiles', () async {
-        const testWorkspace = Workspace([
-          WorkspacePackage(name: 'test1', path: '/test'),
-          WorkspacePackage(name: 'test2', path: '/test/not1'),
-          WorkspacePackage(name: 'test3', path: '/test/not2'),
-        ]);
-
-        when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            runInShell: any(named: 'runInShell'),
-          ),
-        ).thenStream(Stream.value(json.encode(testWorkspace)));
-
-        final result = await sut([]);
-        expect(result, TaskResult.rejected);
-        verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
-          () => mockResolver.file('/test${path.separator}pubspec.lock'),
-          () => mockResolver.file('/test/not1${path.separator}pubspec.lock'),
-          () => mockResolver.file('/test/not2${path.separator}pubspec.lock'),
-          () => mockLogger.error('Failed to find pubspec.lock in workspace'),
-        ]);
-        verifyNever(() => mockResolver.file(any()));
-      });
-    });
-
     group('task operation', () {
-      const testWorkspace = Workspace([
-        WorkspacePackage(name: 'test', path: '/test'),
-      ]);
-
-      setUp(() {
-        when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            runInShell: any(named: 'runInShell'),
-          ),
-        ).thenStream(Stream.value(json.encode(testWorkspace)));
-
-        // ignore: discarded_futures
+      setUp(() async {
         when(() => mockRunner.run(any(), any())).thenAnswer((i) async => 0);
       });
 
@@ -347,11 +197,9 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -375,7 +223,7 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
@@ -406,11 +254,9 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -434,7 +280,7 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
@@ -456,17 +302,15 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
@@ -488,11 +332,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -501,7 +343,7 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
@@ -523,11 +365,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -536,7 +376,7 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
@@ -562,11 +402,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -575,12 +413,13 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         sut = PullUpDependenciesTask(
           fileResolver: mockResolver,
           programRunner: mockRunner,
+          lockfileResolver: mockLockfileResolver,
           logger: mockLogger,
           config: const PullUpDependenciesConfig(allowed: ['a']),
         );
@@ -606,11 +445,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockResolver.file('/test${path.separator}pubspec.lock'))
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
             .thenAnswer((i) {
           final res = MockFile();
-          when(() => res.path).thenReturn('/test${path.separator}pubspec.lock');
-          when(() => res.existsSync()).thenReturn(true);
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
 packages:
@@ -619,12 +456,31 @@ packages:
     dependency: 'direct'
 ''',
           );
-          return res;
+          return Future.value(res);
         });
 
         final result = await sut([]);
         expect(result, TaskResult.accepted);
         verify(() => mockLogger.debug('=> All dependencies are up to date'));
+        verifyNever(() => mockLogger.info(any()));
+      });
+
+      test('rejects if lockfile is missing', () async {
+        when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
+          final res = MockFile();
+          when(() => res.readAsString()).thenAnswer(
+            (i) async => '''
+name: pull_up
+''',
+          );
+          return res;
+        });
+
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenReturnAsync(null);
+
+        final result = await sut([]);
+        expect(result, TaskResult.rejected);
         verifyNever(() => mockLogger.info(any()));
       });
     });

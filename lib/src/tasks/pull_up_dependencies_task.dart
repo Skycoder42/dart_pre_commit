@@ -1,19 +1,15 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:checked_yaml/checked_yaml.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';
+import '../util/lockfile_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
-import 'models/pull_up_dependencies/workspace.dart';
 import 'provider/task_provider.dart';
 
 part 'pull_up_dependencies_task.freezed.dart';
@@ -27,6 +23,7 @@ final pullUpDependenciesTaskProvider = TaskProvider.configurable(
   (ref, PullUpDependenciesConfig config) => PullUpDependenciesTask(
     fileResolver: ref.watch(fileResolverProvider),
     programRunner: ref.watch(programRunnerProvider),
+    lockfileResolver: ref.watch(lockfileResolverProvider),
     logger: ref.watch(taskLoggerProvider),
     config: config,
   ),
@@ -62,6 +59,8 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
 
   final FileResolver _fileResolver;
 
+  final LockfileResolver _lockfileResolver;
+
   final TaskLogger _logger;
 
   final PullUpDependenciesConfig _config;
@@ -70,10 +69,12 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   const PullUpDependenciesTask({
     required ProgramRunner programRunner,
     required FileResolver fileResolver,
+    required LockfileResolver lockfileResolver,
     required TaskLogger logger,
     required PullUpDependenciesConfig config,
   })  : _programRunner = programRunner,
         _fileResolver = fileResolver,
+        _lockfileResolver = lockfileResolver,
         _logger = logger,
         _config = config;
 
@@ -93,7 +94,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       return TaskResult.accepted;
     }
 
-    final lockFile = await _findWorkspaceLockfile();
+    final lockFile = await _lockfileResolver.findWorkspaceLockfile();
     if (lockFile == null) {
       return TaskResult.rejected;
     }
@@ -145,31 +146,6 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       _logger.debug('pubspec.lock is not ignored, checking if staged');
       return entries.isNotEmpty;
     }
-  }
-
-  Future<File?> _findWorkspaceLockfile() async {
-    final workspace = await _programRunner
-        .stream(
-          'dart',
-          ['pub', 'workspace', 'list', '--json'],
-          runInShell: true,
-        )
-        .transform(json.decoder)
-        .cast<Map<String, dynamic>>()
-        .map(Workspace.fromJson)
-        .single;
-
-    for (final package in workspace.packages) {
-      final lockFile =
-          _fileResolver.file(path.join(package.path, 'pubspec.lock'));
-      if (lockFile.existsSync()) {
-        _logger.debug('Detected workspace lockfile as: ${lockFile.path}');
-        return lockFile;
-      }
-    }
-
-    _logger.error('Failed to find pubspec.lock in workspace');
-    return null;
   }
 
   Map<String, Version> _resolveLockVersions(PubspecLock pubspecLock) {
