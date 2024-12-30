@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
+import '../util/file_resolver.dart';
 import '../util/lockfile_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
@@ -23,6 +24,7 @@ final osvScannerTaskProvider = TaskProvider.configurable(
   OsvScannerConfig.fromJson,
   (ref, config) => OsvScannerTask(
     programRunner: ref.watch(programRunnerProvider),
+    fileResolver: ref.watch(fileResolverProvider),
     lockfileResolver: ref.watch(lockfileResolverProvider),
     taskLogger: ref.watch(taskLoggerProvider),
     config: config,
@@ -62,6 +64,7 @@ class OsvScannerTask implements RepoTask {
   static const osvScannerBinary = 'osv-scanner';
 
   final ProgramRunner _programRunner;
+  final FileResolver _fileResolver;
   final LockfileResolver _lockfileResolver;
   final TaskLogger _taskLogger;
   final OsvScannerConfig _config;
@@ -69,10 +72,12 @@ class OsvScannerTask implements RepoTask {
   /// @nodoc
   const OsvScannerTask({
     required ProgramRunner programRunner,
+    required FileResolver fileResolver,
     required LockfileResolver lockfileResolver,
     required TaskLogger taskLogger,
     required OsvScannerConfig config,
   })  : _programRunner = programRunner,
+        _fileResolver = fileResolver,
         _lockfileResolver = lockfileResolver,
         _taskLogger = taskLogger,
         _config = config;
@@ -104,7 +109,7 @@ class OsvScannerTask implements RepoTask {
             ],
             if (lockfile case File(path: final path)) ...[
               '--lockfile',
-              path,
+              await _fileResolver.resolve(path),
             ],
             if (!_config.lockfileOnly) ...[
               '--recursive',

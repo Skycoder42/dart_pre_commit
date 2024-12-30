@@ -10,6 +10,7 @@ import 'package:dart_pre_commit/src/tasks/models/osv_scanner/package_info.dart';
 import 'package:dart_pre_commit/src/tasks/models/osv_scanner/result.dart';
 import 'package:dart_pre_commit/src/tasks/models/osv_scanner/vulnerability.dart';
 import 'package:dart_pre_commit/src/tasks/osv_scanner_task.dart';
+import 'package:dart_pre_commit/src/util/file_resolver.dart';
 import 'package:dart_pre_commit/src/util/lockfile_resolver.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
@@ -21,6 +22,8 @@ import '../global_mocks.dart';
 import 'flutter_compat_task_test.dart';
 
 class MockProgramRunner extends Mock implements ProgramRunner {}
+
+class MockFileResolver extends Mock implements FileResolver {}
 
 class MockLockfileResolver extends Mock implements LockfileResolver {}
 
@@ -71,6 +74,7 @@ const osvScannerResult = OsvScannerResult(
 void main() {
   group('$OsvScannerTask', () {
     final mockRunner = MockProgramRunner();
+    final mockFileResolver = MockFileResolver();
     final mockLockfileResolver = MockLockfileResolver();
     final mockLogger = MockTaskLogger();
 
@@ -78,6 +82,7 @@ void main() {
 
     setUp(() async {
       reset(mockRunner);
+      reset(mockFileResolver);
       reset(mockLockfileResolver);
       reset(mockLogger);
 
@@ -93,11 +98,15 @@ void main() {
         ),
       );
 
+      when(() => mockFileResolver.resolve(any()))
+          .thenAnswer((i) async => i.positionalArguments.first as String);
+
       when(() => mockLockfileResolver.findWorkspaceLockfile())
           .thenReturnAsync(FakeFile('pubspec.lock'));
 
       sut = OsvScannerTask(
         programRunner: mockRunner,
+        fileResolver: mockFileResolver,
         lockfileResolver: mockLockfileResolver,
         taskLogger: mockLogger,
         config: const OsvScannerConfig(),
@@ -190,6 +199,7 @@ void main() {
 
         sut = OsvScannerTask(
           programRunner: mockRunner,
+          fileResolver: mockFileResolver,
           lockfileResolver: mockLockfileResolver,
           taskLogger: mockLogger,
           config: fixture.config,
@@ -200,6 +210,8 @@ void main() {
         expect(result, TaskResult.accepted);
         verifyInOrder([
           () => mockLockfileResolver.findWorkspaceLockfile(),
+          if (fixture.hasLockfile)
+            () => mockFileResolver.resolve('pubspec.lock'),
           () => mockRunner.stream(
                 'osv-scanner',
                 fixture.args,
@@ -208,6 +220,8 @@ void main() {
         ]);
 
         verifyNoMoreInteractions(mockRunner);
+        verifyNoMoreInteractions(mockFileResolver);
+        verifyNoMoreInteractions(mockLockfileResolver);
         verifyZeroInteractions(mockLogger);
       },
     );
