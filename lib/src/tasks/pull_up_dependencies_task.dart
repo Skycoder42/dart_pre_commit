@@ -36,11 +36,7 @@ final pullUpDependenciesTaskProvider = TaskProvider.configurable(
 sealed class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
-  @JsonSerializable(
-    anyMap: true,
-    checked: true,
-    disallowUnrecognizedKeys: true,
-  )
+  @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory PullUpDependenciesConfig({
     @Default(<String>[]) List<String> allowed,
   }) = _PullUpDependenciesConfig;
@@ -72,11 +68,11 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
     required LockfileResolver lockfileResolver,
     required TaskLogger logger,
     required PullUpDependenciesConfig config,
-  })  : _programRunner = programRunner,
-        _fileResolver = fileResolver,
-        _lockfileResolver = lockfileResolver,
-        _logger = logger,
-        _config = config;
+  }) : _programRunner = programRunner,
+       _fileResolver = fileResolver,
+       _lockfileResolver = lockfileResolver,
+       _logger = logger,
+       _config = config;
 
   @override
   String get taskName => _taskName;
@@ -111,14 +107,8 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
       await pubspecFile.readAsString(),
       sourceUrl: pubspecFile.uri,
     );
-    var updateCnt = _pullUpVersions(
-      pubspec.dependencies,
-      resolvedVersions,
-    );
-    updateCnt += _pullUpVersions(
-      pubspec.devDependencies,
-      resolvedVersions,
-    );
+    var updateCnt = _pullUpVersions(pubspec.dependencies, resolvedVersions);
+    updateCnt += _pullUpVersions(pubspec.devDependencies, resolvedVersions);
 
     if (updateCnt > 0) {
       _logger.info(
@@ -181,8 +171,9 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
               );
             } else {
               ++updateCtr;
-              _logger
-                  .info('${entry.key}: $versionConstraint -> $resolvedVersion');
+              _logger.info(
+                '${entry.key}: $versionConstraint -> $resolvedVersion',
+              );
             }
           } else {
             _logger.debug('${entry.key}: $versionConstraint OK');

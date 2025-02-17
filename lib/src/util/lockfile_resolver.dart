@@ -32,25 +32,28 @@ class LockfileResolver {
     required ProgramRunner programRunner,
     required FileResolver fileResolver,
     required TaskLogger logger,
-  })  : _programRunner = programRunner,
-        _fileResolver = fileResolver,
-        _logger = logger;
+  }) : _programRunner = programRunner,
+       _fileResolver = fileResolver,
+       _logger = logger;
 
   Future<File?> findWorkspaceLockfile() async {
-    final workspace = await _programRunner
-        .stream(
-          'dart',
-          ['pub', 'workspace', 'list', '--json'],
-          runInShell: true,
-        )
-        .transform(json.decoder)
-        .cast<Map<String, dynamic>>()
-        .map(Workspace.fromJson)
-        .single;
+    final workspace =
+        await _programRunner
+            .stream('dart', [
+              'pub',
+              'workspace',
+              'list',
+              '--json',
+            ], runInShell: true)
+            .transform(json.decoder)
+            .cast<Map<String, dynamic>>()
+            .map(Workspace.fromJson)
+            .single;
 
     for (final package in workspace.packages) {
-      final lockFile =
-          _fileResolver.file(path.join(package.path, 'pubspec.lock'));
+      final lockFile = _fileResolver.file(
+        path.join(package.path, 'pubspec.lock'),
+      );
       if (lockFile.existsSync()) {
         _logger.debug('Detected workspace lockfile as: ${lockFile.path}');
         return lockFile;

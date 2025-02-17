@@ -37,42 +37,46 @@ void main() {
     });
 
     group('loadPubspecConfig', () {
-      test('returns default data and logs warning if pubspec was not found',
-          () async {
-        when(() => mockFile.existsSync()).thenReturn(false);
+      test(
+        'returns default data and logs warning if pubspec was not found',
+        () async {
+          when(() => mockFile.existsSync()).thenReturn(false);
 
-        final result = await sut.loadPubspecConfig();
+          final result = await sut.loadPubspecConfig();
 
-        verifyInOrder([
-          () => mockFileResolver.file('pubspec.yaml'),
-          () => mockFile.existsSync(),
-          () => mockLogger.warn(any()),
-        ]);
+          verifyInOrder([
+            () => mockFileResolver.file('pubspec.yaml'),
+            () => mockFile.existsSync(),
+            () => mockLogger.warn(any()),
+          ]);
 
-        expect(result.isFlutterProject, isFalse);
-        expect(result.isPublished, isTrue);
-        expect(result.hasCustomLintDependency, isFalse);
-      });
+          expect(result.isFlutterProject, isFalse);
+          expect(result.isPublished, isTrue);
+          expect(result.hasCustomLintDependency, isFalse);
+        },
+      );
 
-      test('returns default data if entries are not found in pubspec',
-          () async {
-        when(() => mockFile.existsSync()).thenReturn(true);
-        when(() => mockFile.uri).thenReturn(Uri());
-        when(() => mockFile.readAsString()).thenReturnAsync('name: app');
+      test(
+        'returns default data if entries are not found in pubspec',
+        () async {
+          when(() => mockFile.existsSync()).thenReturn(true);
+          when(() => mockFile.uri).thenReturn(Uri());
+          when(() => mockFile.readAsString()).thenReturnAsync('name: app');
 
-        final result = await sut.loadPubspecConfig();
+          final result = await sut.loadPubspecConfig();
 
-        verifyInOrder([
-          () => mockFileResolver.file('pubspec.yaml'),
-          () => mockFile.existsSync(),
-          () => mockFile.readAsString(),
-          () => mockFile.uri,
-        ]);
+          verifyInOrder([
+            () => mockFileResolver.file('pubspec.yaml'),
+            () => mockFile.existsSync(),
+            () => mockFile.readAsString(),
+            () => mockFile.uri,
+          ]);
 
-        expect(result.isFlutterProject, isFalse);
-        expect(result.isPublished, isTrue);
-        expect(result.hasCustomLintDependency, isFalse);
-      });
+          expect(result.isFlutterProject, isFalse);
+          expect(result.isPublished, isTrue);
+          expect(result.hasCustomLintDependency, isFalse);
+        },
+      );
 
       test('returns custom data if entries are found in pubspec', () async {
         when(() => mockFile.existsSync()).thenReturn(true);

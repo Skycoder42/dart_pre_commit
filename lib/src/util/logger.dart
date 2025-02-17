@@ -13,9 +13,7 @@ import '../task_base.dart';
 /// your provider container with a specific implementation.
 ///
 /// See the `example/main.dart` for an example.
-final loggerProvider = Provider<Logger>(
-  (ref) => throw UnimplementedError(),
-);
+final loggerProvider = Provider<Logger>((ref) => throw UnimplementedError());
 
 /// @nodoc
 @internal

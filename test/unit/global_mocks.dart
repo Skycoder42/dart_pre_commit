@@ -26,9 +26,8 @@ RepoEntry fakeEntry(
   String path, {
   bool partiallyStaged = false,
   bool exists = true,
-}) =>
-    RepoEntry(
-      file: FakeFile(path, exists: exists),
-      partiallyStaged: partiallyStaged,
-      gitRoot: Directory.systemTemp,
-    );
+}) => RepoEntry(
+  file: FakeFile(path, exists: exists),
+  partiallyStaged: partiallyStaged,
+  gitRoot: Directory.systemTemp,
+);

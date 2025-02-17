@@ -47,60 +47,68 @@ void main() {
           verifyNoMoreInteractions(mockFileResolver);
         });
 
-        test('returns true and sets config to empty map if no config is given',
-            () async {
-          when(() => mockFile.readAsString()).thenReturnAsync('name: test');
+        test(
+          'returns true and sets config to empty map if no config is given',
+          () async {
+            when(() => mockFile.readAsString()).thenReturnAsync('name: test');
 
-          final result = await sut.loadGlobalConfig();
+            final result = await sut.loadGlobalConfig();
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns true and sets config to empty map if config is true',
-            () async {
-          when(() => mockFile.readAsString())
-              .thenReturnAsync('dart_pre_commit: true');
+        test(
+          'returns true and sets config to empty map if config is true',
+          () async {
+            when(
+              () => mockFile.readAsString(),
+            ).thenReturnAsync('dart_pre_commit: true');
 
-          final result = await sut.loadGlobalConfig();
+            final result = await sut.loadGlobalConfig();
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns false and sets config to empty map if config is false',
-            () async {
-          when(() => mockFile.readAsString())
-              .thenReturnAsync('dart_pre_commit: false');
+        test(
+          'returns false and sets config to empty map if config is false',
+          () async {
+            when(
+              () => mockFile.readAsString(),
+            ).thenReturnAsync('dart_pre_commit: false');
 
-          final result = await sut.loadGlobalConfig();
+            final result = await sut.loadGlobalConfig();
 
-          expect(result, isFalse);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isFalse);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns true and sets config to given map if config is a map',
-            () async {
-          when(() => mockFile.readAsString()).thenAnswer(
-            (i) async => '''
+        test(
+          'returns true and sets config to given map if config is a map',
+          () async {
+            when(() => mockFile.readAsString()).thenAnswer(
+              (i) async => '''
 dart_pre_commit:
   key1: value1
   key2: 2
 ''',
-          );
+            );
 
-          final result = await sut.loadGlobalConfig();
+            final result = await sut.loadGlobalConfig();
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, const {
-            'key1': 'value1',
-            'key2': 2,
-          });
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, const {'key1': 'value1', 'key2': 2});
+          },
+        );
 
         test('throws if config has an invalid value', () async {
-          when(() => mockFile.readAsString())
-              .thenReturnAsync('dart_pre_commit: 42');
+          when(
+            () => mockFile.readAsString(),
+          ).thenReturnAsync('dart_pre_commit: 42');
 
           expect(
             () => sut.loadGlobalConfig(),
@@ -136,53 +144,58 @@ dart_pre_commit:
           verifyZeroInteractions(mockFileResolver);
         });
 
-        test('returns true and sets config to empty map if no config is given',
-            () async {
-          when(() => mockFile.readAsString()).thenReturnAsync('');
+        test(
+          'returns true and sets config to empty map if no config is given',
+          () async {
+            when(() => mockFile.readAsString()).thenReturnAsync('');
 
-          final result = await sut.loadGlobalConfig(mockFile);
+            final result = await sut.loadGlobalConfig(mockFile);
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns true and sets config to empty map if config is true',
-            () async {
-          when(() => mockFile.readAsString()).thenReturnAsync('true');
+        test(
+          'returns true and sets config to empty map if config is true',
+          () async {
+            when(() => mockFile.readAsString()).thenReturnAsync('true');
 
-          final result = await sut.loadGlobalConfig(mockFile);
+            final result = await sut.loadGlobalConfig(mockFile);
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns false and sets config to empty map if config is false',
-            () async {
-          when(() => mockFile.readAsString()).thenReturnAsync('false');
+        test(
+          'returns false and sets config to empty map if config is false',
+          () async {
+            when(() => mockFile.readAsString()).thenReturnAsync('false');
 
-          final result = await sut.loadGlobalConfig(mockFile);
+            final result = await sut.loadGlobalConfig(mockFile);
 
-          expect(result, isFalse);
-          expect(sut.debugGlobalConfig, isEmpty);
-        });
+            expect(result, isFalse);
+            expect(sut.debugGlobalConfig, isEmpty);
+          },
+        );
 
-        test('returns true and sets config to given map if config is a map',
-            () async {
-          when(() => mockFile.readAsString()).thenAnswer(
-            (i) async => '''
+        test(
+          'returns true and sets config to given map if config is a map',
+          () async {
+            when(() => mockFile.readAsString()).thenAnswer(
+              (i) async => '''
 key1: value1
 key2: 2
 ''',
-          );
+            );
 
-          final result = await sut.loadGlobalConfig(mockFile);
+            final result = await sut.loadGlobalConfig(mockFile);
 
-          expect(result, isTrue);
-          expect(sut.debugGlobalConfig, const {
-            'key1': 'value1',
-            'key2': 2,
-          });
-        });
+            expect(result, isTrue);
+            expect(sut.debugGlobalConfig, const {'key1': 'value1', 'key2': 2});
+          },
+        );
 
         test('throws if config has an invalid value', () async {
           when(() => mockFile.readAsString()).thenReturnAsync('42');
@@ -215,10 +228,7 @@ task:
   key1: value1
   key2: false
 ''',
-            equals(const {
-              'key1': 'value1',
-              'key2': false,
-            }),
+            equals(const {'key1': 'value1', 'key2': false}),
           ),
         ],
         (fixture) async {
@@ -230,10 +240,8 @@ task:
           final config = sut.loadTaskConfig('task');
           expect(config, fixture.$2);
         },
-        dataToString: (t) => (
-          t.$1,
-          t.$2.describe(StringDescription()),
-        ).toString(),
+        dataToString:
+            (t) => (t.$1, t.$2.describe(StringDescription())).toString(),
       );
 
       test('returns null if task is disabled by default', () async {
@@ -280,10 +288,8 @@ exclude:
           final config = sut.loadExcludePatterns();
           expect(config, fixture.$2);
         },
-        dataToString: (t) => (
-          t.$1,
-          t.$2.describe(StringDescription()),
-        ).toString(),
+        dataToString:
+            (t) => (t.$1, t.$2.describe(StringDescription())).toString(),
       );
 
       test('throws exception on invalid exclude configuration value', () async {

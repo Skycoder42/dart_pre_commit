@@ -44,21 +44,25 @@ void main() {
       verifyNoMoreInteractions(mockOutSink);
     });
 
-    testData<(TaskStatus, String)>('prints status', const [
-      (TaskStatus.scanning, '[S] '),
-      (TaskStatus.clean, '[C] '),
-      (TaskStatus.hasChanges, '[M] '),
-      (TaskStatus.hasUnstagedChanges, '[U] '),
-      (TaskStatus.rejected, '[R] '),
-    ], (fixture) {
-      sut.updateStatus(status: fixture.$1);
-      verifyInOrder([
-        () => mockOutSink.write(fixture.$2),
-        () => mockOutSink.write(''),
-        () => mockOutSink.writeln(),
-      ]);
-      verifyNoMoreInteractions(mockOutSink);
-    });
+    testData<(TaskStatus, String)>(
+      'prints status',
+      const [
+        (TaskStatus.scanning, '[S] '),
+        (TaskStatus.clean, '[C] '),
+        (TaskStatus.hasChanges, '[M] '),
+        (TaskStatus.hasUnstagedChanges, '[U] '),
+        (TaskStatus.rejected, '[R] '),
+      ],
+      (fixture) {
+        sut.updateStatus(status: fixture.$1);
+        verifyInOrder([
+          () => mockOutSink.write(fixture.$2),
+          () => mockOutSink.write(''),
+          () => mockOutSink.writeln(),
+        ]);
+        verifyNoMoreInteractions(mockOutSink);
+      },
+    );
 
     test('prints detail', () {
       sut.updateStatus(detail: 'detail');
@@ -87,13 +91,7 @@ void main() {
       'update and clear use old state correctly',
       const [
         ('msg', null, null, false, ['[S] ', 'msg', ' test2']),
-        (
-          null,
-          TaskStatus.clean,
-          null,
-          false,
-          ['[C] ', 'test1', ' test2'],
-        ),
+        (null, TaskStatus.clean, null, false, ['[C] ', 'test1', ' test2']),
         (null, null, 'dtl', false, ['[S] ', 'test1', ' dtl']),
         ('msg', TaskStatus.clean, null, false, ['[C] ', 'msg', ' test2']),
         ('msg', null, 'dtl', false, ['[S] ', 'msg', ' dtl']),
@@ -160,18 +158,15 @@ void main() {
     );
 
     testData<
-        (LogLevel, void Function(SimpleLogger)?, void Function(SimpleLogger)?)>(
+      (LogLevel, void Function(SimpleLogger)?, void Function(SimpleLogger)?)
+    >(
       'honors logLevel',
       [
         (LogLevel.debug, null, (l) => l.debug('')),
         (LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
         (LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
         (LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
-        (
-          LogLevel.except,
-          (l) => l.error(''),
-          (l) => l.except(Exception()),
-        ),
+        (LogLevel.except, (l) => l.error(''), (l) => l.except(Exception())),
         (LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {

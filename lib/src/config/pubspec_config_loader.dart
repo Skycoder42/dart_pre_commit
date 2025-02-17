@@ -40,15 +40,16 @@ class PubspecConfigLoader {
   const PubspecConfigLoader({
     required FileResolver fileResolver,
     required Logger logger,
-  })  : _fileResolver = fileResolver,
-        _logger = logger;
+  }) : _fileResolver = fileResolver,
+       _logger = logger;
 
   /// @nodoc
   Future<PubspecConfig> loadPubspecConfig() async {
     final pubspecFile = _fileResolver.file('pubspec.yaml');
     if (!pubspecFile.existsSync()) {
-      _logger
-          .warn('No pubspec.yaml file found. Skipping pubspec configuration.');
+      _logger.warn(
+        'No pubspec.yaml file found. Skipping pubspec configuration.',
+      );
       return const PubspecConfig();
     }
 
@@ -58,8 +59,9 @@ class PubspecConfigLoader {
     return PubspecConfig(
       isFlutterProject: pubspec.dependencies.containsKey('flutter'),
       isPublished: pubspec.publishTo != 'none',
-      hasCustomLintDependency:
-          pubspec.devDependencies.containsKey('custom_lint'),
+      hasCustomLintDependency: pubspec.devDependencies.containsKey(
+        'custom_lint',
+      ),
     );
   }
 }

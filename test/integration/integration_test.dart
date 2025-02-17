@@ -65,16 +65,12 @@ void main() {
     List<String> arguments, {
     bool failOnError = true,
     void Function(Stream<List<int>>)? onStdout,
-  }) async =>
-      run(
-        'dart',
-        [
-          'pub',
-          ...arguments,
-        ],
-        failOnError: failOnError,
-        onStdout: onStdout,
-      );
+  }) async => run(
+    'dart',
+    ['pub', ...arguments],
+    failOnError: failOnError,
+    onStdout: onStdout,
+  );
 
   Future<int> sut(
     String mode, {
@@ -94,10 +90,7 @@ void main() {
     ];
     final configEditor = YamlEditor('_placeholder: null');
     for (final task in knownTasks) {
-      configEditor.update(
-        [task],
-        mode == task ? (config ?? true) : false,
-      );
+      configEditor.update([task], mode == task ? (config ?? true) : false);
     }
 
     final configFile = File.fromUri(testDir.uri.resolve('config.yaml'));
@@ -113,15 +106,17 @@ void main() {
         ...?arguments,
       ],
       failOnError: failOnError,
-      onStdout: onStdout != null
-          ? (s) => s
+      onStdout:
+          onStdout != null
+              ? (s) => s
                   .transform(utf8.decoder)
                   .transform(const LineSplitter())
                   .map((line) {
-                print('OUT: $line');
-                return line;
-              }).listen(onStdout)
-          : null,
+                    print('OUT: $line');
+                    return line;
+                  })
+                  .listen(onStdout)
+              : null,
     );
   }
 
@@ -131,9 +126,7 @@ void main() {
     await git(const ['init']);
 
     // create files
-    await writeFile(
-      'pubspec.yaml',
-      '''
+    await writeFile('pubspec.yaml', '''
 name: test_project
 version: 0.0.1
 
@@ -151,8 +144,7 @@ dev_dependencies:
   lint: null
   custom_lint: null
   dart_test_tools: '>=5.0.0'
-''',
-    );
+''');
 
     await writeFile('analysis_options.yaml', '''
 analyzer:
@@ -160,24 +152,18 @@ analyzer:
     - custom_lint
 ''');
 
-    await writeFile(
-      'bin/format.dart',
-      '''
+    await writeFile('bin/format.dart', '''
 import 'package:test_project/test_project.dart';
 
 void main() {
   final x = 'this is a very very very very very very very very very very very very very very very very very very very very very very long string';
 }
-''',
-    );
-    await writeFile(
-      'lib/src/analyze.dart',
-      '''
+''');
+    await writeFile('lib/src/analyze.dart', '''
 void main() {
   var x = 'constant';
 }
-''',
-    );
+''');
     await writeFile('lib/test_project.dart', '');
     await writeFile(
       'test/test.dart',
@@ -198,17 +184,14 @@ void main() {
     await sut('format');
 
     final data = await readFile('bin/format.dart');
-    expect(
-      data,
-      '''
+    expect(data, '''
 import 'package:test_project/test_project.dart';
 
 void main() {
   final x =
       'this is a very very very very very very very very very very very very very very very very very very very very very very long string';
 }
-''',
-    );
+''');
   });
 
   test('analyze', () async {
@@ -232,28 +215,21 @@ void main() {
     expect(code, HookResult.rejected.index);
   });
 
-  test(
-    'flutter-compat',
-    () async {
-      printOnFailure('Using PATH: ${Platform.environment['PATH']}');
+  test('flutter-compat', () async {
+    printOnFailure('Using PATH: ${Platform.environment['PATH']}');
 
-      await git(const ['add', 'pubspec.yaml']);
+    await git(const ['add', 'pubspec.yaml']);
 
-      final lines = <String>[];
-      final code = await sut(
-        'flutter-compat',
-        onStdout: lines.add,
-      );
-      expect(code, HookResult.clean.index);
-      expect(
-        lines,
-        contains(
-          startsWith('  [INF] Package test_project is flutter compatible'),
-        ),
-      );
-    },
-    timeout: const Timeout(Duration(minutes: 2)),
-  );
+    final lines = <String>[];
+    final code = await sut('flutter-compat', onStdout: lines.add);
+    expect(code, HookResult.clean.index);
+    expect(
+      lines,
+      contains(
+        startsWith('  [INF] Package test_project is flutter compatible'),
+      ),
+    );
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   test('pull-up-dependencies', () async {
     await git(const ['add', 'pubspec.lock']);
@@ -285,12 +261,8 @@ void main() {
     expect(
       lines,
       allOf([
-        contains(
-          startsWith('  [INF] Required:    mobx: 2.1.0 -> '),
-        ),
-        contains(
-          startsWith('  [WRN] Ignored:     image: 4.0.0 -> '),
-        ),
+        contains(startsWith('  [INF] Required:    mobx: 2.1.0 -> ')),
+        contains(startsWith('  [WRN] Ignored:     image: 4.0.0 -> ')),
       ]),
     );
     expect(code, HookResult.rejected.index);

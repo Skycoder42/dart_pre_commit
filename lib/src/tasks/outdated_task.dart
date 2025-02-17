@@ -47,11 +47,7 @@ enum OutdatedLevel {
 sealed class OutdatedConfig with _$OutdatedConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
-  @JsonSerializable(
-    anyMap: true,
-    checked: true,
-    disallowUnrecognizedKeys: true,
-  )
+  @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory OutdatedConfig({
     @Default(OutdatedLevel.any) OutdatedLevel level,
     @Default(<String>[]) List<String> allowed,
@@ -78,9 +74,9 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
     required ProgramRunner programRunner,
     required TaskLogger logger,
     required OutdatedConfig config,
-  })  : _programRunner = programRunner,
-        _logger = logger,
-        _config = config;
+  }) : _programRunner = programRunner,
+       _logger = logger,
+       _config = config;
 
   @override
   String get taskName => _taskName;
@@ -125,15 +121,18 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
       }
 
       if (hasUpdate && _config.allowed.contains(package.package)) {
-        _logger
-            .warn('Ignored:     ${package.package}: $current -> $resolvable');
+        _logger.warn(
+          'Ignored:     ${package.package}: $current -> $resolvable',
+        );
       } else if (updated) {
         ++outdatedCnt;
-        _logger
-            .info('Required:    ${package.package}: $current -> $resolvable');
+        _logger.info(
+          'Required:    ${package.package}: $current -> $resolvable',
+        );
       } else if (hasUpdate) {
-        _logger
-            .info('Recommended: ${package.package}: $current -> $resolvable');
+        _logger.info(
+          'Recommended: ${package.package}: $current -> $resolvable',
+        );
       } else {
         _logger.debug('Up to date:  ${package.package}: $current');
       }
@@ -150,15 +149,11 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
     }
   }
 
-  Future<OutdatedInfo> _collectOutdated() => _programRunner
-      .stream('dart', [
-        'pub',
-        'outdated',
-        '--show-all',
-        '--json',
-      ])
-      .transform(json.decoder)
-      .cast<Map<String, dynamic>>()
-      .map(OutdatedInfo.fromJson)
-      .single;
+  Future<OutdatedInfo> _collectOutdated() =>
+      _programRunner
+          .stream('dart', ['pub', 'outdated', '--show-all', '--json'])
+          .transform(json.decoder)
+          .cast<Map<String, dynamic>>()
+          .map(OutdatedInfo.fromJson)
+          .single;
 }

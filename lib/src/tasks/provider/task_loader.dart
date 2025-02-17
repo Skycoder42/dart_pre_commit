@@ -10,10 +10,7 @@ import 'task_provider.dart';
 // coverage:ignore-start
 /// A riverpod provider for the [TaskLoader]
 final taskLoaderProvider = Provider(
-  (ref) => TaskLoader(
-    ref: ref,
-    configLoader: ref.watch(configLoaderProvider),
-  ),
+  (ref) => TaskLoader(ref: ref, configLoader: ref.watch(configLoaderProvider)),
 );
 // coverage:ignore-end
 
@@ -32,10 +29,7 @@ class _SimpleTaskConfig<TState extends TaskBase>
   @override
   final bool enabledByDefault;
 
-  _SimpleTaskConfig(
-    this.provider, {
-    required this.enabledByDefault,
-  });
+  _SimpleTaskConfig(this.provider, {required this.enabledByDefault});
 
   @override
   String get taskName => provider.name;
@@ -76,11 +70,9 @@ class TaskLoader {
   final _tasks = <_TaskConfig>[];
 
   /// Default constructor
-  TaskLoader({
-    required Ref ref,
-    required ConfigLoader configLoader,
-  })  : _ref = ref,
-        _configLoader = configLoader;
+  TaskLoader({required Ref ref, required ConfigLoader configLoader})
+    : _ref = ref,
+      _configLoader = configLoader;
 
   /// Registers a simple, unconfigurable task provider.
   ///
@@ -88,13 +80,9 @@ class TaskLoader {
   void registerTask<TState extends TaskBase>(
     TaskProvider<TState> provider, {
     bool enabledByDefault = true,
-  }) =>
-      _tasks.add(
-        _SimpleTaskConfig<TState>(
-          provider,
-          enabledByDefault: enabledByDefault,
-        ),
-      );
+  }) => _tasks.add(
+    _SimpleTaskConfig<TState>(provider, enabledByDefault: enabledByDefault),
+  );
 
   /// Registers a configurable task provider.
   ///
@@ -102,13 +90,12 @@ class TaskLoader {
   void registerConfigurableTask<TState extends TaskBase, TArg>(
     ConfigurableTaskProviderFamily<TState, TArg> providerFamily, {
     bool enabledByDefault = true,
-  }) =>
-      _tasks.add(
-        _ConfigurableTaskConfig<TState, TArg>(
-          providerFamily,
-          enabledByDefault: enabledByDefault,
-        ),
-      );
+  }) => _tasks.add(
+    _ConfigurableTaskConfig<TState, TArg>(
+      providerFamily,
+      enabledByDefault: enabledByDefault,
+    ),
+  );
 
   /// @nodoc
   @internal

@@ -13,9 +13,7 @@ import 'logger.dart';
 /// @nodoc
 @internal
 final programRunnerProvider = Provider(
-  (ref) => ProgramRunner(
-    logger: ref.watch(taskLoggerProvider),
-  ),
+  (ref) => ProgramRunner(logger: ref.watch(taskLoggerProvider)),
 );
 // coverage:ignore-end
 
@@ -36,11 +34,7 @@ class ProgramExitException implements Exception {
   final List<String>? arguments;
 
   /// @nodoc
-  const ProgramExitException(
-    this.exitCode, [
-    this.program,
-    this.arguments,
-  ]);
+  const ProgramExitException(this.exitCode, [this.program, this.arguments]);
 
   @override
   String toString() {
@@ -64,9 +58,7 @@ class ProgramRunner {
   final TaskLogger _logger;
 
   /// @nodoc
-  const ProgramRunner({
-    required TaskLogger logger,
-  }) : _logger = logger;
+  const ProgramRunner({required TaskLogger logger}) : _logger = logger;
 
   /// @nodoc
   Stream<String> stream(

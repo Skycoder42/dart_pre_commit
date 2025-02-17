@@ -49,8 +49,9 @@ void main() {
         when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
           const PubspecConfig(isFlutterProject: true, isPublished: false),
         );
-        when(() => mockProgramDetector.hasProgram(any()))
-            .thenReturnAsync(false);
+        when(
+          () => mockProgramDetector.hasProgram(any()),
+        ).thenReturnAsync(false);
 
         await sut.registerDefaultTasks();
 
@@ -59,8 +60,9 @@ void main() {
           () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
-          () => mockTaskLoader
-              .registerConfigurableTask(pullUpDependenciesTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(
+            pullUpDependenciesTaskProvider,
+          ),
           () => mockProgramDetector.hasProgram(OsvScannerTask.osvScannerBinary),
         ]);
         verifyNoMoreInteractions(mockPubspecConfigLoader);
@@ -68,9 +70,9 @@ void main() {
       });
 
       test('registers all tasks if extra configs do apply', () async {
-        when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
-          const PubspecConfig(hasCustomLintDependency: true),
-        );
+        when(
+          mockPubspecConfigLoader.loadPubspecConfig,
+        ).thenReturnAsync(const PubspecConfig(hasCustomLintDependency: true));
         when(() => mockProgramDetector.hasProgram(any())).thenReturnAsync(true);
 
         await sut.registerDefaultTasks();
@@ -82,8 +84,9 @@ void main() {
           () => mockTaskLoader.registerConfigurableTask(customLintTaskProvider),
           () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
           () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
-          () => mockTaskLoader
-              .registerConfigurableTask(pullUpDependenciesTaskProvider),
+          () => mockTaskLoader.registerConfigurableTask(
+            pullUpDependenciesTaskProvider,
+          ),
           () => mockProgramDetector.hasProgram(OsvScannerTask.osvScannerBinary),
           () => mockTaskLoader.registerConfigurableTask(osvScannerTaskProvider),
         ]);

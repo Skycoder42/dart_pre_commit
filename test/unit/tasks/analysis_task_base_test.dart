@@ -144,12 +144,8 @@ void main() {
       [
         const (<String, dynamic>{}, AnalysisConfig()),
         const (
-          <String, dynamic>{
-            'error-level': 'warning',
-          },
-          AnalysisConfig(
-            errorLevel: AnalyzeErrorLevel.warning,
-          ),
+          <String, dynamic>{'error-level': 'warning'},
+          AnalysisConfig(errorLevel: AnalyzeErrorLevel.warning),
         ),
       ],
       (fixture) {
@@ -166,20 +162,17 @@ void main() {
     late AnalysisTaskBase sut;
 
     void whenRunnerStream(Stream<String> stream, [int exitCode = 0]) => when(
-          () => mockRunner.stream(
-            any(),
-            any(),
-            failOnExit: any(named: 'failOnExit'),
-            exitCodeHandler: any(named: 'exitCodeHandler'),
-          ),
-        ).thenAnswer(
-          (i) {
-            final handler =
-                i.namedArguments[#exitCodeHandler] as ExitCodeHandlerCb?;
-            handler?.call(exitCode);
-            return stream;
-          },
-        );
+      () => mockRunner.stream(
+        any(),
+        any(),
+        failOnExit: any(named: 'failOnExit'),
+        exitCodeHandler: any(named: 'exitCodeHandler'),
+      ),
+    ).thenAnswer((i) {
+      final handler = i.namedArguments[#exitCodeHandler] as ExitCodeHandlerCb?;
+      handler?.call(exitCode);
+      return stream;
+    });
 
     setUp(() {
       reset(mockLogger);
@@ -192,9 +185,10 @@ void main() {
         ),
       );
 
-      // ignore: discarded_futures
-      when(() => mockResolver.resolve(any()))
-          .thenAnswer((i) async => i.positionalArguments.first as String);
+      when(
+        // ignore: discarded_futures
+        () => mockResolver.resolve(any()),
+      ).thenAnswer((i) async => i.positionalArguments.first as String);
       when(() => mockResolver.resolveAll(any())).thenAnswer(
         (i) => Stream.fromIterable(
           i.positionalArguments.first as Iterable<String>,
@@ -241,10 +235,7 @@ void main() {
       const [
         (AnalyzeErrorLevel.error, ['--no-fatal-warnings']),
         (AnalyzeErrorLevel.warning, ['--fatal-warnings']),
-        (
-          AnalyzeErrorLevel.info,
-          ['--fatal-warnings', '--fatal-infos'],
-        ),
+        (AnalyzeErrorLevel.info, ['--fatal-warnings', '--fatal-infos']),
       ],
       (fixture) async {
         sut = TestableAnalysisTaskBase(
@@ -299,8 +290,9 @@ void main() {
         expect(result, TaskResult.accepted);
         verifyInOrder([
           () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
-          () => mockLogger
-              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
+          () => mockLogger.info(
+            '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
+          ),
           () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
           () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
           () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
@@ -329,62 +321,70 @@ void main() {
         verify(() => mockLogger.info(any())).called(1);
       });
 
-      test('succeeds if none of the files are staged and option is enabled',
-          () async {
-        sut = TestableAnalysisTaskBase(
-          logger: mockLogger,
-          programRunner: mockRunner,
-          fileResolver: mockResolver,
-          config: const AnalysisConfig(ignoreUnstagedFiles: true),
-        );
+      test(
+        'succeeds if none of the files are staged and option is enabled',
+        () async {
+          sut = TestableAnalysisTaskBase(
+            logger: mockLogger,
+            programRunner: mockRunner,
+            fileResolver: mockResolver,
+            config: const AnalysisConfig(ignoreUnstagedFiles: true),
+          );
 
-        whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
+          whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
 
-        final result = await sut(const []);
-        expect(result, TaskResult.accepted);
-        verifyInOrder([
-          () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
-          () => mockLogger
-              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
-          () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
-          () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
-          () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
-          () => mockLogger
-              .info('5 issue(s) found, but none are in staged files.'),
-        ]);
-        verifyNever(() => mockLogger.info(any()));
-      });
+          final result = await sut(const []);
+          expect(result, TaskResult.accepted);
+          verifyInOrder([
+            () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
+            () => mockLogger.info(
+              '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
+            ),
+            () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
+            () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
+            () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
+            () => mockLogger.info(
+              '5 issue(s) found, but none are in staged files.',
+            ),
+          ]);
+          verifyNever(() => mockLogger.info(any()));
+        },
+      );
 
-      test('fails if some of the files are staged and option is enabled',
-          () async {
-        sut = TestableAnalysisTaskBase(
-          logger: mockLogger,
-          programRunner: mockRunner,
-          fileResolver: mockResolver,
-          config: const AnalysisConfig(ignoreUnstagedFiles: true),
-        );
+      test(
+        'fails if some of the files are staged and option is enabled',
+        () async {
+          sut = TestableAnalysisTaskBase(
+            logger: mockLogger,
+            programRunner: mockRunner,
+            fileResolver: mockResolver,
+            config: const AnalysisConfig(ignoreUnstagedFiles: true),
+          );
 
-        whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
+          whenRunnerStream(Stream.value(json.encode(fullAnalyzeResult)), 1);
 
-        final result = await sut([
-          fakeEntry('a.dart'),
-          fakeEntry('a-a-a.dart'),
-          fakeEntry('b/b.dart'),
-          fakeEntry('c/c/d.dart'),
-        ]);
-        expect(result, TaskResult.rejected);
-        verifyInOrder([
-          () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
-          () => mockLogger
-              .info('  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A'),
-          () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
-          () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
-          () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
-          () => mockLogger
-              .info('5 issue(s) found, 2 of those are in unstaged files.'),
-        ]);
-        verifyNever(() => mockLogger.info(any()));
-      });
+          final result = await sut([
+            fakeEntry('a.dart'),
+            fakeEntry('a-a-a.dart'),
+            fakeEntry('b/b.dart'),
+            fakeEntry('c/c/d.dart'),
+          ]);
+          expect(result, TaskResult.rejected);
+          verifyInOrder([
+            () => mockLogger.info('  error - a.dart:10:11 - a1 1 - A'),
+            () => mockLogger.info(
+              '  warning - a-a-a.dart:88:99 - a2 - a2-a2 2 - A',
+            ),
+            () => mockLogger.info('  info - b/b.dart:30:31 - b3 3 - B'),
+            () => mockLogger.info('  warning - c/c/c.dart:40:41 - c4 4 - C'),
+            () => mockLogger.info('  none - pubspec.yaml:50:51 - d5 5 - D'),
+            () => mockLogger.info(
+              '5 issue(s) found, 2 of those are in unstaged files.',
+            ),
+          ]);
+          verifyNever(() => mockLogger.info(any()));
+        },
+      );
     });
   });
 }

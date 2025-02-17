@@ -40,10 +40,7 @@ void main() {
       // ignore: discarded_futures
       when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 0);
 
-      sut = FormatTask(
-        programRunner: mockRunner,
-        config: const FormatConfig(),
-      );
+      sut = FormatTask(programRunner: mockRunner, config: const FormatConfig());
     });
 
     test('task metadata is correct', () {
@@ -72,40 +69,30 @@ void main() {
       final res = await sut(fakeEntry);
       expect(res, TaskResult.accepted);
       verify(
-        () => mockRunner.run(
-          'dart',
-          const [
-            'format',
-            '--fix',
-            '--set-exit-if-changed',
-            'mock.dart',
-          ],
-        ),
+        () => mockRunner.run('dart', const [
+          'format',
+          '--set-exit-if-changed',
+          'mock.dart',
+        ]),
       );
     });
 
     test('calls dart format with line length if given', () async {
       sut = FormatTask(
         programRunner: mockRunner,
-        config: const FormatConfig(
-          lineLength: 160,
-        ),
+        config: const FormatConfig(lineLength: 160),
       );
 
       final res = await sut(fakeEntry);
       expect(res, TaskResult.accepted);
       verify(
-        () => mockRunner.run(
-          'dart',
-          const [
-            'format',
-            '--fix',
-            '--set-exit-if-changed',
-            '--line-length',
-            '160',
-            'mock.dart',
-          ],
-        ),
+        () => mockRunner.run('dart', const [
+          'format',
+          '--set-exit-if-changed',
+          '--line-length',
+          '160',
+          'mock.dart',
+        ]),
       );
     });
 

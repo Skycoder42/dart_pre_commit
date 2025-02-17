@@ -59,13 +59,11 @@ void main() {
       verify(() => mockTaskLogger.info('INFO'));
     });
 
-    testData<Level>(
-      'isLoggable should always return true',
-      Level.LEVELS,
-      (level) {
-        expect(sut.isLoggable(level), isTrue);
-      },
-    );
+    testData<Level>('isLoggable should always return true', Level.LEVELS, (
+      level,
+    ) {
+      expect(sut.isLoggable(level), isTrue);
+    });
 
     testData<(Level, void Function(String))>(
       'log should log according to level',
@@ -81,12 +79,15 @@ void main() {
         (
           Level.SHOUT,
           (m) => mockTaskLogger.except(
-                any(
-                  that: isA<LoggingWrapperException>()
-                      .having((e) => e.message, 'message', m),
-                ),
-                any(that: isNull),
+            any(
+              that: isA<LoggingWrapperException>().having(
+                (e) => e.message,
+                'message',
+                m,
               ),
+            ),
+            any(that: isNull),
+          ),
         ),
       ],
       (fixture) {
@@ -125,8 +126,11 @@ void main() {
       verify(
         () => mockTaskLogger.except(
           any(
-            that: isA<LoggingWrapperException>()
-                .having((e) => e.message, 'message', 'SHOUT'),
+            that: isA<LoggingWrapperException>().having(
+              (e) => e.message,
+              'message',
+              'SHOUT',
+            ),
           ),
           any(that: isNull),
         ),

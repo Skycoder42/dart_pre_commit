@@ -33,10 +33,10 @@ Future<void> main(List<String> args) async {
       throw Exception('Flutter binary ${flutterBin.path} does not exist');
     }
 
-    await _exec(
-      await flutterBin.resolveSymbolicLinks(),
-      const ['doctor', '-v'],
-    );
+    await _exec(await flutterBin.resolveSymbolicLinks(), const [
+      'doctor',
+      '-v',
+    ]);
 
     await _addToPath(Platform.executable);
     await _addToPath(await flutterBin.parent.resolveSymbolicLinks());

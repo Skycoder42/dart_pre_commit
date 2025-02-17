@@ -45,8 +45,8 @@ class SimpleLogger implements Logger {
     IOSink? outSink,
     IOSink? errSink,
     this.logLevel = LogLevel.info,
-  })  : outSink = outSink ?? stdout,
-        errSink = errSink ?? stderr;
+  }) : outSink = outSink ?? stdout,
+       errSink = errSink ?? stderr;
 
   @override
   void updateStatus({
@@ -113,7 +113,8 @@ class SimpleLogger implements Logger {
   }
 
   @override
-  Future<void> pipeStderr(Stream<List<int>> errStream) => errStream.listen((e) {
+  Future<void> pipeStderr(Stream<List<int>> errStream) =>
+      errStream.listen((e) {
         if (canLog(LogLevel.error)) {
           errSink.add(e);
         }

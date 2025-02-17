@@ -26,11 +26,7 @@ final formatTaskProvider = TaskProvider.configurable(
 sealed class FormatConfig with _$FormatConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
-  @JsonSerializable(
-    anyMap: true,
-    checked: true,
-    disallowUnrecognizedKeys: true,
-  )
+  @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory FormatConfig({
     // ignore: invalid_annotation_target
     @JsonKey(name: 'line-length') int? lineLength,
@@ -54,8 +50,8 @@ class FormatTask with PatternTaskMixin implements FileTask {
   const FormatTask({
     required ProgramRunner programRunner,
     required FormatConfig config,
-  })  : _programRunner = programRunner,
-        _config = config;
+  }) : _programRunner = programRunner,
+       _config = config;
 
   @override
   String get taskName => _taskName;
@@ -68,7 +64,6 @@ class FormatTask with PatternTaskMixin implements FileTask {
     const program = 'dart';
     final arguments = [
       'format',
-      '--fix',
       '--set-exit-if-changed',
       if (_config.lineLength != null) ...[
         '--line-length',

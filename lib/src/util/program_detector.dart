@@ -9,9 +9,7 @@ import 'program_runner.dart';
 /// @nodoc
 @internal
 final programDetectorProvider = Provider(
-  (ref) => ProgramDetector(
-    programRunner: ref.watch(programRunnerProvider),
-  ),
+  (ref) => ProgramDetector(programRunner: ref.watch(programRunnerProvider)),
 );
 // coverage:ignore-end
 
@@ -24,9 +22,8 @@ class ProgramDetector {
   final ProgramRunner _programRunner;
 
   /// @nodoc
-  ProgramDetector({
-    required ProgramRunner programRunner,
-  }) : _programRunner = programRunner;
+  ProgramDetector({required ProgramRunner programRunner})
+    : _programRunner = programRunner;
 
   /// @nodoc
   Future<bool> hasProgram(

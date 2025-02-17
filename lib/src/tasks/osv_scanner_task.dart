@@ -38,11 +38,7 @@ final osvScannerTaskProvider = TaskProvider.configurable(
 sealed class OsvScannerConfig with _$OsvScannerConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
-  @JsonSerializable(
-    anyMap: true,
-    checked: true,
-    disallowUnrecognizedKeys: true,
-  )
+  @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory OsvScannerConfig({
     // ignore: invalid_annotation_target
     @JsonKey(name: 'lockfile-only') @Default(true) bool lockfileOnly,
@@ -76,11 +72,11 @@ class OsvScannerTask implements RepoTask {
     required LockfileResolver lockfileResolver,
     required TaskLogger taskLogger,
     required OsvScannerConfig config,
-  })  : _programRunner = programRunner,
-        _fileResolver = fileResolver,
-        _lockfileResolver = lockfileResolver,
-        _taskLogger = taskLogger,
-        _config = config;
+  }) : _programRunner = programRunner,
+       _fileResolver = fileResolver,
+       _lockfileResolver = lockfileResolver,
+       _taskLogger = taskLogger,
+       _config = config;
 
   @override
   String get taskName => _taskName;
@@ -98,30 +94,24 @@ class OsvScannerTask implements RepoTask {
       return TaskResult.rejected;
     }
 
-    final osvScannerJson = await _programRunner
-        .stream(
-          osvScannerBinary,
-          [
-            '--json',
-            if (_config.configFile case final String path) ...[
-              '--config',
-              path,
-            ],
-            if (lockfile case File(path: final path)) ...[
-              '--lockfile',
-              await _fileResolver.resolve(path),
-            ],
-            if (!_config.lockfileOnly) ...[
-              '--recursive',
-              '.',
-            ],
-          ],
-          failOnExit: false,
-        )
-        .transform(json.decoder)
-        .cast<Map<String, dynamic>>()
-        .map(OsvScannerResult.fromJson)
-        .single;
+    final osvScannerJson =
+        await _programRunner
+            .stream(osvScannerBinary, [
+              '--json',
+              if (_config.configFile case final String path) ...[
+                '--config',
+                path,
+              ],
+              if (lockfile case File(path: final path)) ...[
+                '--lockfile',
+                await _fileResolver.resolve(path),
+              ],
+              if (!_config.lockfileOnly) ...['--recursive', '.'],
+            ], failOnExit: false)
+            .transform(json.decoder)
+            .cast<Map<String, dynamic>>()
+            .map(OsvScannerResult.fromJson)
+            .single;
 
     var vulnerabilityCount = 0;
     for (final result in osvScannerJson.results) {
@@ -143,10 +133,7 @@ class OsvScannerTask implements RepoTask {
     }
   }
 
-  void _logVulnerability(
-    PackageInfo package,
-    Vulnerability vulnerability,
-  ) {
+  void _logVulnerability(PackageInfo package, Vulnerability vulnerability) {
     _taskLogger.warn(
       '${package.name}@${package.version} - '
       '${vulnerability.id}: ${vulnerability.summary}. '

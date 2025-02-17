@@ -70,20 +70,15 @@ void main() {
 
       testData<(String, bool)>(
         'Does only match non flutter pubspec',
-        const [
-          ('not_flutter', true),
-          ('flutter', false),
-        ],
+        const [('not_flutter', true), ('flutter', false)],
         (fixture) {
           when(() => mockFile.path).thenReturn('pubspec.yaml');
           when(() => mockFile.uri).thenReturn(Uri.file('pubspec.yaml'));
-          when(() => mockFile.readAsStringSync()).thenReturn(
-            '''
+          when(() => mockFile.readAsStringSync()).thenReturn('''
 name: name
 dependencies:
   ${fixture.$1}: null
-''',
-          );
+''');
 
           expect(sut.canProcess(mockRepoEntry), fixture.$2);
 
@@ -107,9 +102,10 @@ dependencies:
 
       setUp(() {
         when(() => mockFile.uri).thenReturn(testUri);
-        // ignore: discarded_futures
-        when(() => mockFile.readAsString())
-            .thenAnswer((i) async => testContent);
+        when(
+          // ignore: discarded_futures
+          () => mockFile.readAsString(),
+        ).thenAnswer((i) async => testContent);
         when(() => mockFile.parent).thenReturn(FakeDirectory(dependencyPath));
         when(
           // ignore: discarded_futures
@@ -132,31 +128,25 @@ dependencies:
             () => mockFile.readAsString(),
             () => mockFile.uri,
             () => mockProgramRunner.run(
-                  'flutter',
-                  const ['create', '--project-name', 't', '.'],
-                  workingDirectory: any(
-                    named: 'workingDirectory',
-                    that: isSystemTempDir(),
-                  ),
-                  failOnExit: true,
-                  runInShell: Platform.isWindows,
-                ),
+              'flutter',
+              const ['create', '--project-name', 't', '.'],
+              workingDirectory: any(
+                named: 'workingDirectory',
+                that: isSystemTempDir(),
+              ),
+              failOnExit: true,
+              runInShell: Platform.isWindows,
+            ),
             () => mockFile.parent,
             () => mockProgramRunner.run(
-                  'flutter',
-                  const [
-                    'pub',
-                    'add',
-                    dependencyName,
-                    '--path',
-                    dependencyPath,
-                  ],
-                  workingDirectory: any(
-                    named: 'workingDirectory',
-                    that: isSystemTempDir(),
-                  ),
-                  runInShell: Platform.isWindows,
-                ),
+              'flutter',
+              const ['pub', 'add', dependencyName, '--path', dependencyPath],
+              workingDirectory: any(
+                named: 'workingDirectory',
+                that: isSystemTempDir(),
+              ),
+              runInShell: Platform.isWindows,
+            ),
           ]);
         },
       );
@@ -205,10 +195,7 @@ dependencies:
           ),
         ).thenThrow(Exception('FAILURE'));
 
-        expect(
-          () => sut.call([mockRepoEntry]),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => sut.call([mockRepoEntry]), throwsA(isA<Exception>()));
       });
     });
   });

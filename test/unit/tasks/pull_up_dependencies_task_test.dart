@@ -103,8 +103,9 @@ name: pull_up
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -121,10 +122,7 @@ packages:
 
         expect(result, TaskResult.accepted);
         verify(
-          () => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]),
+          () => mockRunner.run('git', const ['check-ignore', 'pubspec.lock']),
         );
         verifyInOrder([
           () => mockLogger.debug('pubspec.lock is ignored'),
@@ -140,14 +138,12 @@ packages:
 
         expect(result, TaskResult.accepted);
         verify(
-          () => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]),
+          () => mockRunner.run('git', const ['check-ignore', 'pubspec.lock']),
         );
         verifyInOrder([
-          () => mockLogger
-              .debug('pubspec.lock is not ignored, checking if staged'),
+          () => mockLogger.debug(
+            'pubspec.lock is not ignored, checking if staged',
+          ),
           () => mockLogger.debug('=> All dependencies are up to date'),
         ]);
         verifyNever(() => mockLogger.info(any()));
@@ -160,14 +156,12 @@ packages:
 
         expect(result, TaskResult.accepted);
         verify(
-          () => mockRunner.run('git', const [
-            'check-ignore',
-            'pubspec.lock',
-          ]),
+          () => mockRunner.run('git', const ['check-ignore', 'pubspec.lock']),
         );
         verifyInOrder([
-          () => mockLogger
-              .debug('pubspec.lock is not ignored, checking if staged'),
+          () => mockLogger.debug(
+            'pubspec.lock is not ignored, checking if staged',
+          ),
           () =>
               mockLogger.debug('No staged changes for pubspec.lock, skipping'),
         ]);
@@ -197,8 +191,9 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -231,8 +226,9 @@ packages:
         verifyInOrder([
           () => mockLogger.info('b: ^1.0.0 -> 1.0.1'),
           () => mockLogger.info('d: ^1.0.0 -> 1.1.0'),
-          () => mockLogger
-              .info('=> 2 dependencies can be pulled up to newer versions!'),
+          () => mockLogger.info(
+            '=> 2 dependencies can be pulled up to newer versions!',
+          ),
         ]);
         verifyNever(() => mockLogger.info(any()));
       });
@@ -254,8 +250,9 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -302,8 +299,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -332,8 +330,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -365,8 +364,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -383,8 +383,9 @@ packages:
         expect(result, TaskResult.rejected);
         verifyInOrder([
           () => mockLogger.info('a: ^1.0.0 -> 1.2.0-nullsafety.0'),
-          () => mockLogger
-              .info('=> 1 dependencies can be pulled up to newer versions!'),
+          () => mockLogger.info(
+            '=> 1 dependencies can be pulled up to newer versions!',
+          ),
         ]);
         verifyNever(() => mockLogger.info(any()));
       });
@@ -402,8 +403,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -445,8 +447,9 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenAnswer((i) {
+        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
+          i,
+        ) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
             (i) async => '''
@@ -476,8 +479,9 @@ name: pull_up
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenReturnAsync(null);
+        when(
+          () => mockLockfileResolver.findWorkspaceLockfile(),
+        ).thenReturnAsync(null);
 
         final result = await sut([]);
         expect(result, TaskResult.rejected);

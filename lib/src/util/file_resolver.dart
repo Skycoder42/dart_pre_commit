@@ -7,9 +7,7 @@ import 'package:riverpod/riverpod.dart';
 // coverage:ignore-start
 /// @nodoc
 @internal
-final fileResolverProvider = Provider(
-  (ref) => FileResolver(),
-);
+final fileResolverProvider = Provider((ref) => FileResolver());
 // coverage:ignore-end
 
 /// @nodoc
@@ -17,9 +15,9 @@ final fileResolverProvider = Provider(
 class FileResolver {
   /// @nodoc
   Future<String> resolve(String path, [Directory? from]) async => relative(
-        await File(path).resolveSymbolicLinks(),
-        from: await (from ?? Directory.current).resolveSymbolicLinks(),
-      );
+    await File(path).resolveSymbolicLinks(),
+    from: await (from ?? Directory.current).resolveSymbolicLinks(),
+  );
 
   /// @nodoc
   Stream<String> resolveAll(Iterable<String> paths, [Directory? from]) =>

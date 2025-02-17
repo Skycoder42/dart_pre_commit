@@ -87,17 +87,18 @@ class ConsoleLogger implements Logger {
 
   @override
   void except(Exception exception, [StackTrace? stackTrace]) => _log(
-        LogLevel.except,
-        stackTrace != null ? '$exception\n$stackTrace' : exception.toString(),
-        Color.MAGENTA,
-      );
+    LogLevel.except,
+    stackTrace != null ? '$exception\n$stackTrace' : exception.toString(),
+    Color.MAGENTA,
+  );
 
   @override
-  Future<void> pipeStderr(Stream<List<int>> stderr) => stderr
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .listen((event) => _log(LogLevel.error, event, Color.DARK_RED))
-      .asFuture();
+  Future<void> pipeStderr(Stream<List<int>> stderr) =>
+      stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((event) => _log(LogLevel.error, event, Color.DARK_RED))
+          .asFuture();
 
   void _log(LogLevel level, String message, [Color? color]) {
     if (!canLog(level)) {

@@ -41,10 +41,8 @@ sealed class Location with _$Location {
 
   /// @nodoc
   // ignore: sort_unnamed_constructors_first
-  const factory Location({
-    required String file,
-    required Range range,
-  }) = _Location;
+  const factory Location({required String file, required Range range}) =
+      _Location;
 
   /// @nodoc
   factory Location.fromJson(Map<String, dynamic> json) =>

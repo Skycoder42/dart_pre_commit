@@ -36,16 +36,20 @@ void main() {
       expect(output.toString(), cleanLine('test'));
     });
 
-    testData<(TaskStatus, String)>('prints status', const [
-      (TaskStatus.scanning, '🔎 '),
-      (TaskStatus.clean, '✅ '),
-      (TaskStatus.hasChanges, '✏️ '),
-      (TaskStatus.hasUnstagedChanges, '⚠️ '),
-      (TaskStatus.rejected, '❌ '),
-    ], (fixture) {
-      sut.updateStatus(message: 'test', status: fixture.$1);
-      expect(output.toString(), contains(fixture.$2));
-    });
+    testData<(TaskStatus, String)>(
+      'prints status',
+      const [
+        (TaskStatus.scanning, '🔎 '),
+        (TaskStatus.clean, '✅ '),
+        (TaskStatus.hasChanges, '✏️ '),
+        (TaskStatus.hasUnstagedChanges, '⚠️ '),
+        (TaskStatus.rejected, '❌ '),
+      ],
+      (fixture) {
+        sut.updateStatus(message: 'test', status: fixture.$1);
+        expect(output.toString(), contains(fixture.$2));
+      },
+    );
 
     test('prints detail', () {
       sut.updateStatus(detail: 'test');
@@ -61,51 +65,42 @@ void main() {
     });
 
     testData<(String?, TaskStatus?, String?, bool, String)>(
-        'update and clear use old state correctly', [
-      ('msg', null, null, false, '🔎 msg${italic(' test2')}'),
-      (
-        null,
-        TaskStatus.clean,
-        null,
-        false,
-        '✅ test1${italic(' test2')}',
-      ),
-      (null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
-      ('msg', TaskStatus.clean, null, false, '✅ msg${italic(' test2')}'),
-      ('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
-      (null, TaskStatus.clean, 'dtl', false, '✅ test1${italic(' dtl')}'),
-      ('msg', TaskStatus.clean, 'dtl', false, '✅ msg${italic(' dtl')}'),
-      const ('msg', null, null, true, 'msg'),
-      const (null, TaskStatus.clean, null, true, '✅ '),
-      (null, null, 'dtl', true, italic(' dtl')),
-      const ('msg', TaskStatus.clean, null, true, '✅ msg'),
-      ('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
-      (null, TaskStatus.clean, 'dtl', true, '✅ ${italic(' dtl')}'),
-      (
-        'msg',
-        TaskStatus.clean,
-        'dtl',
-        true,
-        '✅ msg${italic(' dtl')}',
-      ),
-    ], (fixture) {
-      sut
-        ..updateStatus(
-          message: 'test1',
-          status: TaskStatus.scanning,
-          detail: 'test2',
-        )
-        ..updateStatus(
-          message: fixture.$1,
-          status: fixture.$2,
-          detail: fixture.$3,
-          clear: fixture.$4,
+      'update and clear use old state correctly',
+      [
+        ('msg', null, null, false, '🔎 msg${italic(' test2')}'),
+        (null, TaskStatus.clean, null, false, '✅ test1${italic(' test2')}'),
+        (null, null, 'dtl', false, '🔎 test1${italic(' dtl')}'),
+        ('msg', TaskStatus.clean, null, false, '✅ msg${italic(' test2')}'),
+        ('msg', null, 'dtl', false, '🔎 msg${italic(' dtl')}'),
+        (null, TaskStatus.clean, 'dtl', false, '✅ test1${italic(' dtl')}'),
+        ('msg', TaskStatus.clean, 'dtl', false, '✅ msg${italic(' dtl')}'),
+        const ('msg', null, null, true, 'msg'),
+        const (null, TaskStatus.clean, null, true, '✅ '),
+        (null, null, 'dtl', true, italic(' dtl')),
+        const ('msg', TaskStatus.clean, null, true, '✅ msg'),
+        ('msg', null, 'dtl', true, 'msg${italic(' dtl')}'),
+        (null, TaskStatus.clean, 'dtl', true, '✅ ${italic(' dtl')}'),
+        ('msg', TaskStatus.clean, 'dtl', true, '✅ msg${italic(' dtl')}'),
+      ],
+      (fixture) {
+        sut
+          ..updateStatus(
+            message: 'test1',
+            status: TaskStatus.scanning,
+            detail: 'test2',
+          )
+          ..updateStatus(
+            message: fixture.$1,
+            status: fixture.$2,
+            detail: fixture.$3,
+            clear: fixture.$4,
+          );
+        expect(
+          output.toString(),
+          cleanLine('🔎 test1${italic(' test2')}') + cleanLine(fixture.$5),
         );
-      expect(
-        output.toString(),
-        cleanLine('🔎 test1${italic(' test2')}') + cleanLine(fixture.$5),
-      );
-    });
+      },
+    );
   });
 
   test('completeStatus writes newline', () {
@@ -167,22 +162,15 @@ void main() {
     });
 
     testData<
-        (
-          LogLevel,
-          void Function(ConsoleLogger)?,
-          void Function(ConsoleLogger)?
-        )>(
+      (LogLevel, void Function(ConsoleLogger)?, void Function(ConsoleLogger)?)
+    >(
       'honors log level',
       [
         (LogLevel.debug, null, (l) => l.debug('')),
         (LogLevel.info, (l) => l.debug(''), (l) => l.info('')),
         (LogLevel.warn, (l) => l.info(''), (l) => l.warn('')),
         (LogLevel.error, (l) => l.warn(''), (l) => l.error('')),
-        (
-          LogLevel.except,
-          (l) => l.error(''),
-          (l) => l.except(Exception()),
-        ),
+        (LogLevel.except, (l) => l.error(''), (l) => l.except(Exception())),
         (LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {
@@ -206,9 +194,7 @@ void main() {
 
     expect(
       output.toString(),
-      startsWith(
-        cleanLine('${beginColor(31)}    msg1$endColor$newLine'),
-      ),
+      startsWith(cleanLine('${beginColor(31)}    msg1$endColor$newLine')),
     );
   });
 }

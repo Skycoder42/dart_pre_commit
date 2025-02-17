@@ -75,16 +75,17 @@ void main() {
         final result = await sut.findWorkspaceLockfile();
         expect(result, isA<MockFile>());
         verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
+          () => mockRunner.stream('dart', [
+            'pub',
+            'workspace',
+            'list',
+            '--json',
+          ], runInShell: true),
           () => mockResolver.file('/test/not${path.separator}pubspec.lock'),
           () => mockResolver.file('/test/found1${path.separator}pubspec.lock'),
           () => mockLogger.debug(
-                'Detected workspace lockfile as: /test/found1${path.separator}pubspec.lock',
-              ),
+            'Detected workspace lockfile as: /test/found1${path.separator}pubspec.lock',
+          ),
         ]);
         verifyNever(() => mockResolver.file(any()));
       });
@@ -103,11 +104,12 @@ void main() {
         final result = await sut.findWorkspaceLockfile();
         expect(result, isNull);
         verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
+          () => mockRunner.stream('dart', [
+            'pub',
+            'workspace',
+            'list',
+            '--json',
+          ], runInShell: true),
           () => mockLogger.error('Failed to find pubspec.lock in workspace'),
         ]);
         verifyNever(() => mockResolver.file(any()));
@@ -131,11 +133,12 @@ void main() {
         final result = await sut.findWorkspaceLockfile();
         expect(result, isNull);
         verifyInOrder([
-          () => mockRunner.stream(
-                'dart',
-                ['pub', 'workspace', 'list', '--json'],
-                runInShell: true,
-              ),
+          () => mockRunner.stream('dart', [
+            'pub',
+            'workspace',
+            'list',
+            '--json',
+          ], runInShell: true),
           () => mockResolver.file('/test${path.separator}pubspec.lock'),
           () => mockResolver.file('/test/not1${path.separator}pubspec.lock'),
           () => mockResolver.file('/test/not2${path.separator}pubspec.lock'),

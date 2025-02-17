@@ -38,11 +38,7 @@ enum AnalyzeErrorLevel {
 sealed class AnalysisConfig with _$AnalysisConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
-  @JsonSerializable(
-    anyMap: true,
-    checked: true,
-    disallowUnrecognizedKeys: true,
-  )
+  @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory AnalysisConfig({
     // ignore: invalid_annotation_target
     @JsonKey(name: 'error-level')
@@ -73,10 +69,10 @@ abstract base class AnalysisTaskBase with PatternTaskMixin implements RepoTask {
     required FileResolver fileResolver,
     required TaskLogger logger,
     required AnalysisConfig config,
-  })  : _programRunner = programRunner,
-        _fileResolver = fileResolver,
-        _logger = logger,
-        _config = config;
+  }) : _programRunner = programRunner,
+       _fileResolver = fileResolver,
+       _logger = logger,
+       _config = config;
 
   @override
   Pattern get filePattern => RegExp(r'^(?:pubspec\.ya?ml|.*\.dart)$');
@@ -146,7 +142,7 @@ abstract base class AnalysisTaskBase with PatternTaskMixin implements RepoTask {
 
     return (
       exitCode,
-      AnalyzeResult.fromJson(json.decode(jsonString) as Map<String, dynamic>)
+      AnalyzeResult.fromJson(json.decode(jsonString) as Map<String, dynamic>),
     );
   }
 

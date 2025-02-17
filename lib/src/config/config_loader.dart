@@ -10,9 +10,7 @@ import '../util/file_resolver.dart';
 /// @nodoc
 @internal
 final configLoaderProvider = Provider(
-  (ref) => ConfigLoader(
-    fileResolver: ref.watch(fileResolverProvider),
-  ),
+  (ref) => ConfigLoader(fileResolver: ref.watch(fileResolverProvider)),
 );
 // coverage:ignore-end
 
@@ -26,9 +24,8 @@ class ConfigLoader {
   late YamlMap _globalConfig;
 
   /// @nodoc
-  ConfigLoader({
-    required FileResolver fileResolver,
-  }) : _fileResolver = fileResolver;
+  ConfigLoader({required FileResolver fileResolver})
+    : _fileResolver = fileResolver;
 
   /// @nodoc
   Future<bool> loadGlobalConfig([File? customConfig]) {
@@ -45,10 +42,11 @@ class ConfigLoader {
       null => const [],
       String() => [RegExp(excludedFiles)],
       YamlList() => excludedFiles.cast<String>().map(RegExp.new).toList(),
-      _ => throw Exception(
+      _ =>
+        throw Exception(
           'Invalid configuration for $_excludedFilesKey - '
           'value must be null, string or a list of strings',
-        )
+        ),
     };
   }
 

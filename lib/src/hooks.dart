@@ -151,11 +151,11 @@ class Hooks {
     required TaskLoader taskLoader,
     required Logger logger,
     this.config = const HooksConfig(),
-  })  : _fileResolver = fileResolver,
-        _programRunner = programRunner,
-        _configLoader = configLoader,
-        _taskLoader = taskLoader,
-        _logger = logger;
+  }) : _fileResolver = fileResolver,
+       _programRunner = programRunner,
+       _configLoader = configLoader,
+       _taskLoader = taskLoader,
+       _logger = logger;
 
   /// Executes all enabled hooks on the current repository.
   ///
@@ -172,9 +172,10 @@ class Hooks {
   /// file with problems that cannot be fixed automatically.
   Future<HookResult> call() async {
     try {
-      final configFile = config.configFile != null
-          ? _fileResolver.file(config.configFile!)
-          : null;
+      final configFile =
+          config.configFile != null
+              ? _fileResolver.file(config.configFile!)
+              : null;
       final enabled = await _configLoader.loadGlobalConfig(configFile);
 
       if (!enabled) {
@@ -192,12 +193,12 @@ class Hooks {
       }
 
       var lintState = HookResult.clean;
-      lintState = await Stream.fromIterable(entries)
-          .asyncMap((e) => _scanEntry(tasks, e))
-          .raise(lintState);
-      lintState = await Stream.fromIterable(tasks.whereType<RepoTask>())
-          .asyncMap((task) => _evaluateRepoTask(task, entries))
-          .raise(lintState);
+      lintState = await Stream.fromIterable(
+        entries,
+      ).asyncMap((e) => _scanEntry(tasks, e)).raise(lintState);
+      lintState = await Stream.fromIterable(
+        tasks.whereType<RepoTask>(),
+      ).asyncMap((task) => _evaluateRepoTask(task, entries)).raise(lintState);
 
       return lintState;
     } on _RejectedException {
@@ -348,18 +349,16 @@ class Hooks {
     if (entries.isEmpty) {
       return _processTaskResult(taskResult, null);
     } else {
-      return Stream.fromIterable(entries)
-          .asyncMap((entry) => _processTaskResult(taskResult, entry))
-          .raise();
+      return Stream.fromIterable(
+        entries,
+      ).asyncMap((entry) => _processTaskResult(taskResult, entry)).raise();
     }
   }
 
   Stream<RepoEntry> _collectStagedFiles() async* {
     final gitRoot = await _gitRoot();
-    final indexChanges = await _streamGitFiles(gitRoot, [
-      'diff',
-      '--name-only',
-    ]).toList();
+    final indexChanges =
+        await _streamGitFiles(gitRoot, ['diff', '--name-only']).toList();
     final stagedChanges = _streamGitFiles(gitRoot, [
       'diff',
       '--name-only',
@@ -383,7 +382,8 @@ class Hooks {
     }
   }
 
-  Future<String> _gitRoot() async => Directory(
+  Future<String> _gitRoot() async =>
+      Directory(
         await _programRunner.stream('git', const [
           'rev-parse',
           '--show-toplevel',

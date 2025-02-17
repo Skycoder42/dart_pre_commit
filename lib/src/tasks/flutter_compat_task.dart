@@ -34,8 +34,8 @@ class FlutterCompatTask implements RepoTask {
   const FlutterCompatTask({
     required ProgramRunner programRunner,
     required TaskLogger taskLogger,
-  })  : _programRunner = programRunner,
-        _taskLogger = taskLogger;
+  }) : _programRunner = programRunner,
+       _taskLogger = taskLogger;
 
   @override
   String get taskName => _taskName;

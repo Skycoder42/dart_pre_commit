@@ -75,11 +75,10 @@ class ConfigurableTaskProviderBuilder {
     // ignore: invalid_use_of_internal_member
     FamilyCreate<State, Ref<State>, Arg> create, {
     List<ProviderOrFamily>? dependencies,
-  }) =>
-      ConfigurableTaskProviderFamily(
-        name,
-        fromJson,
-        create,
-        dependencies: dependencies,
-      );
+  }) => ConfigurableTaskProviderFamily(
+    name,
+    fromJson,
+    create,
+    dependencies: dependencies,
+  );
 }

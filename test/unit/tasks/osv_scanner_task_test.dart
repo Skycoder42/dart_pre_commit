@@ -93,16 +93,16 @@ void main() {
           failOnExit: any(named: 'failOnExit'),
         ),
       ).thenAnswer(
-        (_) => Stream.value(
-          json.encode(const OsvScannerResult(results: [])),
-        ),
+        (_) => Stream.value(json.encode(const OsvScannerResult(results: []))),
       );
 
-      when(() => mockFileResolver.resolve(any()))
-          .thenAnswer((i) async => i.positionalArguments.first as String);
+      when(
+        () => mockFileResolver.resolve(any()),
+      ).thenAnswer((i) async => i.positionalArguments.first as String);
 
-      when(() => mockLockfileResolver.findWorkspaceLockfile())
-          .thenReturnAsync(FakeFile('pubspec.lock'));
+      when(
+        () => mockLockfileResolver.findWorkspaceLockfile(),
+      ).thenReturnAsync(FakeFile('pubspec.lock'));
 
       sut = OsvScannerTask(
         programRunner: mockRunner,
@@ -182,18 +182,13 @@ void main() {
             lockfileOnly: false,
           ),
           hasLockfile: false,
-          args: [
-            '--json',
-            '--config',
-            'test.toml',
-            '--recursive',
-            '.',
-          ],
+          args: ['--json', '--config', 'test.toml', '--recursive', '.'],
         ),
       ],
       (fixture) async {
-        when(() => mockLockfileResolver.findWorkspaceLockfile())
-            .thenReturnAsync(
+        when(
+          () => mockLockfileResolver.findWorkspaceLockfile(),
+        ).thenReturnAsync(
           fixture.hasLockfile ? FakeFile('pubspec.lock') : null,
         );
 
@@ -212,11 +207,8 @@ void main() {
           () => mockLockfileResolver.findWorkspaceLockfile(),
           if (fixture.hasLockfile)
             () => mockFileResolver.resolve('pubspec.lock'),
-          () => mockRunner.stream(
-                'osv-scanner',
-                fixture.args,
-                failOnExit: false,
-              ),
+          () =>
+              mockRunner.stream('osv-scanner', fixture.args, failOnExit: false),
         ]);
 
         verifyNoMoreInteractions(mockRunner);
@@ -227,8 +219,9 @@ void main() {
     );
 
     test('throws if lockfile is missing but required', () async {
-      when(() => mockLockfileResolver.findWorkspaceLockfile())
-          .thenReturnAsync(null);
+      when(
+        () => mockLockfileResolver.findWorkspaceLockfile(),
+      ).thenReturnAsync(null);
 
       final result = await sut(const []);
 
@@ -257,17 +250,17 @@ void main() {
       expect(result, TaskResult.rejected);
       verifyInOrder([
         () => mockLogger.warn(
-              'package_a@1.2.3 - vuln-id-1: This is a serious issue. '
-              '(See https://github.com/advisories/vuln-id-1)',
-            ),
+          'package_a@1.2.3 - vuln-id-1: This is a serious issue. '
+          '(See https://github.com/advisories/vuln-id-1)',
+        ),
         () => mockLogger.warn(
-              'package_a@1.2.3 - vuln-id-2: This is another serious issue. '
-              '(See https://github.com/advisories/vuln-id-2)',
-            ),
+          'package_a@1.2.3 - vuln-id-2: This is another serious issue. '
+          '(See https://github.com/advisories/vuln-id-2)',
+        ),
         () => mockLogger.warn(
-              'package_b@2.0.0 - vuln-id-3: This is a not so serious issue. '
-              '(See https://github.com/advisories/vuln-id-3)',
-            ),
+          'package_b@2.0.0 - vuln-id-3: This is a not so serious issue. '
+          '(See https://github.com/advisories/vuln-id-3)',
+        ),
         () => mockLogger.error('Found 3 security issues in dependencies!'),
       ]);
 

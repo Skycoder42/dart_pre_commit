@@ -17,23 +17,14 @@ void main() {
   TypeMatcher<ProgramExitException> isAProgramException(
     List<String> args,
     int exitCode,
-  ) =>
-      isA<ProgramExitException>()
-          .having(
-            (e) => e.exitCode,
-            'exitCode',
-            exitCode,
-          )
-          .having(
-            (e) => e.program,
-            'program',
-            Platform.isWindows ? 'cmd' : 'bash',
-          )
-          .having(
-            (e) => e.arguments,
-            'arguments',
-            Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
-          );
+  ) => isA<ProgramExitException>()
+      .having((e) => e.exitCode, 'exitCode', exitCode)
+      .having((e) => e.program, 'program', Platform.isWindows ? 'cmd' : 'bash')
+      .having(
+        (e) => e.arguments,
+        'arguments',
+        Platform.isWindows ? ['/c', ...args] : ['-c', ...args],
+      );
 
   setUpAll(() {
     registerFallbackValue(const Stream<List<int>>.empty());
@@ -45,9 +36,7 @@ void main() {
     // ignore: discarded_futures
     when(() => mockLogger.pipeStderr(any())).thenAnswer((i) async {});
 
-    sut = ProgramRunner(
-      logger: mockLogger,
-    );
+    sut = ProgramRunner(logger: mockLogger);
   });
 
   Future<int> run(
@@ -57,17 +46,17 @@ void main() {
   }) async =>
       Platform.isWindows
           ? sut.run(
-              'cmd',
-              ['/c', ...args],
-              failOnExit: failOnExit,
-              workingDirectory: workingDirectory,
-            )
+            'cmd',
+            ['/c', ...args],
+            failOnExit: failOnExit,
+            workingDirectory: workingDirectory,
+          )
           : sut.run(
-              'bash',
-              ['-c', ...args],
-              failOnExit: failOnExit,
-              workingDirectory: workingDirectory,
-            );
+            'bash',
+            ['-c', ...args],
+            failOnExit: failOnExit,
+            workingDirectory: workingDirectory,
+          );
 
   Stream<String> runStream(
     List<String> args, {
@@ -77,19 +66,19 @@ void main() {
   }) =>
       Platform.isWindows
           ? sut.stream(
-              'cmd',
-              ['/c', ...args],
-              failOnExit: failOnExit,
-              exitCodeHandler: handler,
-              workingDirectory: workingDirectory,
-            )
+            'cmd',
+            ['/c', ...args],
+            failOnExit: failOnExit,
+            exitCodeHandler: handler,
+            workingDirectory: workingDirectory,
+          )
           : sut.stream(
-              'bash',
-              ['-c', ...args],
-              failOnExit: failOnExit,
-              exitCodeHandler: handler,
-              workingDirectory: workingDirectory,
-            );
+            'bash',
+            ['-c', ...args],
+            failOnExit: failOnExit,
+            exitCodeHandler: handler,
+            workingDirectory: workingDirectory,
+          );
 
   group('run', () {
     test('forwards exit code', () async {
@@ -121,9 +110,7 @@ void main() {
 
   group('stream', () {
     test('forwards output', () async {
-      final res = runStream(const [
-        'echo a && echo b && echo c',
-      ]);
+      final res = runStream(const ['echo a && echo b && echo c']);
       expect(
         res,
         emitsInOrder(<dynamic>[
@@ -136,9 +123,7 @@ void main() {
     });
 
     test('throws error if exit code indicates so', () async {
-      const args = [
-        'echo a && echo b && false',
-      ];
+      const args = ['echo a && echo b && false'];
       final stream = runStream(args);
       expect(
         stream,
@@ -152,24 +137,16 @@ void main() {
     });
 
     test('Does not throw if failOnExit is false', () async {
-      const args = [
-        'echo a && echo b && false',
-      ];
+      const args = ['echo a && echo b && false'];
       final stream = runStream(args, failOnExit: false);
       expect(
         stream,
-        emitsInOrder(<dynamic>[
-          startsWith('a'),
-          startsWith('b'),
-          emitsDone,
-        ]),
+        emitsInOrder(<dynamic>[startsWith('a'), startsWith('b'), emitsDone]),
       );
     });
 
     test('Reports exit code via callback', () async {
-      const args = [
-        'echo a && echo b && exit 42',
-      ];
+      const args = ['echo a && echo b && exit 42'];
       final stream = runStream(
         args,
         failOnExit: false,
@@ -179,44 +156,34 @@ void main() {
       );
       expect(
         stream,
+        emitsInOrder(<dynamic>[startsWith('a'), startsWith('b'), emitsDone]),
+      );
+    });
+
+    test('runs in working directory', () async {
+      final stream = runStream(
+        Platform.isWindows ? const ['cd'] : const ['pwd'],
+        workingDirectory: Directory.systemTemp.path,
+      );
+
+      expect(
+        stream,
         emitsInOrder(<dynamic>[
-          startsWith('a'),
-          startsWith('b'),
+          if (Platform.isMacOS)
+            await Directory.systemTemp.resolveSymbolicLinks()
+          else
+            Directory.systemTemp.path,
           emitsDone,
         ]),
       );
     });
-
-    test(
-      'runs in working directory',
-      () async {
-        final stream = runStream(
-          Platform.isWindows ? const ['cd'] : const ['pwd'],
-          workingDirectory: Directory.systemTemp.path,
-        );
-
-        expect(
-          stream,
-          emitsInOrder(<dynamic>[
-            if (Platform.isMacOS)
-              await Directory.systemTemp.resolveSymbolicLinks()
-            else
-              Directory.systemTemp.path,
-            emitsDone,
-          ]),
-        );
-      },
-    );
   });
 
   testData<(ProgramExitException, String)>(
     'ProgramExitException shows correct error message',
     const [
       (ProgramExitException(42), 'A subprocess failed with exit code 42'),
-      (
-        ProgramExitException(13, 'dart'),
-        'dart failed with exit code 13',
-      ),
+      (ProgramExitException(13, 'dart'), 'dart failed with exit code 13'),
       (
         ProgramExitException(7, 'dart', ['some', 'args']),
         '"dart some args" failed with exit code 7',

@@ -38,10 +38,10 @@ class DefaultTasksLoader {
     required ProgramDetector programDetector,
     required TaskLoader taskLoader,
     required Logger logger,
-  })  : _pubspecConfigLoader = pubspecConfigLoader,
-        _programDetector = programDetector,
-        _taskLoader = taskLoader,
-        _logger = logger;
+  }) : _pubspecConfigLoader = pubspecConfigLoader,
+       _programDetector = programDetector,
+       _taskLoader = taskLoader,
+       _logger = logger;
 
   /// Performs the registration of the default tasks.
   ///

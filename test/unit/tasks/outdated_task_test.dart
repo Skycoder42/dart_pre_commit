@@ -27,10 +27,7 @@ void main() {
             'level': 'minor',
             'allowed': ['a', 'beta'],
           },
-          OutdatedConfig(
-            level: OutdatedLevel.minor,
-            allowed: ['a', 'beta'],
-          ),
+          OutdatedConfig(level: OutdatedLevel.minor, allowed: ['a', 'beta']),
         ),
       ],
       (fixture) {
@@ -47,11 +44,7 @@ void main() {
     void whenRunner([List<PackageInfo> packages = const []]) =>
         when(() => mockRunner.stream(any(), any())).thenAnswer(
           (i) => Stream.fromFuture(
-            Future.value(
-              OutdatedInfo(
-                packages: packages,
-              ),
-            ),
+            Future.value(OutdatedInfo(packages: packages)),
           ).map((i) => i.toJson()).cast<Object?>().transform(json.encoder),
         );
 
@@ -87,13 +80,10 @@ void main() {
 
     group('outdated', () {
       OutdatedTask createSut(OutdatedLevel level) => OutdatedTask(
-            programRunner: mockRunner,
-            logger: mockLogger,
-            config: OutdatedConfig(
-              level: level,
-              allowed: [ignoredTestPackage],
-            ),
-          );
+        programRunner: mockRunner,
+        logger: mockLogger,
+        config: OutdatedConfig(level: level, allowed: [ignoredTestPackage]),
+      );
 
       test('task metadata is correct', () {
         final sut = createSut(OutdatedLevel.any);
@@ -263,8 +253,9 @@ void main() {
 
             expect(res, TaskResult.accepted);
             verify(
-              () => mockLogger
-                  .warn('Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0'),
+              () => mockLogger.warn(
+                'Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0',
+              ),
             );
           });
 
@@ -282,8 +273,9 @@ void main() {
 
             expect(res, TaskResult.accepted);
             verify(
-              () => mockLogger
-                  .warn('Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0'),
+              () => mockLogger.warn(
+                'Ignored:     $ignoredTestPackage: 1.0.0 -> 1.1.0',
+              ),
             );
           });
 

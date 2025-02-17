@@ -12,9 +12,7 @@ import '../logger.dart';
 /// @nodoc
 @internal
 final loggingWrapperProvider = Provider(
-  (ref) => LoggingWrapper(
-    ref.watch(taskLoggerProvider),
-  ),
+  (ref) => LoggingWrapper(ref.watch(taskLoggerProvider)),
 );
 // coverage:ignore-end
 
@@ -93,9 +91,10 @@ class LoggingWrapper implements logging.Logger {
     Zone? zone,
   ]) {
     if (logLevel >= logging.Level.SHOUT) {
-      final exception = error is Exception
-          ? error
-          : LoggingWrapperException((error ?? message).toString());
+      final exception =
+          error is Exception
+              ? error
+              : LoggingWrapperException((error ?? message).toString());
       taskLogger.except(exception, stackTrace);
     } else if (logLevel >= logging.Level.SEVERE) {
       taskLogger.error(message.toString());
@@ -123,9 +122,10 @@ class LoggingWrapper implements logging.Logger {
 
   @override
   void shout(Object? message, [Object? error, StackTrace? stackTrace]) {
-    final exception = error is Exception
-        ? error
-        : LoggingWrapperException((error ?? message).toString());
+    final exception =
+        error is Exception
+            ? error
+            : LoggingWrapperException((error ?? message).toString());
     taskLogger.except(exception, stackTrace);
   }
 

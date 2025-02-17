@@ -6,10 +6,8 @@ part 'workspace.g.dart';
 @freezed
 @internal
 sealed class WorkspacePackage with _$WorkspacePackage {
-  const factory WorkspacePackage({
-    required String name,
-    required String path,
-  }) = _WorkspacePackage;
+  const factory WorkspacePackage({required String name, required String path}) =
+      _WorkspacePackage;
 
   factory WorkspacePackage.fromJson(Map<String, dynamic> json) =>
       _$WorkspacePackageFromJson(json);

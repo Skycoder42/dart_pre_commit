@@ -10,9 +10,8 @@ part 'outdated_info.g.dart';
 @internal
 sealed class OutdatedInfo with _$OutdatedInfo {
   /// @nodoc
-  const factory OutdatedInfo({
-    required List<PackageInfo> packages,
-  }) = _OutdatedInfo;
+  const factory OutdatedInfo({required List<PackageInfo> packages}) =
+      _OutdatedInfo;
 
   /// @nodoc
   factory OutdatedInfo.fromJson(Map<String, dynamic> json) =>
