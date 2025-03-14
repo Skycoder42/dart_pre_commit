@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas
+// ignore_for_file: unnecessary_lambdas, discarded_futures
 
 import 'dart:io';
 
@@ -92,7 +92,7 @@ void main() {
     );
 
     group('check if task runs', () {
-      setUp(() async {
+      setUp(() {
         when(() => mockResolver.file('pubspec.yaml')).thenAnswer((i) {
           final res = MockFile();
           when(() => res.readAsString()).thenAnswer(
@@ -170,7 +170,7 @@ packages:
     });
 
     group('task operation', () {
-      setUp(() async {
+      setUp(() {
         when(() => mockRunner.run(any(), any())).thenAnswer((i) async => 0);
       });
 

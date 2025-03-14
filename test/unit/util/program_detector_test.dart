@@ -1,3 +1,5 @@
+// ignore_for_file: discarded_futures
+
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/program_detector.dart';
@@ -17,7 +19,7 @@ void main() {
 
     late ProgramDetector sut;
 
-    setUp(() async {
+    setUp(() {
       reset(mockProgramRunner);
 
       when(

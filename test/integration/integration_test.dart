@@ -24,7 +24,7 @@ void main() {
   }
 
   Future<String> readFile(String path) async =>
-      File(join(testDir.path, path)).readAsString();
+      await File(join(testDir.path, path)).readAsString();
 
   Future<int> run(
     String program,
@@ -59,13 +59,13 @@ void main() {
     return exitCode;
   }
 
-  Future<void> git(List<String> arguments) async => run('git', arguments);
+  Future<void> git(List<String> arguments) async => await run('git', arguments);
 
   Future<int> pub(
     List<String> arguments, {
     bool failOnError = true,
     void Function(Stream<List<int>>)? onStdout,
-  }) async => run(
+  }) async => await run(
     'dart',
     ['pub', ...arguments],
     failOnError: failOnError,

@@ -1,3 +1,5 @@
+// ignore_for_file: discarded_futures
+
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';
@@ -37,7 +39,6 @@ void main() {
     setUp(() {
       reset(mockRunner);
 
-      // ignore: discarded_futures
       when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 0);
 
       sut = FormatTask(programRunner: mockRunner, config: const FormatConfig());
@@ -102,7 +103,7 @@ void main() {
       expect(res, TaskResult.modified);
     });
 
-    test('throws exception if dart format returns >1', () async {
+    test('throws exception if dart format returns >1', () {
       when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 42);
       expect(() => sut(fakeEntry), throwsA(isA<ProgramExitException>()));
     });

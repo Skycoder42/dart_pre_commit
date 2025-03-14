@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas
+// ignore_for_file: unnecessary_lambdas, discarded_futures
 
 import 'dart:convert';
 
@@ -80,7 +80,7 @@ void main() {
 
     late OsvScannerTask sut;
 
-    setUp(() async {
+    setUp(() {
       reset(mockRunner);
       reset(mockFileResolver);
       reset(mockLockfileResolver);

@@ -1,3 +1,5 @@
+// ignore_for_file: discarded_futures
+
 import 'dart:async';
 import 'dart:io';
 
@@ -33,7 +35,6 @@ void main() {
   setUp(() {
     reset(mockLogger);
 
-    // ignore: discarded_futures
     when(() => mockLogger.pipeStderr(any())).thenAnswer((i) async {});
 
     sut = ProgramRunner(logger: mockLogger);
@@ -43,7 +44,7 @@ void main() {
     List<String> args, {
     bool failOnExit = false,
     String? workingDirectory,
-  }) async =>
+  }) =>
       Platform.isWindows
           ? sut.run(
             'cmd',
@@ -86,7 +87,7 @@ void main() {
       expect(exitCode, 42);
     });
 
-    test('throws on unexpected exit code if enabled', () async {
+    test('throws on unexpected exit code if enabled', () {
       const args = ['exit 42'];
       expect(
         () => run(args, failOnExit: true),
@@ -109,7 +110,7 @@ void main() {
   });
 
   group('stream', () {
-    test('forwards output', () async {
+    test('forwards output', () {
       final res = runStream(const ['echo a && echo b && echo c']);
       expect(
         res,
@@ -122,7 +123,7 @@ void main() {
       );
     });
 
-    test('throws error if exit code indicates so', () async {
+    test('throws error if exit code indicates so', () {
       const args = ['echo a && echo b && false'];
       final stream = runStream(args);
       expect(
@@ -136,7 +137,7 @@ void main() {
       );
     });
 
-    test('Does not throw if failOnExit is false', () async {
+    test('Does not throw if failOnExit is false', () {
       const args = ['echo a && echo b && false'];
       final stream = runStream(args, failOnExit: false);
       expect(
@@ -145,7 +146,7 @@ void main() {
       );
     });
 
-    test('Reports exit code via callback', () async {
+    test('Reports exit code via callback', () {
       const args = ['echo a && echo b && exit 42'];
       final stream = runStream(
         args,

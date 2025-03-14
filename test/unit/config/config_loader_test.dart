@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas
+// ignore_for_file: unnecessary_lambdas, discarded_futures
 
 import 'dart:io';
 
@@ -105,7 +105,7 @@ dart_pre_commit:
           },
         );
 
-        test('throws if config has an invalid value', () async {
+        test('throws if config has an invalid value', () {
           when(
             () => mockFile.readAsString(),
           ).thenReturnAsync('dart_pre_commit: 42');
@@ -197,7 +197,7 @@ key2: 2
           },
         );
 
-        test('throws if config has an invalid value', () async {
+        test('throws if config has an invalid value', () {
           when(() => mockFile.readAsString()).thenReturnAsync('42');
 
           expect(

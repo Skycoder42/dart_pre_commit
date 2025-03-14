@@ -21,7 +21,7 @@ class FileResolver {
 
   /// @nodoc
   Stream<String> resolveAll(Iterable<String> paths, [Directory? from]) =>
-      Stream.fromIterable(paths).asyncMap((p) async => resolve(p, from));
+      Stream.fromIterable(paths).asyncMap((p) async => await resolve(p, from));
 
   /// @nodoc
   File file(String path) => File(path);

@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas
+// ignore_for_file: unnecessary_lambdas, discarded_futures
 
 import 'dart:io';
 
@@ -57,7 +57,7 @@ void main() {
     registerFallbackValue(fakeEntry(''));
   });
 
-  setUp(() async {
+  setUp(() {
     reset(mockLogger);
     reset(mockResolver);
     reset(mockRunner);
@@ -84,14 +84,12 @@ void main() {
 
     when(() => mockFileTask.taskName).thenReturn('file-task');
     when(() => mockFileTask.filePattern).thenReturn(RegExp('.*'));
-    // ignore: discarded_futures
     when(
       () => mockFileTask(any()),
     ).thenAnswer((_) async => TaskResult.accepted);
     when(() => mockRepoTask.taskName).thenReturn('repo-task');
     when(() => mockRepoTask.filePattern).thenReturn(RegExp('.*'));
     when(() => mockRepoTask.callForEmptyEntries).thenReturn(true);
-    // ignore: discarded_futures
     when(
       () => mockRepoTask(any()),
     ).thenAnswer((_) async => TaskResult.accepted);

@@ -347,9 +347,9 @@ class Hooks {
     List<RepoEntry> entries,
   ) async {
     if (entries.isEmpty) {
-      return _processTaskResult(taskResult, null);
+      return await _processTaskResult(taskResult, null);
     } else {
-      return Stream.fromIterable(
+      return await Stream.fromIterable(
         entries,
       ).asyncMap((entry) => _processTaskResult(taskResult, entry)).raise();
     }
