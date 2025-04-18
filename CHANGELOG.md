@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.4.5] - 2025-04-18
+### Fixed
+- Fixed incompatibility with osv-scanner Version 2.0
+  - To keep using v1, add `legacy: true` to the scanner config
+
 ## [5.4.4] - 2025-03-14
 ### Changed
 - Updated dependencies
@@ -246,6 +251,7 @@ higher version from the lockfile
 - Initial release
 - Automatic deployment
 
+[5.4.5]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.4...v5.4.5
 [5.4.4]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.3...v5.4.4
 [5.4.3]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.2...v5.4.3
 [5.4.2]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.1...v5.4.2

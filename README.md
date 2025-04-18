@@ -308,6 +308,7 @@ vulnerabilities in dependent packages. The task will fail in case such dependenc
 -----------------|-----------|---------|-------------
  `lockfile-only` | `bool`    | `true`  | If set to true, then only the pubspec.lock itself is scanned. Otherwise, the whole source folder is scanned.
  `config`        | `String?` | `null`  | If specified, the config file path will be passed to the osv scanner. Otherwise, the scanner tries to auto-detect the configuration.
+ `legacy`        | `bool`    | `false` | If set to true, assume the installed osv-scanner is Version 1.x. By default, Version 2.x is expected.
 
 ## Documentation
 The documentation is available at

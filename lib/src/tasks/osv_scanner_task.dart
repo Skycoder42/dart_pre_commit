@@ -44,6 +44,7 @@ sealed class OsvScannerConfig with _$OsvScannerConfig {
     @JsonKey(name: 'lockfile-only') @Default(true) bool lockfileOnly,
     // ignore: invalid_annotation_target
     @JsonKey(name: 'config') String? configFile,
+    @Default(false) bool legacy,
   }) = _OsvScannerConfig;
 
   /// @nodoc
@@ -97,7 +98,7 @@ class OsvScannerTask implements RepoTask {
     final osvScannerJson =
         await _programRunner
             .stream(osvScannerBinary, [
-              '--json',
+              if (_config.legacy) '--json' else ...['scan', '--format', 'json'],
               if (_config.configFile case final String path) ...[
                 '--config',
                 path,
