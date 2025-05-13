@@ -5,5 +5,8 @@
     "toplevel",
     "unstaged",
     "yarml"
-  ]
+  ],
+  "files.exclude": {
+    "**/.git": false
+  }
 }

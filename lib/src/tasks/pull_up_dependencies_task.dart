@@ -2,7 +2,6 @@ import 'package:checked_yaml/checked_yaml.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/file_resolver.dart';

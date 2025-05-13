@@ -35,7 +35,7 @@ class _SimpleTaskConfig<TState extends TaskBase>
   String get taskName => provider.name;
 
   @override
-  TState create(Ref ref, YamlMap config) => ref.read(provider);
+  TState create(Ref ref, YamlMap config) => ref.read(provider.provider);
 }
 
 class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
