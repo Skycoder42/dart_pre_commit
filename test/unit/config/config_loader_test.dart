@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas, discarded_futures
+// ignore_for_file: unnecessary_lambdas
 
 import 'dart:io';
 
@@ -240,8 +240,8 @@ task:
           final config = sut.loadTaskConfig('task');
           expect(config, fixture.$2);
         },
-        dataToString:
-            (t) => (t.$1, t.$2.describe(StringDescription())).toString(),
+        dataToString: (t) =>
+            (t.$1, t.$2.describe(StringDescription())).toString(),
       );
 
       test('returns null if task is disabled by default', () async {
@@ -288,8 +288,8 @@ exclude:
           final config = sut.loadExcludePatterns();
           expect(config, fixture.$2);
         },
-        dataToString:
-            (t) => (t.$1, t.$2.describe(StringDescription())).toString(),
+        dataToString: (t) =>
+            (t.$1, t.$2.describe(StringDescription())).toString(),
       );
 
       test('throws exception on invalid exclude configuration value', () async {

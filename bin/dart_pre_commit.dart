@@ -104,10 +104,9 @@ Future<int> _run(List<String> args) async {
     di = ProviderContainer(
       overrides: [
         loggerProvider.overrideWith(
-          (ref) =>
-              ansiSupported
-                  ? ref.watch(consoleLoggerProvider(logLevel))
-                  : ref.watch(simpleLoggerProvider(logLevel)),
+          (ref) => ansiSupported
+              ? ref.watch(consoleLoggerProvider(logLevel))
+              : ref.watch(simpleLoggerProvider(logLevel)),
         ),
       ],
     );

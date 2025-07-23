@@ -57,10 +57,9 @@ abstract class DartPreCommit {
     return ProviderContainer(
       overrides: [
         loggerProvider.overrideWith(
-          (ref) =>
-              ansiSupported
-                  ? ref.watch(consoleLoggerProvider(logLevel))
-                  : ref.watch(simpleLoggerProvider(logLevel)),
+          (ref) => ansiSupported
+              ? ref.watch(consoleLoggerProvider(logLevel))
+              : ref.watch(simpleLoggerProvider(logLevel)),
         ),
       ],
     );

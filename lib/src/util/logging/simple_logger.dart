@@ -113,12 +113,11 @@ class SimpleLogger implements Logger {
   }
 
   @override
-  Future<void> pipeStderr(Stream<List<int>> errStream) =>
-      errStream.listen((e) {
-        if (canLog(LogLevel.error)) {
-          errSink.add(e);
-        }
-      }).asFuture();
+  Future<void> pipeStderr(Stream<List<int>> errStream) => errStream.listen((e) {
+    if (canLog(LogLevel.error)) {
+      errSink.add(e);
+    }
+  }).asFuture();
 }
 
 extension _TaskStatusIconX on TaskStatus {

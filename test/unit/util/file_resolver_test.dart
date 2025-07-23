@@ -52,11 +52,10 @@ void main() {
         join(testDir.path, 'dir1', 'file2.dart'),
       ).create(f2.path, recursive: true);
 
-      final resPath =
-          await sut.resolveAll([
-            l1.absolute.path,
-            l2.absolute.path,
-          ], testDir).toList();
+      final resPath = await sut.resolveAll([
+        l1.absolute.path,
+        l2.absolute.path,
+      ], testDir).toList();
       expect(resPath, [join('dir1', 'file1.dart'), join('dir2', 'file2.dart')]);
     },
     onPlatform: const <String, dynamic>{

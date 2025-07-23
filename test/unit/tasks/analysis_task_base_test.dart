@@ -161,18 +161,20 @@ void main() {
 
     late AnalysisTaskBase sut;
 
-    void whenRunnerStream(Stream<String> stream, [int exitCode = 0]) => when(
-      () => mockRunner.stream(
-        any(),
-        any(),
-        failOnExit: any(named: 'failOnExit'),
-        exitCodeHandler: any(named: 'exitCodeHandler'),
-      ),
-    ).thenAnswer((i) {
-      final handler = i.namedArguments[#exitCodeHandler] as ExitCodeHandlerCb?;
-      handler?.call(exitCode);
-      return stream;
-    });
+    void whenRunnerStream(Stream<String> stream, [int exitCode = 0]) =>
+        when(
+          () => mockRunner.stream(
+            any(),
+            any(),
+            failOnExit: any(named: 'failOnExit'),
+            exitCodeHandler: any(named: 'exitCodeHandler'),
+          ),
+        ).thenAnswer((i) {
+          final handler =
+              i.namedArguments[#exitCodeHandler] as ExitCodeHandlerCb?;
+          handler?.call(exitCode);
+          return stream;
+        });
 
     setUp(() {
       reset(mockLogger);
@@ -186,7 +188,6 @@ void main() {
       );
 
       when(
-        // ignore: discarded_futures
         () => mockResolver.resolve(any()),
       ).thenAnswer((i) async => i.positionalArguments.first as String);
       when(() => mockResolver.resolveAll(any())).thenAnswer(

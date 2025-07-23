@@ -172,10 +172,9 @@ class Hooks {
   /// file with problems that cannot be fixed automatically.
   Future<HookResult> call() async {
     try {
-      final configFile =
-          config.configFile != null
-              ? _fileResolver.file(config.configFile!)
-              : null;
+      final configFile = config.configFile != null
+          ? _fileResolver.file(config.configFile!)
+          : null;
       final enabled = await _configLoader.loadGlobalConfig(configFile);
 
       if (!enabled) {
@@ -357,8 +356,10 @@ class Hooks {
 
   Stream<RepoEntry> _collectStagedFiles() async* {
     final gitRoot = await _gitRoot();
-    final indexChanges =
-        await _streamGitFiles(gitRoot, ['diff', '--name-only']).toList();
+    final indexChanges = await _streamGitFiles(gitRoot, [
+      'diff',
+      '--name-only',
+    ]).toList();
     final stagedChanges = _streamGitFiles(gitRoot, [
       'diff',
       '--name-only',
@@ -382,13 +383,12 @@ class Hooks {
     }
   }
 
-  Future<String> _gitRoot() async =>
-      Directory(
-        await _programRunner.stream('git', const [
-          'rev-parse',
-          '--show-toplevel',
-        ]).first,
-      ).resolveSymbolicLinks();
+  Future<String> _gitRoot() async => Directory(
+    await _programRunner.stream('git', const [
+      'rev-parse',
+      '--show-toplevel',
+    ]).first,
+  ).resolveSymbolicLinks();
 
   Stream<String> _streamGitFiles(
     String gitRoot,

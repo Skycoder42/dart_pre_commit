@@ -1,5 +1,3 @@
-// ignore_for_file: discarded_futures
-
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/util/program_runner.dart';

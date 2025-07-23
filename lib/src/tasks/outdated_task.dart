@@ -149,11 +149,10 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
     }
   }
 
-  Future<OutdatedInfo> _collectOutdated() =>
-      _programRunner
-          .stream('dart', ['pub', 'outdated', '--show-all', '--json'])
-          .transform(json.decoder)
-          .cast<Map<String, dynamic>>()
-          .map(OutdatedInfo.fromJson)
-          .single;
+  Future<OutdatedInfo> _collectOutdated() => _programRunner
+      .stream('dart', ['pub', 'outdated', '--show-all', '--json'])
+      .transform(json.decoder)
+      .cast<Map<String, dynamic>>()
+      .map(OutdatedInfo.fromJson)
+      .single;
 }

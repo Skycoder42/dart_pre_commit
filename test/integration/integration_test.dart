@@ -106,17 +106,16 @@ void main() {
         ...?arguments,
       ],
       failOnError: failOnError,
-      onStdout:
-          onStdout != null
-              ? (s) => s
-                  .transform(utf8.decoder)
-                  .transform(const LineSplitter())
-                  .map((line) {
-                    print('OUT: $line');
-                    return line;
-                  })
-                  .listen(onStdout)
-              : null,
+      onStdout: onStdout != null
+          ? (s) => s
+                .transform(utf8.decoder)
+                .transform(const LineSplitter())
+                .map((line) {
+                  print('OUT: $line');
+                  return line;
+                })
+                .listen(onStdout)
+          : null,
     );
   }
 

@@ -23,12 +23,11 @@ Future<void> main(List<String> args) async {
       ),
     );
     final manifestResponse = await manifestRequest.close();
-    final manifest =
-        await manifestResponse
-            .transform(utf8.decoder)
-            .transform(json.decoder)
-            .cast<Map<String, dynamic>>()
-            .single;
+    final manifest = await manifestResponse
+        .transform(utf8.decoder)
+        .transform(json.decoder)
+        .cast<Map<String, dynamic>>()
+        .single;
     final releaseVersion = _getLatestVersion(channel, manifest);
     final release = _getRelease(channel, releaseVersion, manifest);
 
@@ -77,14 +76,13 @@ String _getLatestVersion(String channel, Map<String, dynamic> manifest) {
   Map<String, dynamic> manifest,
 ) {
   final arch = Github.env.runnerArch!.toLowerCase();
-  final releases =
-      (manifest['releases'] as List<dynamic>).cast<Map<String, dynamic>>();
-  final release =
-      releases
-          .where((r) => r['channel'] == channel)
-          .where((r) => r['hash'] == version)
-          .where((r) => r['dart_sdk_arch'] == arch)
-          .single;
+  final releases = (manifest['releases'] as List<dynamic>)
+      .cast<Map<String, dynamic>>();
+  final release = releases
+      .where((r) => r['channel'] == channel)
+      .where((r) => r['hash'] == version)
+      .where((r) => r['dart_sdk_arch'] == arch)
+      .single;
   final baseUrl = Uri.parse('${manifest['base_url']}/');
   return (
     version: release['version'] as String,

@@ -95,24 +95,20 @@ class OsvScannerTask implements RepoTask {
       return TaskResult.rejected;
     }
 
-    final osvScannerJson =
-        await _programRunner
-            .stream(osvScannerBinary, [
-              if (_config.legacy) '--json' else ...['scan', '--format', 'json'],
-              if (_config.configFile case final String path) ...[
-                '--config',
-                path,
-              ],
-              if (lockfile case File(path: final path)) ...[
-                '--lockfile',
-                await _fileResolver.resolve(path),
-              ],
-              if (!_config.lockfileOnly) ...['--recursive', '.'],
-            ], failOnExit: false)
-            .transform(json.decoder)
-            .cast<Map<String, dynamic>>()
-            .map(OsvScannerResult.fromJson)
-            .single;
+    final osvScannerJson = await _programRunner
+        .stream(osvScannerBinary, [
+          if (_config.legacy) '--json' else ...['scan', '--format', 'json'],
+          if (_config.configFile case final String path) ...['--config', path],
+          if (lockfile case File(path: final path)) ...[
+            '--lockfile',
+            await _fileResolver.resolve(path),
+          ],
+          if (!_config.lockfileOnly) ...['--recursive', '.'],
+        ], failOnExit: false)
+        .transform(json.decoder)
+        .cast<Map<String, dynamic>>()
+        .map(OsvScannerResult.fromJson)
+        .single;
 
     var vulnerabilityCount = 0;
     for (final result in osvScannerJson.results) {

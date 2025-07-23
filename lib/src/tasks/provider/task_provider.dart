@@ -61,7 +61,6 @@ class ConfigurableTaskProviderFamily<State extends TaskBase, Arg>
   String get name => super.name!;
 }
 
-// ignore: subtype_of_sealed_class
 /// A helper class to easily create a [ConfigurableTaskProviderFamily].
 @sealed
 class ConfigurableTaskProviderBuilder {

@@ -42,11 +42,10 @@ class ConfigLoader {
       null => const [],
       String() => [RegExp(excludedFiles)],
       YamlList() => excludedFiles.cast<String>().map(RegExp.new).toList(),
-      _ =>
-        throw Exception(
-          'Invalid configuration for $_excludedFilesKey - '
-          'value must be null, string or a list of strings',
-        ),
+      _ => throw Exception(
+        'Invalid configuration for $_excludedFilesKey - '
+        'value must be null, string or a list of strings',
+      ),
     };
   }
 

@@ -1,5 +1,3 @@
-// ignore_for_file: discarded_futures
-
 import 'dart:async';
 import 'dart:io';
 
@@ -44,42 +42,40 @@ void main() {
     List<String> args, {
     bool failOnExit = false,
     String? workingDirectory,
-  }) =>
-      Platform.isWindows
-          ? sut.run(
-            'cmd',
-            ['/c', ...args],
-            failOnExit: failOnExit,
-            workingDirectory: workingDirectory,
-          )
-          : sut.run(
-            'bash',
-            ['-c', ...args],
-            failOnExit: failOnExit,
-            workingDirectory: workingDirectory,
-          );
+  }) => Platform.isWindows
+      ? sut.run(
+          'cmd',
+          ['/c', ...args],
+          failOnExit: failOnExit,
+          workingDirectory: workingDirectory,
+        )
+      : sut.run(
+          'bash',
+          ['-c', ...args],
+          failOnExit: failOnExit,
+          workingDirectory: workingDirectory,
+        );
 
   Stream<String> runStream(
     List<String> args, {
     bool failOnExit = true,
     ExitCodeHandlerCb? handler,
     String? workingDirectory,
-  }) =>
-      Platform.isWindows
-          ? sut.stream(
-            'cmd',
-            ['/c', ...args],
-            failOnExit: failOnExit,
-            exitCodeHandler: handler,
-            workingDirectory: workingDirectory,
-          )
-          : sut.stream(
-            'bash',
-            ['-c', ...args],
-            failOnExit: failOnExit,
-            exitCodeHandler: handler,
-            workingDirectory: workingDirectory,
-          );
+  }) => Platform.isWindows
+      ? sut.stream(
+          'cmd',
+          ['/c', ...args],
+          failOnExit: failOnExit,
+          exitCodeHandler: handler,
+          workingDirectory: workingDirectory,
+        )
+      : sut.stream(
+          'bash',
+          ['-c', ...args],
+          failOnExit: failOnExit,
+          exitCodeHandler: handler,
+          workingDirectory: workingDirectory,
+        );
 
   group('run', () {
     test('forwards exit code', () async {

@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_lambdas, discarded_futures
+// ignore_for_file: unnecessary_lambdas
 
 import 'dart:io';
 
@@ -336,10 +336,9 @@ void main() {
       expect(result, HookResult.clean);
       verify(() => mockTaskLoader.loadTasks());
       verify(() => mockFileTask.filePattern);
-      final captures =
-          verify(
-            () => mockFileTask(captureAny()),
-          ).captured.cast<RepoEntry>().map((e) => e.file.path).toList();
+      final captures = verify(
+        () => mockFileTask(captureAny()),
+      ).captured.cast<RepoEntry>().map((e) => e.file.path).toList();
       expect(captures, ['a.dart', 'b.dart']);
     });
 

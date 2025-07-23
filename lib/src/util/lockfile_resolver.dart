@@ -37,18 +37,17 @@ class LockfileResolver {
        _logger = logger;
 
   Future<File?> findWorkspaceLockfile() async {
-    final workspace =
-        await _programRunner
-            .stream('dart', [
-              'pub',
-              'workspace',
-              'list',
-              '--json',
-            ], runInShell: true)
-            .transform(json.decoder)
-            .cast<Map<String, dynamic>>()
-            .map(Workspace.fromJson)
-            .single;
+    final workspace = await _programRunner
+        .stream('dart', [
+          'pub',
+          'workspace',
+          'list',
+          '--json',
+        ], runInShell: true)
+        .transform(json.decoder)
+        .cast<Map<String, dynamic>>()
+        .map(Workspace.fromJson)
+        .single;
 
     for (final package in workspace.packages) {
       final lockFile = _fileResolver.file(

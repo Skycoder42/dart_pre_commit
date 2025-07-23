@@ -123,7 +123,10 @@ void main() {
           () => mockOutSink.write('test1'),
           () => mockOutSink.write(' test2'),
           () => mockOutSink.writeln(),
-          ...fixture.$5.map((e) => () => mockOutSink.write(e)),
+          ...fixture.$5.map(
+            (e) =>
+                () => mockOutSink.write(e),
+          ),
           () => mockOutSink.writeln(),
         ]);
         verifyNoMoreInteractions(mockOutSink);

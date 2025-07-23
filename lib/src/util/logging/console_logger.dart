@@ -93,12 +93,11 @@ class ConsoleLogger implements Logger {
   );
 
   @override
-  Future<void> pipeStderr(Stream<List<int>> stderr) =>
-      stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .listen((event) => _log(LogLevel.error, event, Color.DARK_RED))
-          .asFuture();
+  Future<void> pipeStderr(Stream<List<int>> stderr) => stderr
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .listen((event) => _log(LogLevel.error, event, Color.DARK_RED))
+      .asFuture();
 
   void _log(LogLevel level, String message, [Color? color]) {
     if (!canLog(level)) {

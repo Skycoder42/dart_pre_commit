@@ -76,8 +76,7 @@ sealed class Diagnostic with _$Diagnostic {
   @override
   String toString() => '${severity.name} - $location - $_description - $code';
 
-  String get _description =>
-      correctionMessage != null
-          ? '$problemMessage $correctionMessage'
-          : problemMessage;
+  String get _description => correctionMessage != null
+      ? '$problemMessage $correctionMessage'
+      : problemMessage;
 }
