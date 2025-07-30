@@ -12,5 +12,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    with:
+      flutterCompat: false
     secrets:
       githubToken: ${{ secrets.GH_PAT }}
