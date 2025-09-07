@@ -1,104 +1,84 @@
+import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../config/config_loader.dart';
-import '../../hooks.dart';
 import '../../task_base.dart';
-import 'task_provider.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the [TaskLoader]
-final taskLoaderProvider = Provider(
-  (ref) => TaskLoader(ref: ref, configLoader: ref.watch(configLoaderProvider)),
-);
-// coverage:ignore-end
 
 abstract interface class _TaskConfig<TState extends TaskBase> {
   String get taskName;
 
   bool get enabledByDefault;
 
-  TState create(Ref ref, YamlMap config);
+  TState create(GetIt getIt, YamlMap config);
 }
 
-class _SimpleTaskConfig<TState extends TaskBase>
-    implements _TaskConfig<TState> {
-  final TaskProvider<TState> provider;
+class _SimpleTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
+  @override
+  final String taskName;
 
   @override
   final bool enabledByDefault;
 
-  _SimpleTaskConfig(this.provider, {required this.enabledByDefault});
+  _SimpleTaskConfig(this.taskName, {required this.enabledByDefault});
 
   @override
-  String get taskName => provider.name;
-
-  @override
-  TState create(Ref ref, YamlMap config) => ref.read(provider);
+  TTask create(GetIt getIt, YamlMap config) => getIt.get<TTask>();
 }
 
-class _ConfigurableTaskConfig<TState extends TaskBase, TArg>
-    implements _TaskConfig<TState> {
-  final ConfigurableTaskProviderFamily<TState, TArg> configurableProvider;
+class _ConfigurableTaskConfig<TTask extends TaskBase, TArg>
+    implements _TaskConfig<TTask> {
+  @override
+  final String taskName;
+  final TArg Function(Map<String, dynamic> json) _fromJson;
 
   @override
   final bool enabledByDefault;
 
   _ConfigurableTaskConfig(
-    this.configurableProvider, {
+    this.taskName,
+    this._fromJson, {
     required this.enabledByDefault,
   });
 
   @override
-  String get taskName => configurableProvider.name;
-
-  @override
-  TState create(Ref ref, YamlMap config) {
+  TTask create(GetIt getIt, YamlMap config) {
     final configMap = config.cast<String, dynamic>();
-    final parsedConfig = configurableProvider.fromJson(configMap);
-    return ref.read(configurableProvider(parsedConfig));
+    final parsedConfig = _fromJson(configMap);
+    return getIt.get<TTask>(param1: parsedConfig);
   }
 }
 
-/// A helper class to register [TaskProvider]s in the application to be used by
-/// the [Hooks] instance.
+@internal
+@singleton
 class TaskLoader {
-  final Ref _ref;
+  final GetIt _getIt;
   final ConfigLoader _configLoader;
 
   final _tasks = <_TaskConfig>[];
 
-  /// Default constructor
-  TaskLoader({required Ref ref, required ConfigLoader configLoader})
-    : _ref = ref,
-      _configLoader = configLoader;
+  TaskLoader(this._getIt, this._configLoader);
 
-  /// Registers a simple, unconfigurable task provider.
-  ///
-  /// You can use the [TaskProvider] to create such providers.
   void registerTask<TState extends TaskBase>(
-    TaskProvider<TState> provider, {
+    String name, {
     bool enabledByDefault = true,
   }) => _tasks.add(
-    _SimpleTaskConfig<TState>(provider, enabledByDefault: enabledByDefault),
+    _SimpleTaskConfig<TState>(name, enabledByDefault: enabledByDefault),
   );
 
-  /// Registers a configurable task provider.
-  ///
-  /// You can use the [TaskProvider.configurable] to create such providers.
   void registerConfigurableTask<TState extends TaskBase, TArg>(
-    ConfigurableTaskProviderFamily<TState, TArg> providerFamily, {
+    String name,
+    TArg Function(Map<String, dynamic> json) fromJson, {
     bool enabledByDefault = true,
   }) => _tasks.add(
     _ConfigurableTaskConfig<TState, TArg>(
-      providerFamily,
+      name,
+      fromJson,
       enabledByDefault: enabledByDefault,
     ),
   );
 
-  /// @nodoc
-  @internal
   Iterable<TaskBase> loadTasks() sync* {
     for (final task in _tasks) {
       final taskConfig = _configLoader.loadTaskConfig(
@@ -107,7 +87,7 @@ class TaskLoader {
       );
 
       if (taskConfig != null) {
-        yield task.create(_ref, taskConfig);
+        yield task.create(_getIt, taskConfig);
       }
     }
   }

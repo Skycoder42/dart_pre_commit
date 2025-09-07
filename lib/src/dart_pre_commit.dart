@@ -3,8 +3,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:riverpod/riverpod.dart';
+import 'package:get_it/get_it.dart';
 
+import 'di.dart';
 import 'hooks.dart';
 import 'tasks/provider/default_tasks_loader.dart';
 import 'tasks/provider/task_loader.dart';
@@ -37,44 +38,32 @@ abstract class DartPreCommit {
     LogLevel logLevel = LogLevel.info,
     bool? useAnsiLogger,
   }) async {
-    final di = _createProviderContainer(logLevel, useAnsiLogger);
+    final di = _createDiContainer(logLevel, useAnsiLogger);
     try {
       await _registerTasks(di, registerDefaultTasks, registerCustomTasks);
-      final result = await di.read(hooksProvider(config)).call();
+      final result = await di.get<Hooks>(param1: config).call();
       return result;
     } finally {
-      di.dispose();
+      await di.reset();
     }
   }
 
-  static ProviderContainer _createProviderContainer(
-    LogLevel logLevel,
-    bool? useAnsiLogger,
-  ) {
+  static GetIt _createDiContainer(LogLevel logLevel, bool? useAnsiLogger) {
     final ansiSupported =
         useAnsiLogger ?? (stdout.hasTerminal && stdout.supportsAnsiEscapes);
-
-    return ProviderContainer(
-      overrides: [
-        loggerProvider.overrideWith(
-          (ref) => ansiSupported
-              ? ref.watch(consoleLoggerProvider(logLevel))
-              : ref.watch(simpleLoggerProvider(logLevel)),
-        ),
-      ],
-    );
+    return createDiContainer(useAnsiLogger: ansiSupported);
   }
 
   static Future<void> _registerTasks(
-    ProviderContainer di,
+    GetIt getIt,
     bool registerDefaultTasks,
     RegisterTasksCallback? registerCustomTasks,
   ) async {
     if (registerDefaultTasks) {
-      await di.read(defaultTasksLoaderProvider).registerDefaultTasks();
+      await getIt.get<DefaultTasksLoader>().registerDefaultTasks();
     }
     if (registerCustomTasks != null) {
-      await registerCustomTasks(di.read(taskLoaderProvider));
+      await registerCustomTasks(getIt.get<TaskLoader>());
     }
   }
 }

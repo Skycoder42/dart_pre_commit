@@ -1,22 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../util/file_resolver.dart';
 import '../util/logger.dart';
 
 part 'pubspec_config_loader.freezed.dart';
-
-// coverage:ignore-start
-/// @nodoc
-@internal
-final pubspecConfigLoaderProvider = Provider(
-  (ref) => PubspecConfigLoader(
-    fileResolver: ref.watch(fileResolverProvider),
-    logger: ref.watch(loggerProvider),
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
@@ -32,16 +21,13 @@ sealed class PubspecConfig with _$PubspecConfig {
 
 /// @nodoc
 @internal
+@injectable
 class PubspecConfigLoader {
   final FileResolver _fileResolver;
   final Logger _logger;
 
   /// @nodoc
-  const PubspecConfigLoader({
-    required FileResolver fileResolver,
-    required Logger logger,
-  }) : _fileResolver = fileResolver,
-       _logger = logger;
+  const PubspecConfigLoader(this._fileResolver, this._logger);
 
   /// @nodoc
   Future<PubspecConfig> loadPubspecConfig() async {

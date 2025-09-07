@@ -2,39 +2,22 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as path;
-import 'package:riverpod/riverpod.dart';
 
 import 'file_resolver.dart';
 import 'logger.dart';
 import 'models/workspace.dart';
 import 'program_runner.dart';
 
-// coverage:ignore-start
-/// @nodoc
 @internal
-final lockfileResolverProvider = Provider(
-  (ref) => LockfileResolver(
-    programRunner: ref.watch(programRunnerProvider),
-    fileResolver: ref.watch(fileResolverProvider),
-    logger: ref.watch(taskLoggerProvider),
-  ),
-);
-// coverage:ignore-end
-
-@internal
+@injectable
 class LockfileResolver {
   final ProgramRunner _programRunner;
   final FileResolver _fileResolver;
   final TaskLogger _logger;
 
-  LockfileResolver({
-    required ProgramRunner programRunner,
-    required FileResolver fileResolver,
-    required TaskLogger logger,
-  }) : _programRunner = programRunner,
-       _fileResolver = fileResolver,
-       _logger = logger;
+  const LockfileResolver(this._programRunner, this._fileResolver, this._logger);
 
   Future<File?> findWorkspaceLockfile() async {
     final workspace = await _programRunner

@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_pre_commit/dart_pre_commit.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:dart_pre_commit/src/dart_pre_commit.dart';
+import 'package:dart_pre_commit/src/hooks.dart';
+import 'package:dart_pre_commit/src/util/logger.dart';
 
 /// @nodoc
 Future<void> main(List<String> args) async {
@@ -83,7 +84,6 @@ Future<int> _run(List<String> args) async {
         )
         ..addFlag('help', abbr: 'h', negatable: false, help: 'Show this help.');
 
-  ProviderContainer? di;
   try {
     // parse command line options
     final options = parser.parse(args);
@@ -101,31 +101,17 @@ Future<int> _run(List<String> args) async {
     // setup dependency injection container
     final ansiSupported = options['ansi'] as bool;
     final logLevel = LogLevel.values.byName(options['log-level'] as String);
-    di = ProviderContainer(
-      overrides: [
-        loggerProvider.overrideWith(
-          (ref) => ansiSupported
-              ? ref.watch(consoleLoggerProvider(logLevel))
-              : ref.watch(simpleLoggerProvider(logLevel)),
-        ),
-      ],
-    );
 
-    // register tasks
-    await di.read(defaultTasksLoaderProvider).registerDefaultTasks();
-
-    // load hooks instance
-    final hooks = di.read(
-      hooksProvider(
-        HooksConfig(
-          configFile: options['config-path'] as String?,
-          continueOnRejected: options['continue-on-rejected'] as bool,
-        ),
+    final result = await DartPreCommit.run(
+      config: HooksConfig(
+        configFile: options['config-path'] as String?,
+        continueOnRejected: options['continue-on-rejected'] as bool,
       ),
+      logLevel: logLevel,
+      useAnsiLogger: ansiSupported,
     );
 
     // run hooks and return result
-    final result = await hooks();
     if (options['detailed-exit-code'] as bool) {
       return result.exitCode;
     } else {
@@ -137,9 +123,9 @@ Future<int> _run(List<String> args) async {
       ..write(parser.usage);
     return 2;
   } on Exception catch (e, s) {
-    di?.read(loggerProvider).except(e, s);
+    stderr
+      ..writeln(e)
+      ..writeln(s);
     return 127;
-  } finally {
-    di?.dispose();
   }
 }

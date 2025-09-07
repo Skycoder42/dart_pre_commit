@@ -1,21 +1,14 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../util/file_resolver.dart';
 
-// coverage:ignore-start
 /// @nodoc
 @internal
-final configLoaderProvider = Provider(
-  (ref) => ConfigLoader(fileResolver: ref.watch(fileResolverProvider)),
-);
-// coverage:ignore-end
-
-/// @nodoc
-@internal
+@singleton
 class ConfigLoader {
   static const _excludedFilesKey = 'exclude';
 
@@ -24,8 +17,7 @@ class ConfigLoader {
   late YamlMap _globalConfig;
 
   /// @nodoc
-  ConfigLoader({required FileResolver fileResolver})
-    : _fileResolver = fileResolver;
+  ConfigLoader(this._fileResolver);
 
   /// @nodoc
   Future<bool> loadGlobalConfig([File? customConfig]) {

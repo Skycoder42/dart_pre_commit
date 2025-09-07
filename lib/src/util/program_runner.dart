@@ -2,18 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
-import 'package:riverpod/riverpod.dart';
 
 import 'logger.dart';
-
-// coverage:ignore-start
-/// @nodoc
-@internal
-final programRunnerProvider = Provider(
-  (ref) => ProgramRunner(logger: ref.watch(taskLoggerProvider)),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
@@ -52,11 +44,12 @@ class ProgramExitException implements Exception {
 
 /// @nodoc
 @internal
+@injectable
 class ProgramRunner {
   final TaskLogger _logger;
 
   /// @nodoc
-  const ProgramRunner({required TaskLogger logger}) : _logger = logger;
+  const ProgramRunner(this._logger);
 
   /// @nodoc
   Stream<String> stream(

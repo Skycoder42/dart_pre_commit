@@ -26,6 +26,7 @@ coverage/
 coverage_badge.svg
 
 # generated files
+*.config.dart
 *.freezed.dart
 *.g.dart
 

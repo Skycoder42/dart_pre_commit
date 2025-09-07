@@ -2,17 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:console/console.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:injectable/injectable.dart';
 
 import '../logger.dart';
 import 'simple_logger.dart';
 
-// coverage:ignore-start
-/// A riverpod provider family for the [ConsoleLogger].
-final consoleLoggerProvider = Provider.family<Logger, LogLevel>(
-  (ref, logLevel) => ConsoleLogger(logLevel),
-);
-// coverage:ignore-end
+/// Environment for ansi
+const ansiEnv = Environment('ansi');
 
 /// An advanced logger, that providers console optimized, interactive logging.
 ///
@@ -22,6 +18,8 @@ final consoleLoggerProvider = Provider.family<Logger, LogLevel>(
 /// with a log file or other, non-console output.
 ///
 /// For simple logging, i.e. to a file, use [SimpleLogger] instead.
+@Singleton(as: Logger)
+@ansiEnv
 class ConsoleLogger implements Logger {
   String _statusMessage = '';
   TaskStatus? _statusState;
@@ -35,7 +33,7 @@ class ConsoleLogger implements Logger {
   ///
   /// The [logLevel], which is [LogLevel.info] by default, can be adjusted to
   /// control how much is logged.
-  ConsoleLogger([this.logLevel = LogLevel.info]);
+  ConsoleLogger() : logLevel = LogLevel.info;
 
   @override
   void updateStatus({

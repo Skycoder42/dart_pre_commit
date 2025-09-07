@@ -1,26 +1,9 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import 'package:riverpod/riverpod.dart';
 
 import '../hooks.dart';
 import '../task_base.dart';
-
-// coverage:ignore-start
-/// A riverpod provider family for the [Logger].
-///
-/// This provider is **not** initialized. Instead you have to override it in
-/// your provider container with a specific implementation.
-///
-/// See the `example/main.dart` for an example.
-final loggerProvider = Provider<Logger>((ref) => throw UnimplementedError());
-
-/// @nodoc
-@internal
-final taskLoggerProvider = Provider<TaskLogger>(
-  (ref) => ref.watch(loggerProvider),
-);
-// coverage:ignore-end
 
 /// The status a [TaskBase] can be in.
 enum TaskStatus {

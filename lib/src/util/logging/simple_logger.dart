@@ -1,16 +1,12 @@
 import 'dart:io';
 
-import 'package:riverpod/riverpod.dart';
+import 'package:injectable/injectable.dart';
 
 import '../logger.dart';
 import 'console_logger.dart';
 
-// coverage:ignore-start
-/// A riverpod provider family for the [ConsoleLogger].
-final simpleLoggerProvider = Provider.family<Logger, LogLevel>(
-  (ref, logLevel) => SimpleLogger(logLevel: logLevel),
-);
-// coverage:ignore-end
+/// Environment for non ansi
+const noAnsiEnv = Environment('noAnsi');
 
 /// A simple logger class, the provides file-optimized logs.
 ///
@@ -20,6 +16,8 @@ final simpleLoggerProvider = Provider.family<Logger, LogLevel>(
 /// to be displayed by a rich terminal.
 ///
 /// For advanced logging, i.e. to a console/TTY, use [ConsoleLogger] instead.
+@Singleton(as: Logger)
+@noAnsiEnv
 class SimpleLogger implements Logger {
   /// The [IOSink] for normal log messages
   final IOSink outSink;
@@ -37,16 +35,7 @@ class SimpleLogger implements Logger {
   String? _statusDetail;
 
   /// Default constructor.
-  ///
-  /// If not specified, [outSink] and [errSink] will be set to [stdout] and
-  /// [stderr] repectively. The [logLevel], which is [LogLevel.info] by default,
-  /// can be adjusted to control how much is logged.
-  SimpleLogger({
-    IOSink? outSink,
-    IOSink? errSink,
-    this.logLevel = LogLevel.info,
-  }) : outSink = outSink ?? stdout,
-       errSink = errSink ?? stderr;
+  SimpleLogger() : outSink = stdout, errSink = stderr, logLevel = LogLevel.info;
 
   @override
   void updateStatus({

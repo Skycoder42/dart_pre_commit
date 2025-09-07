@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
@@ -7,23 +8,12 @@ import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
-import 'provider/task_provider.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the flutter compatibility task.
-final flutterCompatTaskProvider = TaskProvider(
-  FlutterCompatTask._taskName,
-  (ref) => FlutterCompatTask(
-    programRunner: ref.watch(programRunnerProvider),
-    taskLogger: ref.watch(taskLoggerProvider),
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
+@injectable
 class FlutterCompatTask implements RepoTask {
-  static const _taskName = 'flutter-compat';
+  static const name = 'flutter-compat';
   static final _pubspecRegexp = RegExp(r'^pubspec.ya?ml$');
 
   final ProgramRunner _programRunner;
@@ -31,14 +21,10 @@ class FlutterCompatTask implements RepoTask {
   final TaskLogger _taskLogger;
 
   /// @nodoc
-  const FlutterCompatTask({
-    required ProgramRunner programRunner,
-    required TaskLogger taskLogger,
-  }) : _programRunner = programRunner,
-       _taskLogger = taskLogger;
+  const FlutterCompatTask(this._programRunner, this._taskLogger);
 
   @override
-  String get taskName => _taskName;
+  String get taskName => name;
 
   @override
   bool get callForEmptyEntries => false;

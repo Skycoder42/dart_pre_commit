@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:path/path.dart';
-import 'package:riverpod/riverpod.dart';
 
 import 'config/config_loader.dart';
 import 'repo_entry.dart';
@@ -13,21 +13,6 @@ import 'util/logger.dart';
 import 'util/program_runner.dart';
 
 part 'hooks.freezed.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the [Hooks] class, configurable with the
-/// [HooksConfig].
-final hooksProvider = Provider.family(
-  (ref, HooksConfig config) => Hooks(
-    fileResolver: ref.watch(fileResolverProvider),
-    programRunner: ref.watch(programRunnerProvider),
-    configLoader: ref.watch(configLoaderProvider),
-    taskLoader: ref.watch(taskLoaderProvider),
-    logger: ref.watch(loggerProvider),
-    config: config,
-  ),
-);
-// coverage:ignore-end
 
 /// A configuration class for launching the [Hooks] instance.
 @freezed
@@ -120,11 +105,8 @@ class _RejectedException implements Exception {
   const _RejectedException();
 }
 
-/// A callable class the runs the hooks on a repository.
-///
-/// This is the main entrypoint of the library. The class will scan your
-/// repository for staged files and run all activated hooks on them, reporting
-/// a result.
+@internal
+@injectable
 class Hooks {
   final FileResolver _fileResolver;
   final ProgramRunner _programRunner;
@@ -133,29 +115,16 @@ class Hooks {
 
   final Logger _logger;
 
-  /// The configuration used by this instance.
   final HooksConfig config;
 
-  /// Constructs a new [Hooks] instance.
-  ///
-  /// The [fileResolver], [programRunner], [configLoader], [taskLoader] and
-  /// [logger] are needed internally by this class. Use the [hooksProvider] for
-  /// an easy initialization.
-  ///
-  /// The [config] can be used to control custom behavior. See [HooksConfig] for
-  /// more details.
-  const Hooks({
-    required FileResolver fileResolver,
-    required ProgramRunner programRunner,
-    required ConfigLoader configLoader,
-    required TaskLoader taskLoader,
-    required Logger logger,
-    this.config = const HooksConfig(),
-  }) : _fileResolver = fileResolver,
-       _programRunner = programRunner,
-       _configLoader = configLoader,
-       _taskLoader = taskLoader,
-       _logger = logger;
+  const Hooks(
+    this._fileResolver,
+    this._programRunner,
+    this._configLoader,
+    this._taskLoader,
+    this._logger,
+    @factoryParam this.config,
+  );
 
   /// Executes all enabled hooks on the current repository.
   ///

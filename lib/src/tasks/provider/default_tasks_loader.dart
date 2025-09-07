@@ -1,8 +1,10 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:injectable/injectable.dart';
+import 'package:meta/meta.dart';
 
 import '../../config/pubspec_config_loader.dart';
 import '../../util/logger.dart';
 import '../../util/program_detector.dart';
+import '../analysis_task_base.dart';
 import '../analyze_task.dart';
 import '../custom_lint_task.dart';
 import '../flutter_compat_task.dart';
@@ -12,27 +14,14 @@ import '../outdated_task.dart';
 import '../pull_up_dependencies_task.dart';
 import 'task_loader.dart';
 
-// coverage:ignore-start
-/// A riverpod provider for the [DefaultTasksLoader].
-final defaultTasksLoaderProvider = Provider(
-  (ref) => DefaultTasksLoader(
-    pubspecConfigLoader: ref.watch(pubspecConfigLoaderProvider),
-    programDetector: ref.watch(programDetectorProvider),
-    taskLoader: ref.watch(taskLoaderProvider),
-    logger: ref.watch(loggerProvider),
-  ),
-);
-// coverage:ignore-end
-
-/// A helper class to automatically register all tasks that are provided with
-/// this package in the [TaskLoader].
+@internal
+@injectable
 class DefaultTasksLoader {
   final PubspecConfigLoader _pubspecConfigLoader;
   final ProgramDetector _programDetector;
   final TaskLoader _taskLoader;
   final Logger _logger;
 
-  /// Default constructor.
   const DefaultTasksLoader({
     required PubspecConfigLoader pubspecConfigLoader,
     required ProgramDetector programDetector,
@@ -43,45 +32,51 @@ class DefaultTasksLoader {
        _taskLoader = taskLoader,
        _logger = logger;
 
-  /// Performs the registration of the default tasks.
-  ///
-  /// This will register the following task providers with the [TaskLoader]:
-  /// - [formatTaskProvider]
-  /// - [analyzeTaskProvider]
-  /// - [customLintTaskProvider] (only if `custom_lint` is installed as dev
-  /// dependency)
-  /// - [flutterCompatTaskProvider] (only if not a flutter package)
-  /// - [outdatedTaskProvider]
-  /// - [pullUpDependenciesTaskProvider]
-  /// - [osvScannerTaskProvider] (only if the `osv-scanner` binary is found in
-  /// the path)
   Future<void> registerDefaultTasks() async {
     final pubspecConfig = await _pubspecConfigLoader.loadPubspecConfig();
 
     _logger.debug('detected pubspec config: $pubspecConfig');
 
     _taskLoader
-      ..registerConfigurableTask(formatTaskProvider)
-      ..registerConfigurableTask(analyzeTaskProvider);
+      ..registerConfigurableTask<FormatTask, FormatConfig>(
+        FormatTask.name,
+        FormatConfig.fromJson,
+      )
+      ..registerConfigurableTask<AnalyzeTask, AnalysisConfig>(
+        AnalyzeTask.name,
+        AnalysisConfig.fromJson,
+      );
 
     if (pubspecConfig.hasCustomLintDependency) {
-      _taskLoader.registerConfigurableTask(customLintTaskProvider);
+      _taskLoader.registerConfigurableTask<CustomLintTask, AnalysisConfig>(
+        CustomLintTask.name,
+        AnalysisConfig.fromJson,
+      );
     }
 
     if (!pubspecConfig.isFlutterProject) {
-      _taskLoader.registerTask(flutterCompatTaskProvider);
+      _taskLoader.registerTask<FlutterCompatTask>(FlutterCompatTask.name);
     }
 
     _taskLoader
-      ..registerConfigurableTask(outdatedTaskProvider)
-      ..registerConfigurableTask(pullUpDependenciesTaskProvider);
+      ..registerConfigurableTask<OutdatedTask, OutdatedConfig>(
+        OutdatedTask.name,
+        OutdatedConfig.fromJson,
+      )
+      ..registerConfigurableTask<
+        PullUpDependenciesTask,
+        PullUpDependenciesConfig
+      >(PullUpDependenciesTask.name, PullUpDependenciesConfig.fromJson);
 
     final osvScannerFound = await _programDetector.hasProgram(
       OsvScannerTask.osvScannerBinary,
     );
     _logger.debug('osv-scanner found in PATH: $osvScannerFound');
     if (osvScannerFound) {
-      _taskLoader.registerConfigurableTask(osvScannerTaskProvider);
+      _taskLoader.registerConfigurableTask<OsvScannerTask, OsvScannerConfig>(
+        OsvScannerTask.name,
+        OsvScannerConfig.fromJson,
+      );
     }
   }
 }

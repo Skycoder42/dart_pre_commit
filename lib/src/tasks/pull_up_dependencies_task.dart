@@ -1,5 +1,6 @@
 import 'package:checked_yaml/checked_yaml.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
@@ -10,25 +11,9 @@ import '../util/lockfile_resolver.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/pull_up_dependencies/pubspec_lock.dart';
-import 'provider/task_provider.dart';
 
 part 'pull_up_dependencies_task.freezed.dart';
 part 'pull_up_dependencies_task.g.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the pull up dependencies task.
-final pullUpDependenciesTaskProvider = TaskProvider.configurable(
-  PullUpDependenciesTask._taskName,
-  PullUpDependenciesConfig.fromJson,
-  (ref, PullUpDependenciesConfig config) => PullUpDependenciesTask(
-    fileResolver: ref.watch(fileResolverProvider),
-    programRunner: ref.watch(programRunnerProvider),
-    lockfileResolver: ref.watch(lockfileResolverProvider),
-    logger: ref.watch(taskLoggerProvider),
-    config: config,
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
@@ -48,8 +33,9 @@ sealed class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
 
 /// @nodoc
 @internal
+@injectable
 class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
-  static const _taskName = 'pull-up-dependencies';
+  static const name = 'pull-up-dependencies';
 
   final ProgramRunner _programRunner;
 
@@ -62,20 +48,16 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   final PullUpDependenciesConfig _config;
 
   /// @nodoc
-  const PullUpDependenciesTask({
-    required ProgramRunner programRunner,
-    required FileResolver fileResolver,
-    required LockfileResolver lockfileResolver,
-    required TaskLogger logger,
-    required PullUpDependenciesConfig config,
-  }) : _programRunner = programRunner,
-       _fileResolver = fileResolver,
-       _lockfileResolver = lockfileResolver,
-       _logger = logger,
-       _config = config;
+  const PullUpDependenciesTask(
+    this._programRunner,
+    this._fileResolver,
+    this._lockfileResolver,
+    this._logger,
+    @factoryParam this._config,
+  );
 
   @override
-  String get taskName => _taskName;
+  String get taskName => name;
 
   @override
   bool get callForEmptyEntries => true;

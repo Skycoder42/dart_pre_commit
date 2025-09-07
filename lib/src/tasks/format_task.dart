@@ -1,24 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/program_runner.dart';
-import 'provider/task_provider.dart';
 
 part 'format_task.freezed.dart';
 part 'format_task.g.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the format task.
-final formatTaskProvider = TaskProvider.configurable(
-  FormatTask._taskName,
-  FormatConfig.fromJson,
-  (ref, config) => FormatTask(
-    programRunner: ref.watch(programRunnerProvider),
-    config: config,
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @freezed
@@ -39,22 +27,19 @@ sealed class FormatConfig with _$FormatConfig {
 
 /// @nodoc
 @internal
+@injectable
 class FormatTask with PatternTaskMixin implements FileTask {
-  static const _taskName = 'format';
+  static const name = 'format';
 
   final ProgramRunner _programRunner;
 
   final FormatConfig _config;
 
   /// @nodoc
-  const FormatTask({
-    required ProgramRunner programRunner,
-    required FormatConfig config,
-  }) : _programRunner = programRunner,
-       _config = config;
+  const FormatTask(this._programRunner, @factoryParam this._config);
 
   @override
-  String get taskName => _taskName;
+  String get taskName => name;
 
   @override
   Pattern get filePattern => RegExp(r'^.*\.dart$');

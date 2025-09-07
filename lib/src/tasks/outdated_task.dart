@@ -1,29 +1,16 @@
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
 import '../util/logger.dart';
 import '../util/program_runner.dart';
 import 'models/outdated/outdated_info.dart';
-import 'provider/task_provider.dart';
 
 part 'outdated_task.freezed.dart';
 part 'outdated_task.g.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the outdated task.
-final outdatedTaskProvider = TaskProvider.configurable(
-  OutdatedTask._taskName,
-  OutdatedConfig.fromJson,
-  (ref, OutdatedConfig config) => OutdatedTask(
-    programRunner: ref.watch(programRunnerProvider),
-    logger: ref.watch(taskLoggerProvider),
-    config: config,
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
@@ -60,8 +47,9 @@ sealed class OutdatedConfig with _$OutdatedConfig {
 
 /// @nodoc
 @internal
+@injectable
 class OutdatedTask with PatternTaskMixin implements RepoTask {
-  static const _taskName = 'outdated';
+  static const name = 'outdated';
 
   final ProgramRunner _programRunner;
 
@@ -70,16 +58,14 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
   final OutdatedConfig _config;
 
   /// @nodoc
-  const OutdatedTask({
-    required ProgramRunner programRunner,
-    required TaskLogger logger,
-    required OutdatedConfig config,
-  }) : _programRunner = programRunner,
-       _logger = logger,
-       _config = config;
+  const OutdatedTask(
+    this._programRunner,
+    this._logger,
+    @factoryParam this._config,
+  );
 
   @override
-  String get taskName => _taskName;
+  String get taskName => name;
 
   @override
   bool get callForEmptyEntries => true;

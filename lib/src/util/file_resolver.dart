@@ -1,17 +1,12 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:riverpod/riverpod.dart';
-
-// coverage:ignore-start
-/// @nodoc
-@internal
-final fileResolverProvider = Provider((ref) => FileResolver());
-// coverage:ignore-end
 
 /// @nodoc
 @internal
+@injectable
 class FileResolver {
   /// @nodoc
   Future<String> resolve(String path, [Directory? from]) async => relative(

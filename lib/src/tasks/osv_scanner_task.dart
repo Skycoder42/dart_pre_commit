@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 
 import '../repo_entry.dart';
 import '../task_base.dart';
@@ -12,25 +13,9 @@ import '../util/program_runner.dart';
 import 'models/osv_scanner/osv_scanner_result.dart';
 import 'models/osv_scanner/package_info.dart';
 import 'models/osv_scanner/vulnerability.dart';
-import 'provider/task_provider.dart';
 
 part 'osv_scanner_task.freezed.dart';
 part 'osv_scanner_task.g.dart';
-
-// coverage:ignore-start
-/// A riverpod provider for the osv scanner task.
-final osvScannerTaskProvider = TaskProvider.configurable(
-  OsvScannerTask._taskName,
-  OsvScannerConfig.fromJson,
-  (ref, config) => OsvScannerTask(
-    programRunner: ref.watch(programRunnerProvider),
-    fileResolver: ref.watch(fileResolverProvider),
-    lockfileResolver: ref.watch(lockfileResolverProvider),
-    taskLogger: ref.watch(taskLoggerProvider),
-    config: config,
-  ),
-);
-// coverage:ignore-end
 
 /// @nodoc
 @internal
@@ -54,8 +39,9 @@ sealed class OsvScannerConfig with _$OsvScannerConfig {
 
 /// @nodoc
 @internal
+@injectable
 class OsvScannerTask implements RepoTask {
-  static const _taskName = 'osv-scanner';
+  static const name = 'osv-scanner';
 
   /// @nodoc
   static const osvScannerBinary = 'osv-scanner';
@@ -67,20 +53,16 @@ class OsvScannerTask implements RepoTask {
   final OsvScannerConfig _config;
 
   /// @nodoc
-  const OsvScannerTask({
-    required ProgramRunner programRunner,
-    required FileResolver fileResolver,
-    required LockfileResolver lockfileResolver,
-    required TaskLogger taskLogger,
-    required OsvScannerConfig config,
-  }) : _programRunner = programRunner,
-       _fileResolver = fileResolver,
-       _lockfileResolver = lockfileResolver,
-       _taskLogger = taskLogger,
-       _config = config;
+  const OsvScannerTask(
+    this._programRunner,
+    this._fileResolver,
+    this._lockfileResolver,
+    this._taskLogger,
+    @factoryParam this._config,
+  );
 
   @override
-  String get taskName => _taskName;
+  String get taskName => name;
 
   @override
   bool canProcess(RepoEntry entry) => false;

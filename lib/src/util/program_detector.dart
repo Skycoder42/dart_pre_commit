@@ -1,20 +1,13 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
-import 'package:riverpod/riverpod.dart';
 
 import 'program_runner.dart';
 
-// coverage:ignore-start
 /// @nodoc
 @internal
-final programDetectorProvider = Provider(
-  (ref) => ProgramDetector(programRunner: ref.watch(programRunnerProvider)),
-);
-// coverage:ignore-end
-
-/// @nodoc
-@internal
+@injectable
 class ProgramDetector {
   /// @nodoc
   static const defaultTestArguments = ['--version'];
@@ -22,8 +15,7 @@ class ProgramDetector {
   final ProgramRunner _programRunner;
 
   /// @nodoc
-  ProgramDetector({required ProgramRunner programRunner})
-    : _programRunner = programRunner;
+  ProgramDetector(this._programRunner);
 
   /// @nodoc
   Future<bool> hasProgram(
