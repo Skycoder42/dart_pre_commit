@@ -1,21 +1,14 @@
 import 'dart:io';
 
 import 'package:injectable/injectable.dart';
+import 'package:meta/meta.dart';
 
 import '../logger.dart';
-import 'console_logger.dart';
 
-/// Environment for non ansi
+@internal
 const noAnsiEnv = Environment('noAnsi');
 
-/// A simple logger class, the provides file-optimized logs.
-///
-/// These logs are plain, color- and decoration-less, without any special
-/// symbols or control characters. You typically use this logger, if the logging
-/// target is a plain file or some other, linear data stream that is not meant
-/// to be displayed by a rich terminal.
-///
-/// For advanced logging, i.e. to a console/TTY, use [ConsoleLogger] instead.
+@internal
 @Singleton(as: Logger)
 @noAnsiEnv
 class SimpleLogger implements Logger {
@@ -35,7 +28,12 @@ class SimpleLogger implements Logger {
   String? _statusDetail;
 
   /// Default constructor.
-  SimpleLogger() : outSink = stdout, errSink = stderr, logLevel = LogLevel.info;
+  SimpleLogger(
+    this.logLevel, {
+    @ignoreParam IOSink? outSink,
+    @ignoreParam IOSink? errSink,
+  }) : outSink = outSink ?? stdout,
+       errSink = errSink ?? stderr;
 
   @override
   void updateStatus({

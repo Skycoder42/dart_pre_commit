@@ -39,7 +39,7 @@ void main() {
 
       when(() => mockRunner.run(any(), any())).thenAnswer((_) async => 0);
 
-      sut = FormatTask(programRunner: mockRunner, config: const FormatConfig());
+      sut = FormatTask(mockRunner, const FormatConfig());
     });
 
     test('task metadata is correct', () {
@@ -77,10 +77,7 @@ void main() {
     });
 
     test('calls dart format with line length if given', () async {
-      sut = FormatTask(
-        programRunner: mockRunner,
-        config: const FormatConfig(lineLength: 160),
-      );
+      sut = FormatTask(mockRunner, const FormatConfig(lineLength: 160));
 
       final res = await sut(fakeEntry);
       expect(res, TaskResult.accepted);

@@ -105,11 +105,11 @@ void main() {
       ).thenReturnAsync(FakeFile('pubspec.lock'));
 
       sut = OsvScannerTask(
-        programRunner: mockRunner,
-        fileResolver: mockFileResolver,
-        lockfileResolver: mockLockfileResolver,
-        taskLogger: mockLogger,
-        config: const OsvScannerConfig(),
+        mockRunner,
+        mockFileResolver,
+        mockLockfileResolver,
+        mockLogger,
+        const OsvScannerConfig(),
       );
     });
 
@@ -218,11 +218,11 @@ void main() {
         );
 
         sut = OsvScannerTask(
-          programRunner: mockRunner,
-          fileResolver: mockFileResolver,
-          lockfileResolver: mockLockfileResolver,
-          taskLogger: mockLogger,
-          config: fixture.config,
+          mockRunner,
+          mockFileResolver,
+          mockLockfileResolver,
+          mockLogger,
+          fixture.config,
         );
 
         final result = await sut(const []);

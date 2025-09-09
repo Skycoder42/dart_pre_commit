@@ -1,4 +1,5 @@
 import 'package:dart_pre_commit/src/config/pubspec_config_loader.dart';
+import 'package:dart_pre_commit/src/tasks/analysis_task_base.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
 import 'package:dart_pre_commit/src/tasks/custom_lint_task.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
@@ -57,12 +58,26 @@ void main() {
 
         verifyInOrder([
           mockPubspecConfigLoader.loadPubspecConfig,
-          () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(
-            pullUpDependenciesTaskProvider,
-          ),
+          () =>
+              mockTaskLoader.registerConfigurableTask<FormatTask, FormatConfig>(
+                FormatTask.name,
+                FormatConfig.fromJson,
+              ),
+          () => mockTaskLoader
+              .registerConfigurableTask<AnalyzeTask, AnalysisConfig>(
+                AnalyzeTask.name,
+                AnalysisConfig.fromJson,
+              ),
+          () => mockTaskLoader
+              .registerConfigurableTask<OutdatedTask, OutdatedConfig>(
+                OutdatedTask.name,
+                OutdatedConfig.fromJson,
+              ),
+          () =>
+              mockTaskLoader.registerConfigurableTask<
+                PullUpDependenciesTask,
+                PullUpDependenciesConfig
+              >(PullUpDependenciesTask.name, PullUpDependenciesConfig.fromJson),
           () => mockProgramDetector.hasProgram(OsvScannerTask.osvScannerBinary),
         ]);
         verifyNoMoreInteractions(mockPubspecConfigLoader);
@@ -79,16 +94,40 @@ void main() {
 
         verifyInOrder([
           mockPubspecConfigLoader.loadPubspecConfig,
-          () => mockTaskLoader.registerConfigurableTask(formatTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(analyzeTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(customLintTaskProvider),
-          () => mockTaskLoader.registerTask(flutterCompatTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(outdatedTaskProvider),
-          () => mockTaskLoader.registerConfigurableTask(
-            pullUpDependenciesTaskProvider,
+          () =>
+              mockTaskLoader.registerConfigurableTask<FormatTask, FormatConfig>(
+                FormatTask.name,
+                FormatConfig.fromJson,
+              ),
+          () => mockTaskLoader
+              .registerConfigurableTask<AnalyzeTask, AnalysisConfig>(
+                AnalyzeTask.name,
+                AnalysisConfig.fromJson,
+              ),
+          () => mockTaskLoader
+              .registerConfigurableTask<CustomLintTask, AnalysisConfig>(
+                CustomLintTask.name,
+                AnalysisConfig.fromJson,
+              ),
+          () => mockTaskLoader.registerTask<FlutterCompatTask>(
+            FlutterCompatTask.name,
           ),
+          () => mockTaskLoader
+              .registerConfigurableTask<OutdatedTask, OutdatedConfig>(
+                OutdatedTask.name,
+                OutdatedConfig.fromJson,
+              ),
+          () =>
+              mockTaskLoader.registerConfigurableTask<
+                PullUpDependenciesTask,
+                PullUpDependenciesConfig
+              >(PullUpDependenciesTask.name, PullUpDependenciesConfig.fromJson),
           () => mockProgramDetector.hasProgram(OsvScannerTask.osvScannerBinary),
-          () => mockTaskLoader.registerConfigurableTask(osvScannerTaskProvider),
+          () => mockTaskLoader
+              .registerConfigurableTask<OsvScannerTask, OsvScannerConfig>(
+                OsvScannerTask.name,
+                OsvScannerConfig.fromJson,
+              ),
         ]);
         verifyNoMoreInteractions(mockPubspecConfigLoader);
         verifyNoMoreInteractions(mockTaskLoader);

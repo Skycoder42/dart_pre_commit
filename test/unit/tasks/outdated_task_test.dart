@@ -80,9 +80,9 @@ void main() {
 
     group('outdated', () {
       OutdatedTask createSut(OutdatedLevel level) => OutdatedTask(
-        programRunner: mockRunner,
-        logger: mockLogger,
-        config: OutdatedConfig(level: level, allowed: [ignoredTestPackage]),
+        mockRunner,
+        mockLogger,
+        OutdatedConfig(level: level, allowed: [ignoredTestPackage]),
       );
 
       test('task metadata is correct', () {

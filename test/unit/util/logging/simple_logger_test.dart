@@ -23,12 +23,12 @@ void main() {
     sut = SimpleLogger(
       outSink: mockOutSink,
       errSink: mockErrSink,
-      logLevel: LogLevel.debug,
+      LogLevel.debug,
     );
   });
 
   test('uses stdout and stderr by default', () {
-    sut = SimpleLogger(logLevel: LogLevel.debug);
+    sut = SimpleLogger(LogLevel.debug);
 
     expect(sut.outSink, same(stdout));
     expect(sut.errSink, same(stderr));
@@ -176,7 +176,7 @@ void main() {
         sut = SimpleLogger(
           outSink: mockOutSink,
           errSink: mockErrSink,
-          logLevel: fixture.$1,
+          fixture.$1,
         );
 
         fixture.$2?.call(sut);

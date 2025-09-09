@@ -3,21 +3,14 @@ import 'dart:convert';
 
 import 'package:console/console.dart';
 import 'package:injectable/injectable.dart';
+import 'package:meta/meta.dart';
 
 import '../logger.dart';
-import 'simple_logger.dart';
 
-/// Environment for ansi
+@internal
 const ansiEnv = Environment('ansi');
 
-/// An advanced logger, that providers console optimized, interactive logging.
-///
-/// This class uses colors and other ANSI-escapes to provide logs to the user
-/// via a TTY. It constantly updates lines and replaces content to provide a
-/// smooth logging experience. This logger should not be used in conjunction
-/// with a log file or other, non-console output.
-///
-/// For simple logging, i.e. to a file, use [SimpleLogger] instead.
+@internal
 @Singleton(as: Logger)
 @ansiEnv
 class ConsoleLogger implements Logger {
@@ -33,7 +26,7 @@ class ConsoleLogger implements Logger {
   ///
   /// The [logLevel], which is [LogLevel.info] by default, can be adjusted to
   /// control how much is logged.
-  ConsoleLogger() : logLevel = LogLevel.info;
+  ConsoleLogger(this.logLevel);
 
   @override
   void updateStatus({

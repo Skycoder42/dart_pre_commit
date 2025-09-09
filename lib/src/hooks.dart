@@ -126,19 +126,6 @@ class Hooks {
     @factoryParam this.config,
   );
 
-  /// Executes all enabled hooks on the current repository.
-  ///
-  /// The command will run expecting [Directory.current] to be the dart project
-  /// root withing the enclosing git repository to be processed. It collects all
-  /// staged files and then runs all enabled hooks on these files.
-  ///
-  /// The result is determined based on the collective result of all processed
-  /// files and hooks. A [HookResult.clean] result is only possible if all
-  /// operations are clean. If at least one staged file had to modified, the
-  /// result is [HookResult.hasChanges]. If at least one file was partially
-  /// staged, it will be [HookResult.hasUnstagedChanges] instead. The
-  /// [HookResult.rejected] will be the result if any task finds at least one
-  /// file with problems that cannot be fixed automatically.
   Future<HookResult> call() async {
     try {
       final configFile = config.configFile != null

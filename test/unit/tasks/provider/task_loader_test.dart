@@ -1,47 +1,43 @@
 import 'package:dart_pre_commit/src/config/config_loader.dart';
 import 'package:dart_pre_commit/src/task_base.dart';
 import 'package:dart_pre_commit/src/tasks/provider/task_loader.dart';
-import 'package:dart_pre_commit/src/tasks/provider/task_provider.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
+class MockGetIt extends Mock implements GetIt {}
+
 class MockConfigLoader extends Mock implements ConfigLoader {}
 
-class MockRef extends Mock implements Ref {}
+class SimpleFakeTask extends Fake implements TaskBase {}
 
-class FakeTaskBase extends Fake implements TaskBase {
-  Map<String, String>? config;
-}
-
-final task1Provider = TaskProvider('task-1', (ref) => FakeTaskBase());
-
-final task2Provider = TaskProvider.configurable(
-  'task-2',
-  (json) => json.cast<String, String>(),
-  (ref, arg) => FakeTaskBase()..config = arg,
-);
+class ConfigurableFakeTask extends Fake implements TaskBase {}
 
 void main() {
-  setUpAll(() {
-    registerFallbackValue(task1Provider);
-  });
+  const testTask1Name = 'task-1';
+  const testTask2Name = 'task-2';
 
   group('$TaskLoader', () {
+    final mockGetIt = MockGetIt();
     final mockConfigLoader = MockConfigLoader();
-    final mockRef = MockRef();
-    final fakeTask = FakeTaskBase();
+    final simpleFakeTask = SimpleFakeTask();
+    final configurableFakeTask = ConfigurableFakeTask();
 
     late TaskLoader sut;
 
     setUp(() {
+      reset(mockGetIt);
       reset(mockConfigLoader);
-      reset(mockRef);
 
-      when(() => mockRef.read<FakeTaskBase>(any())).thenReturn(fakeTask);
+      when(() => mockGetIt.get<SimpleFakeTask>()).thenReturn(simpleFakeTask);
+      when(
+        () => mockGetIt.get<ConfigurableFakeTask>(
+          param1: any<dynamic>(named: 'param1'),
+        ),
+      ).thenReturn(configurableFakeTask);
 
-      sut = TaskLoader(ref: mockRef, configLoader: mockConfigLoader);
+      sut = TaskLoader(mockGetIt, mockConfigLoader);
     });
 
     group('loadTasks', () {
@@ -50,24 +46,27 @@ void main() {
           () => mockConfigLoader.loadTaskConfig(any()),
         ).thenReturn(YamlMap());
 
-        sut.registerTask(task1Provider);
+        sut.registerTask<SimpleFakeTask>(testTask1Name);
 
         final tasks = sut.loadTasks();
 
-        expect(tasks, [fakeTask]);
+        expect(tasks, [simpleFakeTask]);
 
         verifyInOrder([
-          () => mockConfigLoader.loadTaskConfig(task1Provider.name),
-          () => mockRef.read(task1Provider),
+          () => mockConfigLoader.loadTaskConfig(testTask1Name),
+          () => mockGetIt.get<SimpleFakeTask>(),
         ]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyNoMoreInteractions(mockRef);
+        verifyNoMoreInteractions(mockGetIt);
       });
 
       test('registerTask passes enabledByDefault to config loader', () {
         when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
 
-        sut.registerTask(task1Provider, enabledByDefault: false);
+        sut.registerTask<SimpleFakeTask>(
+          testTask1Name,
+          enabledByDefault: false,
+        );
 
         final tasks = sut.loadTasks();
 
@@ -75,28 +74,26 @@ void main() {
 
         verifyInOrder([
           () => mockConfigLoader.loadTaskConfig(
-            task1Provider.name,
+            testTask1Name,
             enabledByDefault: false,
           ),
         ]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyZeroInteractions(mockRef);
+        verifyZeroInteractions(mockGetIt);
       });
 
       test('returns empty list if single task is disabled', () {
         when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
 
-        sut.registerTask(task1Provider);
+        sut.registerTask(testTask1Name);
 
         final tasks = sut.loadTasks();
 
         expect(tasks, isEmpty);
 
-        verifyInOrder([
-          () => mockConfigLoader.loadTaskConfig(task1Provider.name),
-        ]);
+        verifyInOrder([() => mockConfigLoader.loadTaskConfig(testTask1Name)]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyZeroInteractions(mockRef);
+        verifyZeroInteractions(mockGetIt);
       });
 
       test('returns single, configured task', () {
@@ -104,23 +101,21 @@ void main() {
           () => mockConfigLoader.loadTaskConfig(any()),
         ).thenReturn(YamlMap());
 
-        sut.registerConfigurableTask(task2Provider);
+        sut.registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
+          testTask2Name,
+          (c) => c.cast(),
+        );
 
         final tasks = sut.loadTasks();
 
-        expect(tasks, [fakeTask]);
+        expect(tasks, [configurableFakeTask]);
 
-        final captured =
-            verifyInOrder([
-                  () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-                  () => mockRef.read<FakeTaskBase>(captureAny()),
-                ]).captured[1].single
-                as Provider<FakeTaskBase>;
+        verifyInOrder([
+          () => mockConfigLoader.loadTaskConfig(testTask2Name),
+          () => mockGetIt.get<ConfigurableFakeTask>(param1: <String, String>{}),
+        ]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyNoMoreInteractions(mockRef);
-
-        expect(captured.name, task2Provider.name);
-        expect(captured.argument, isEmpty);
+        verifyNoMoreInteractions(mockGetIt);
       });
 
       test(
@@ -128,7 +123,10 @@ void main() {
         () {
           when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
 
-          sut.registerConfigurableTask(task2Provider, enabledByDefault: false);
+          sut.registerConfigurableTask<
+            ConfigurableFakeTask,
+            Map<String, String>
+          >(testTask2Name, (c) => c.cast(), enabledByDefault: false);
 
           final tasks = sut.loadTasks();
 
@@ -136,12 +134,12 @@ void main() {
 
           verifyInOrder([
             () => mockConfigLoader.loadTaskConfig(
-              task2Provider.name,
+              testTask2Name,
               enabledByDefault: false,
             ),
           ]);
           verifyNoMoreInteractions(mockConfigLoader);
-          verifyZeroInteractions(mockRef);
+          verifyZeroInteractions(mockGetIt);
         },
       );
 
@@ -151,39 +149,38 @@ void main() {
           () => mockConfigLoader.loadTaskConfig(any()),
         ).thenReturn(YamlMap.wrap(testMap));
 
-        sut.registerConfigurableTask(task2Provider);
+        sut.registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
+          testTask2Name,
+          (c) => c.cast(),
+        );
 
         final tasks = sut.loadTasks();
 
-        expect(tasks, [fakeTask]);
+        expect(tasks, [configurableFakeTask]);
 
-        final captured =
-            verifyInOrder([
-                  () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-                  () => mockRef.read<FakeTaskBase>(captureAny()),
-                ]).captured[1].single
-                as Provider<FakeTaskBase>;
+        verifyInOrder([
+          () => mockConfigLoader.loadTaskConfig(testTask2Name),
+          () => mockGetIt.get<ConfigurableFakeTask>(param1: testMap),
+        ]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyNoMoreInteractions(mockRef);
-
-        expect(captured.name, task2Provider.name);
-        expect(captured.argument, testMap);
+        verifyNoMoreInteractions(mockGetIt);
       });
 
       test('returns empty list if configured task is disabled', () {
         when(() => mockConfigLoader.loadTaskConfig(any())).thenReturn(null);
 
-        sut.registerConfigurableTask(task2Provider);
+        sut.registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
+          testTask2Name,
+          (c) => c.cast(),
+        );
 
         final tasks = sut.loadTasks();
 
         expect(tasks, isEmpty);
 
-        verifyInOrder([
-          () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-        ]);
+        verifyInOrder([() => mockConfigLoader.loadTaskConfig(testTask2Name)]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyZeroInteractions(mockRef);
+        verifyZeroInteractions(mockGetIt);
       });
 
       test('returns all enabled tasks', () {
@@ -192,26 +189,24 @@ void main() {
         ).thenReturn(YamlMap());
 
         sut
-          ..registerTask(task1Provider)
-          ..registerConfigurableTask(task2Provider);
+          ..registerTask<SimpleFakeTask>(testTask1Name)
+          ..registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
+            testTask2Name,
+            (c) => c.cast(),
+          );
 
         final tasks = sut.loadTasks();
 
-        expect(tasks, [fakeTask, fakeTask]);
+        expect(tasks, [simpleFakeTask, configurableFakeTask]);
 
-        final captured =
-            verifyInOrder([
-                  () => mockConfigLoader.loadTaskConfig(task1Provider.name),
-                  () => mockRef.read(task1Provider),
-                  () => mockConfigLoader.loadTaskConfig(task2Provider.name),
-                  () => mockRef.read<FakeTaskBase>(captureAny()),
-                ]).captured[3].single
-                as Provider<FakeTaskBase>;
+        verifyInOrder([
+          () => mockConfigLoader.loadTaskConfig(testTask1Name),
+          () => mockGetIt.get<SimpleFakeTask>(),
+          () => mockConfigLoader.loadTaskConfig(testTask2Name),
+          () => mockGetIt.get<ConfigurableFakeTask>(param1: <String, String>{}),
+        ]);
         verifyNoMoreInteractions(mockConfigLoader);
-        verifyNoMoreInteractions(mockRef);
-
-        expect(captured.name, task2Provider.name);
-        expect(captured.argument, isEmpty);
+        verifyNoMoreInteractions(mockGetIt);
       });
     });
   });

@@ -42,12 +42,12 @@ void main() {
 
   Hooks createSut({bool continueOnRejected = false, String? configFile}) =>
       Hooks(
-        fileResolver: mockResolver,
-        programRunner: mockRunner,
-        taskLoader: mockTaskLoader,
-        configLoader: mockConfigLoader,
-        logger: mockLogger,
-        config: HooksConfig(
+        mockResolver,
+        mockRunner,
+        mockConfigLoader,
+        mockTaskLoader,
+        mockLogger,
+        HooksConfig(
           continueOnRejected: continueOnRejected,
           configFile: configFile,
         ),

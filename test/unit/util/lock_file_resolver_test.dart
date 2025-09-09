@@ -37,11 +37,7 @@ void main() {
       reset(mockRunner);
       reset(mockResolver);
 
-      sut = LockfileResolver(
-        programRunner: mockRunner,
-        fileResolver: mockResolver,
-        logger: mockLogger,
-      );
+      sut = LockfileResolver(mockRunner, mockResolver, mockLogger);
     });
 
     group('findWorkspaceLockfile', () {

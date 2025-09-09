@@ -61,11 +61,11 @@ void main() {
       reset(mockLockfileResolver);
 
       sut = PullUpDependenciesTask(
-        logger: mockLogger,
-        programRunner: mockRunner,
-        fileResolver: mockResolver,
-        lockfileResolver: mockLockfileResolver,
-        config: const PullUpDependenciesConfig(),
+        mockRunner,
+        mockResolver,
+        mockLockfileResolver,
+        mockLogger,
+        const PullUpDependenciesConfig(),
       );
     });
 
@@ -419,11 +419,11 @@ packages:
         });
 
         sut = PullUpDependenciesTask(
-          fileResolver: mockResolver,
-          programRunner: mockRunner,
-          lockfileResolver: mockLockfileResolver,
-          logger: mockLogger,
-          config: const PullUpDependenciesConfig(allowed: ['a']),
+          mockRunner,
+          mockResolver,
+          mockLockfileResolver,
+          mockLogger,
+          const PullUpDependenciesConfig(allowed: ['a']),
         );
 
         final result = await sut([]);

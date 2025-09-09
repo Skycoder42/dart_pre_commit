@@ -35,7 +35,7 @@ void main() {
 
     when(() => mockLogger.pipeStderr(any())).thenAnswer((i) async {});
 
-    sut = ProgramRunner(logger: mockLogger);
+    sut = ProgramRunner(mockLogger);
   });
 
   Future<int> run(

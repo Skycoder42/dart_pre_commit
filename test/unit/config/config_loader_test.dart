@@ -28,7 +28,7 @@ void main() {
       when(() => mockFileResolver.file(any())).thenReturn(mockFile);
       when(() => mockFile.uri).thenReturn(testUri);
 
-      sut = ConfigLoader(fileResolver: mockFileResolver);
+      sut = ConfigLoader(mockFileResolver);
     });
 
     group('loadGlobalConfig', () {

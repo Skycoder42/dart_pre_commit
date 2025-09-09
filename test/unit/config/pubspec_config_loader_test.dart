@@ -30,10 +30,7 @@ void main() {
 
       when(() => mockFileResolver.file(any())).thenReturn(mockFile);
 
-      sut = PubspecConfigLoader(
-        fileResolver: mockFileResolver,
-        logger: mockLogger,
-      );
+      sut = PubspecConfigLoader(mockFileResolver, mockLogger);
     });
 
     group('loadPubspecConfig', () {

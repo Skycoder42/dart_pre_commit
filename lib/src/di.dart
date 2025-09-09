@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 
 import 'di.config.dart';
+import 'util/logger.dart';
 import 'util/logging/console_logger.dart';
 import 'util/logging/simple_logger.dart';
 
@@ -10,11 +11,16 @@ import 'util/logging/simple_logger.dart';
 @InjectableInit(
   preferRelativeImports: true,
   throwOnMissingDependencies: true,
-  ignoreUnregisteredTypes: [GetIt],
+  ignoreUnregisteredTypes: [GetIt, LogLevel],
 )
-GetIt createDiContainer({bool useAnsiLogger = false}) {
+GetIt createDiContainer({
+  bool useAnsiLogger = false,
+  LogLevel logLevel = LogLevel.info,
+}) {
   final instance = GetIt.asNewInstance();
-  instance.registerSingleton(instance);
+  instance
+    ..registerSingleton(instance)
+    ..registerSingleton(logLevel);
   return instance.init(
     environment: useAnsiLogger ? ansiEnv.name : noAnsiEnv.name,
   );

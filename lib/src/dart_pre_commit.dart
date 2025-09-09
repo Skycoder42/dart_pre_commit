@@ -51,7 +51,7 @@ abstract class DartPreCommit {
   static GetIt _createDiContainer(LogLevel logLevel, bool? useAnsiLogger) {
     final ansiSupported =
         useAnsiLogger ?? (stdout.hasTerminal && stdout.supportsAnsiEscapes);
-    return createDiContainer(useAnsiLogger: ansiSupported);
+    return createDiContainer(useAnsiLogger: ansiSupported, logLevel: logLevel);
   }
 
   static Future<void> _registerTasks(

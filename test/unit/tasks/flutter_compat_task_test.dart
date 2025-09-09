@@ -48,10 +48,7 @@ void main() {
       reset(mockTaskLogger);
       reset(mockFile);
 
-      sut = FlutterCompatTask(
-        programRunner: mockProgramRunner,
-        taskLogger: mockTaskLogger,
-      );
+      sut = FlutterCompatTask(mockProgramRunner, mockTaskLogger);
     });
 
     test('task metadata is correct', () {

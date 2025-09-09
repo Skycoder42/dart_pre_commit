@@ -29,7 +29,7 @@ void main() {
         ),
       ).thenReturnAsync(0);
 
-      sut = ProgramDetector(programRunner: mockProgramRunner);
+      sut = ProgramDetector(mockProgramRunner);
     });
 
     group('hasProgram', () {
