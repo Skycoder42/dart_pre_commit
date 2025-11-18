@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.1] - 2025-11-18
+### Changed
+- Updated min sdk version to ^3.10.0
+- Updated dependencies
+
 ## [6.0.0] - 2025-09-09
 ### Changed
 - Refactored project to use injectable/get\_it instead of riverpod
@@ -271,6 +276,7 @@ higher version from the lockfile
 - Initial release
 - Automatic deployment
 
+[6.0.1]: https://github.com/Skycoder42/dart_pre_commit/compare/v6.0.0...v6.0.1
 [6.0.0]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.8...v6.0.0
 [5.4.8]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.7...v5.4.8
 [5.4.7]: https://github.com/Skycoder42/dart_pre_commit/compare/v5.4.6...v5.4.7
