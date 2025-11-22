@@ -6,7 +6,6 @@ import '../../util/logger.dart';
 import '../../util/program_detector.dart';
 import '../analysis_task_base.dart';
 import '../analyze_task.dart';
-import '../custom_lint_task.dart';
 import '../flutter_compat_task.dart';
 import '../format_task.dart';
 import '../osv_scanner_task.dart';
@@ -46,13 +45,6 @@ class DefaultTasksLoader {
         AnalyzeTask.name,
         AnalysisConfig.fromJson,
       );
-
-    if (pubspecConfig.hasCustomLintDependency) {
-      _taskLoader.registerConfigurableTask<CustomLintTask, AnalysisConfig>(
-        CustomLintTask.name,
-        AnalysisConfig.fromJson,
-      );
-    }
 
     if (!pubspecConfig.isFlutterProject) {
       _taskLoader.registerTask<FlutterCompatTask>(FlutterCompatTask.name);

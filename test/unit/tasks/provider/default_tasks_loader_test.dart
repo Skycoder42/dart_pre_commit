@@ -1,7 +1,6 @@
 import 'package:dart_pre_commit/src/config/pubspec_config_loader.dart';
 import 'package:dart_pre_commit/src/tasks/analysis_task_base.dart';
 import 'package:dart_pre_commit/src/tasks/analyze_task.dart';
-import 'package:dart_pre_commit/src/tasks/custom_lint_task.dart';
 import 'package:dart_pre_commit/src/tasks/flutter_compat_task.dart';
 import 'package:dart_pre_commit/src/tasks/format_task.dart';
 import 'package:dart_pre_commit/src/tasks/osv_scanner_task.dart';
@@ -87,7 +86,7 @@ void main() {
       test('registers all tasks if extra configs do apply', () async {
         when(
           mockPubspecConfigLoader.loadPubspecConfig,
-        ).thenReturnAsync(const PubspecConfig(hasCustomLintDependency: true));
+        ).thenReturnAsync(const PubspecConfig());
         when(() => mockProgramDetector.hasProgram(any())).thenReturnAsync(true);
 
         await sut.registerDefaultTasks();
@@ -102,11 +101,6 @@ void main() {
           () => mockTaskLoader
               .registerConfigurableTask<AnalyzeTask, AnalysisConfig>(
                 AnalyzeTask.name,
-                AnalysisConfig.fromJson,
-              ),
-          () => mockTaskLoader
-              .registerConfigurableTask<CustomLintTask, AnalysisConfig>(
-                CustomLintTask.name,
                 AnalysisConfig.fromJson,
               ),
           () => mockTaskLoader.registerTask<FlutterCompatTask>(

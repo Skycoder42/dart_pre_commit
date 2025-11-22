@@ -49,7 +49,6 @@ void main() {
 
           expect(result.isFlutterProject, isFalse);
           expect(result.isPublished, isTrue);
-          expect(result.hasCustomLintDependency, isFalse);
         },
       );
 
@@ -71,7 +70,6 @@ void main() {
 
           expect(result.isFlutterProject, isFalse);
           expect(result.isPublished, isTrue);
-          expect(result.hasCustomLintDependency, isFalse);
         },
       );
 
@@ -85,9 +83,6 @@ publish_to: none
 dependencies:
   flutter:
     sdk: flutter
-
-dev_dependencies:
-  custom_lint:
 ''');
 
         final result = await sut.loadPubspecConfig();
@@ -101,7 +96,6 @@ dev_dependencies:
 
         expect(result.isFlutterProject, isTrue);
         expect(result.isPublished, isFalse);
-        expect(result.hasCustomLintDependency, isTrue);
       });
     });
   });

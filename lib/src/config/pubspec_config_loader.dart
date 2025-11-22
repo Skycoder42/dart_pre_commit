@@ -1,3 +1,6 @@
+@internal
+library;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
@@ -15,7 +18,6 @@ sealed class PubspecConfig with _$PubspecConfig {
   const factory PubspecConfig({
     @Default(false) bool isFlutterProject,
     @Default(true) bool isPublished,
-    @Default(false) bool hasCustomLintDependency,
   }) = _PubspecConfig;
 }
 
@@ -45,9 +47,6 @@ class PubspecConfigLoader {
     return PubspecConfig(
       isFlutterProject: pubspec.dependencies.containsKey('flutter'),
       isPublished: pubspec.publishTo != 'none',
-      hasCustomLintDependency: pubspec.devDependencies.containsKey(
-        'custom_lint',
-      ),
     );
   }
 }

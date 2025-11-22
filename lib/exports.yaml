@@ -1,0 +1,7 @@
+exports:
+  - src/**.dart
+  - "!src/di.config.dart"
+  - "!src/tasks/**.dart"
+  - src/tasks/provider/task_loader.dart
+  - "!src/util/logging/*_logger.dart"
+  - "!src/util/models/**.dart"
