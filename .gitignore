@@ -29,5 +29,3 @@ coverage_badge.svg
 *.config.dart
 *.freezed.dart
 *.g.dart
-
-custom_lint.log

@@ -82,7 +82,6 @@ void main() {
     final knownTasks = [
       'format',
       'analyze',
-      'custom-lint',
       'flutter-compat',
       'outdated',
       'pull-up-dependencies',
@@ -141,14 +140,7 @@ dependencies:
 
 dev_dependencies:
   lint: null
-  custom_lint: null
   dart_test_tools: '>=5.0.0'
-''');
-
-    await writeFile('analysis_options.yaml', '''
-analyzer:
-  plugins:
-    - custom_lint
 ''');
 
     await writeFile('bin/format.dart', '''
@@ -265,35 +257,6 @@ void main() {
       ]),
     );
     expect(code, HookResult.rejected.index);
-  });
-
-  test('custom-lint', () async {
-    final lines = <String>[];
-    await git(const ['add', 'test/test.dart']);
-    final code = await sut(
-      'custom-lint',
-      arguments: const ['--detailed-exit-code', '-ldebug'],
-      failOnError: false,
-      onStdout: lines.add,
-    );
-    expect(code, HookResult.rejected.index);
-    expect(
-      lines,
-      allOf(
-        contains(
-          '  [INF]   info - lib${separator}src${separator}analyze.dart:1:6 - '
-          'The library contains public symbols, but is not exported in any of '
-          'the package library files. Exports the library from the package or '
-          'make all top level elements non-public. - src_library_not_exported',
-        ),
-        contains(
-          '  [INF]   info - test${separator}test.dart:1:8 - Libraries in '
-          'lib/src, test or tool should not import package library files from '
-          'lib. Import the library from the src folder instead. - '
-          'no_self_package_imports',
-        ),
-      ),
-    );
   });
 
   test('osv-scanner', () async {
