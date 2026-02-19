@@ -40,11 +40,9 @@ sealed class AnalysisConfig with _$AnalysisConfig {
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory AnalysisConfig({
-    // ignore: invalid_annotation_target
     @JsonKey(name: 'error-level')
     @Default(AnalyzeErrorLevel.info)
     AnalyzeErrorLevel errorLevel,
-    // ignore: invalid_annotation_target
     @JsonKey(name: 'ignore-unstaged-files')
     @Default(false)
     bool ignoreUnstagedFiles,

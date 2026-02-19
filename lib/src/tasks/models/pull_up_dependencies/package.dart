@@ -17,7 +17,6 @@ sealed class Package with _$Package {
   )
   const factory Package({
     required String dependency,
-    // ignore: invalid_annotation_target
     @JsonKey(toJson: Package._versionToJson, fromJson: Package._versionFromJson)
     required Version version,
   }) = _Package;
