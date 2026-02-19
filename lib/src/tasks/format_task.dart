@@ -15,10 +15,8 @@ sealed class FormatConfig with _$FormatConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory FormatConfig({
-    // ignore: invalid_annotation_target
-    @JsonKey(name: 'line-length') int? lineLength,
-  }) = _FormatConfig;
+  const factory FormatConfig({@JsonKey(name: 'line-length') int? lineLength}) =
+      _FormatConfig;
 
   /// @nodoc
   factory FormatConfig.fromJson(Map<String, dynamic> json) =>

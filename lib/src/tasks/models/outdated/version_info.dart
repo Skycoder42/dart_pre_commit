@@ -10,7 +10,6 @@ part 'version_info.g.dart';
 sealed class VersionInfo with _$VersionInfo {
   /// @nodoc
   const factory VersionInfo({
-    // ignore: invalid_annotation_target
     @JsonKey(
       fromJson: VersionInfo._versionFromJson,
       toJson: VersionInfo._versionToJson,

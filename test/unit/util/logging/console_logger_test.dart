@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:console/console.dart';
 import 'package:dart_pre_commit/src/util/logger.dart';
 import 'package:dart_pre_commit/src/util/logging/console_logger.dart';
+import 'package:dart_pre_commit/src/util/logging/logging_module.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:test/test.dart';
 
@@ -27,7 +28,7 @@ void main() {
   setUp(() {
     output.clear();
 
-    sut = ConsoleLogger(LogLevel.debug);
+    sut = ConsoleLogger(LogLevelFactory(.debug));
   });
 
   group('updateStatus', () {
@@ -174,7 +175,7 @@ void main() {
         (LogLevel.nothing, (l) => l.except(Exception()), null),
       ],
       (fixture) {
-        sut = ConsoleLogger(fixture.$1);
+        sut = ConsoleLogger(LogLevelFactory(fixture.$1));
 
         fixture.$2?.call(sut);
         expect(output.toString(), isEmpty);

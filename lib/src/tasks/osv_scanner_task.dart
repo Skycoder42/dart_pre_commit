@@ -25,9 +25,7 @@ sealed class OsvScannerConfig with _$OsvScannerConfig {
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
   const factory OsvScannerConfig({
-    // ignore: invalid_annotation_target
     @JsonKey(name: 'lockfile-only') @Default(true) bool lockfileOnly,
-    // ignore: invalid_annotation_target
     @JsonKey(name: 'config') String? configFile,
     @Default(false) bool legacy,
   }) = _OsvScannerConfig;

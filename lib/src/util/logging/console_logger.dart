@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 
 import '../logger.dart';
+import 'logging_module.dart';
 
 @internal
 const ansiEnv = Environment('ansi');
@@ -26,7 +27,7 @@ class ConsoleLogger implements Logger {
   ///
   /// The [logLevel], which is [LogLevel.info] by default, can be adjusted to
   /// control how much is logged.
-  ConsoleLogger(this.logLevel);
+  ConsoleLogger(LogLevelFactory logLevelFactory) : logLevel = logLevelFactory();
 
   @override
   void updateStatus({

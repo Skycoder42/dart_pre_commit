@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:dart_pre_commit/src/util/logger.dart';
+import 'package:dart_pre_commit/src/util/logging/logging_module.dart';
 import 'package:dart_pre_commit/src/util/logging/simple_logger.dart';
 import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -23,12 +24,12 @@ void main() {
     sut = SimpleLogger(
       outSink: mockOutSink,
       errSink: mockErrSink,
-      LogLevel.debug,
+      LogLevelFactory(.debug),
     );
   });
 
   test('uses stdout and stderr by default', () {
-    sut = SimpleLogger(LogLevel.debug);
+    sut = SimpleLogger(LogLevelFactory(.debug));
 
     expect(sut.outSink, same(stdout));
     expect(sut.errSink, same(stderr));
@@ -176,7 +177,7 @@ void main() {
         sut = SimpleLogger(
           outSink: mockOutSink,
           errSink: mockErrSink,
-          fixture.$1,
+          LogLevelFactory(fixture.$1),
         );
 
         fixture.$2?.call(sut);
