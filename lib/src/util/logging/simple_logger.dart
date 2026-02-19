@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 
 import '../logger.dart';
+import 'logging_module.dart';
 
 @internal
 const noAnsiEnv = Environment('noAnsi');
@@ -29,10 +30,11 @@ class SimpleLogger implements Logger {
 
   /// Default constructor.
   SimpleLogger(
-    this.logLevel, {
+    LogLevelFactory logLevelFactory, {
     @ignoreParam IOSink? outSink,
     @ignoreParam IOSink? errSink,
-  }) : outSink = outSink ?? stdout,
+  }) : logLevel = logLevelFactory(),
+       outSink = outSink ?? stdout,
        errSink = errSink ?? stderr;
 
   @override
