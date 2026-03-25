@@ -1,9 +1,12 @@
 name: Continuos Deployment
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: The version to be deployed
+        required: true
 
 jobs:
   publish:
@@ -12,4 +15,5 @@ jobs:
     permissions:
       id-token: write
     with:
+      version: ${{ inputs.version }}
       buildRunner: true
