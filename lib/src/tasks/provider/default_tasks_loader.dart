@@ -22,14 +22,11 @@ class DefaultTasksLoader {
   final Logger _logger;
 
   const DefaultTasksLoader({
-    required PubspecConfigLoader pubspecConfigLoader,
-    required ProgramDetector programDetector,
-    required TaskLoader taskLoader,
-    required Logger logger,
-  }) : _pubspecConfigLoader = pubspecConfigLoader,
-       _programDetector = programDetector,
-       _taskLoader = taskLoader,
-       _logger = logger;
+    required this._pubspecConfigLoader,
+    required this._programDetector,
+    required this._taskLoader,
+    required this._logger,
+  });
 
   Future<void> registerDefaultTasks() async {
     final pubspecConfig = await _pubspecConfigLoader.loadPubspecConfig();

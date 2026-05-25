@@ -63,14 +63,11 @@ abstract base class AnalysisTaskBase with PatternTaskMixin implements RepoTask {
 
   /// @nodoc
   const AnalysisTaskBase({
-    required ProgramRunner programRunner,
-    required FileResolver fileResolver,
-    required TaskLogger logger,
-    required AnalysisConfig config,
-  }) : _programRunner = programRunner,
-       _fileResolver = fileResolver,
-       _logger = logger,
-       _config = config;
+    required this._programRunner,
+    required this._fileResolver,
+    required this._logger,
+    required this._config,
+  });
 
   @override
   Pattern get filePattern => RegExp(r'^(?:pubspec\.ya?ml|.*\.dart)$');
