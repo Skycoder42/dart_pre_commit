@@ -14,11 +14,11 @@ import 'package:test/test.dart';
 
 import '../global_mocks.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
-class MockFile extends Mock implements File {}
+class MockFile extends Mock implements File;
 
 class FakeDirectory extends Fake implements Directory {
   @override
@@ -27,7 +27,7 @@ class FakeDirectory extends Fake implements Directory {
   @override
   Directory get absolute => FakeDirectory(path);
 
-  FakeDirectory(this.path);
+  new(this.path);
 }
 
 void main() {
@@ -99,9 +99,8 @@ dependencies:
 
       setUp(() {
         when(() => mockFile.uri).thenReturn(testUri);
-        when(
-          () => mockFile.readAsString(),
-        ).thenAnswer((i) async => testContent);
+        when(() => mockFile.readAsString())
+            .thenAnswer((i) async => testContent);
         when(() => mockFile.parent).thenReturn(FakeDirectory(dependencyPath));
         when(
           () => mockProgramRunner.run(

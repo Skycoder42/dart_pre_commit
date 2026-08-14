@@ -9,11 +9,11 @@ import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockFile extends Mock implements File {}
+class MockFile extends Mock implements File;
 
-class MockLogger extends Mock implements Logger {}
+class MockLogger extends Mock implements Logger;
 
 void main() {
   group('$PubspecConfigLoader', () {

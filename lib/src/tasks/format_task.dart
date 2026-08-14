@@ -15,12 +15,11 @@ sealed class FormatConfig with _$FormatConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory FormatConfig({@JsonKey(name: 'line-length') int? lineLength}) =
+  const factory({@JsonKey(name: 'line-length') int? lineLength}) =
       _FormatConfig;
 
   /// @nodoc
-  factory FormatConfig.fromJson(Map<String, dynamic> json) =>
-      _$FormatConfigFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$FormatConfigFromJson(json);
 }
 
 /// @nodoc
@@ -34,7 +33,7 @@ class FormatTask with PatternTaskMixin implements FileTask {
   final FormatConfig _config;
 
   /// @nodoc
-  const FormatTask(this._programRunner, @factoryParam this._config);
+  const new(this._programRunner, @factoryParam this._config);
 
   @override
   String get taskName => name;

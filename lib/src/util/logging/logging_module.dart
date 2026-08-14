@@ -9,7 +9,7 @@ import '../logger.dart';
 class LogLevelFactory {
   static LogLevel logLevel = .nothing;
 
-  LogLevelFactory([@ignoreParam LogLevel? logLevel]) {
+  new([@ignoreParam LogLevel? logLevel]) {
     if (logLevel != null) {
       LogLevelFactory.logLevel = logLevel;
     }

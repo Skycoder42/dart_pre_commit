@@ -35,14 +35,13 @@ sealed class OutdatedConfig with _$OutdatedConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory OutdatedConfig({
+  const factory({
     @Default(OutdatedLevel.any) OutdatedLevel level,
     @Default(<String>[]) List<String> allowed,
   }) = _OutdatedConfig;
 
   /// @nodoc
-  factory OutdatedConfig.fromJson(Map<String, dynamic> json) =>
-      _$OutdatedConfigFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$OutdatedConfigFromJson(json);
 }
 
 /// @nodoc
@@ -58,11 +57,7 @@ class OutdatedTask with PatternTaskMixin implements RepoTask {
   final OutdatedConfig _config;
 
   /// @nodoc
-  const OutdatedTask(
-    this._programRunner,
-    this._logger,
-    @factoryParam this._config,
-  );
+  const new(this._programRunner, this._logger, @factoryParam this._config);
 
   @override
   String get taskName => name;

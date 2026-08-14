@@ -17,7 +17,7 @@ class LockfileResolver {
   final FileResolver _fileResolver;
   final TaskLogger _logger;
 
-  const LockfileResolver(this._programRunner, this._fileResolver, this._logger);
+  const new(this._programRunner, this._fileResolver, this._logger);
 
   Future<File?> findWorkspaceLockfile() async {
     final workspace = await _programRunner

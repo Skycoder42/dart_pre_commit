@@ -10,7 +10,7 @@ part 'package_info.g.dart';
 @internal
 sealed class PackageInfo with _$PackageInfo {
   /// @nodoc
-  const factory PackageInfo({
+  const factory({
     required String package,
     VersionInfo? current,
     VersionInfo? upgradable,
@@ -19,6 +19,5 @@ sealed class PackageInfo with _$PackageInfo {
   }) = _PackageInfo;
 
   /// @nodoc
-  factory PackageInfo.fromJson(Map<String, dynamic> json) =>
-      _$PackageInfoFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PackageInfoFromJson(json);
 }

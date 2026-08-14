@@ -6,13 +6,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-class MockGetIt extends Mock implements GetIt {}
+class MockGetIt extends Mock implements GetIt;
 
-class MockConfigLoader extends Mock implements ConfigLoader {}
+class MockConfigLoader extends Mock implements ConfigLoader;
 
-class SimpleFakeTask extends Fake implements TaskBase {}
+class SimpleFakeTask extends Fake implements TaskBase;
 
-class ConfigurableFakeTask extends Fake implements TaskBase {}
+class ConfigurableFakeTask extends Fake implements TaskBase;
 
 void main() {
   const testTask1Name = 'task-1';
@@ -42,9 +42,8 @@ void main() {
 
     group('loadTasks', () {
       test('returns single, non configured task', () {
-        when(
-          () => mockConfigLoader.loadTaskConfig(any()),
-        ).thenReturn(YamlMap());
+        when(() => mockConfigLoader.loadTaskConfig(any()))
+            .thenReturn(YamlMap());
 
         sut.registerTask<SimpleFakeTask>(testTask1Name);
 
@@ -97,9 +96,8 @@ void main() {
       });
 
       test('returns single, configured task', () {
-        when(
-          () => mockConfigLoader.loadTaskConfig(any()),
-        ).thenReturn(YamlMap());
+        when(() => mockConfigLoader.loadTaskConfig(any()))
+            .thenReturn(YamlMap());
 
         sut.registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
           testTask2Name,
@@ -145,9 +143,8 @@ void main() {
 
       test('returns single, configured task with custom config', () {
         const testMap = {'key1': 'value1', 'key2': 'value2'};
-        when(
-          () => mockConfigLoader.loadTaskConfig(any()),
-        ).thenReturn(YamlMap.wrap(testMap));
+        when(() => mockConfigLoader.loadTaskConfig(any()))
+            .thenReturn(YamlMap.wrap(testMap));
 
         sut.registerConfigurableTask<ConfigurableFakeTask, Map<String, String>>(
           testTask2Name,
@@ -184,9 +181,8 @@ void main() {
       });
 
       test('returns all enabled tasks', () {
-        when(
-          () => mockConfigLoader.loadTaskConfig(any()),
-        ).thenReturn(YamlMap());
+        when(() => mockConfigLoader.loadTaskConfig(any()))
+            .thenReturn(YamlMap());
 
         sut
           ..registerTask<SimpleFakeTask>(testTask1Name)

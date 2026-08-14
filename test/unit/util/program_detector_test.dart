@@ -6,7 +6,7 @@ import 'package:dart_test_tools/dart_test_tools.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
 void main() {
   group('$ProgramDetector', () {

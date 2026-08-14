@@ -18,7 +18,7 @@ part 'hooks.freezed.dart';
 @freezed
 sealed class HooksConfig with _$HooksConfig {
   /// Default constructor
-  const factory HooksConfig({
+  const factory({
     /// Specifies, whether processing should continue on rejections.
     ///
     /// Normally, once one of the hook operations detects an unfixable problem,
@@ -64,7 +64,7 @@ enum HookResult {
 
   /// @nodoc
   @internal
-  const HookResult(this.exitCode);
+  new(this.exitCode);
 
   /// Returns a boolean that indicates whether the result should be treated as
   /// success or as failure.
@@ -102,7 +102,7 @@ extension _HookResultStreamX on Stream<HookResult> {
 }
 
 class _RejectedException implements Exception {
-  const _RejectedException();
+  const new();
 }
 
 @internal
@@ -117,7 +117,7 @@ class Hooks {
 
   final HooksConfig config;
 
-  const Hooks(
+  const new(
     this._fileResolver,
     this._programRunner,
     this._configLoader,
@@ -148,12 +148,12 @@ class Hooks {
       }
 
       var lintState = HookResult.clean;
-      lintState = await Stream.fromIterable(
-        entries,
-      ).asyncMap((e) => _scanEntry(tasks, e)).raise(lintState);
-      lintState = await Stream.fromIterable(
-        tasks.whereType<RepoTask>(),
-      ).asyncMap((task) => _evaluateRepoTask(task, entries)).raise(lintState);
+      lintState = await Stream.fromIterable(entries)
+          .asyncMap((e) => _scanEntry(tasks, e))
+          .raise(lintState);
+      lintState = await Stream.fromIterable(tasks.whereType<RepoTask>())
+          .asyncMap((task) => _evaluateRepoTask(task, entries))
+          .raise(lintState);
 
       return lintState;
     } on _RejectedException {
@@ -218,7 +218,7 @@ class Hooks {
   ) async {
     final filteredEntries = entries.where(task.canProcess).toList();
     if (filteredEntries.isNotEmpty || task.callForEmptyEntries) {
-      return _runRepoTask(task, filteredEntries);
+      return await _runRepoTask(task, filteredEntries);
     } else {
       return HookResult.clean;
     }
@@ -304,9 +304,9 @@ class Hooks {
     if (entries.isEmpty) {
       return await _processTaskResult(taskResult, null);
     } else {
-      return await Stream.fromIterable(
-        entries,
-      ).asyncMap((entry) => _processTaskResult(taskResult, entry)).raise();
+      return await Stream.fromIterable(entries)
+          .asyncMap((entry) => _processTaskResult(taskResult, entry))
+          .raise();
     }
   }
 
@@ -339,7 +339,7 @@ class Hooks {
     }
   }
 
-  Future<String> _gitRoot() async => Directory(
+  Future<String> _gitRoot() async => await Directory(
     await _programRunner.stream('git', const [
       'rev-parse',
       '--show-toplevel',

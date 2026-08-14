@@ -19,7 +19,7 @@ class FakeFile extends Fake implements File {
   @override
   String resolveSymbolicLinksSync() => path;
 
-  FakeFile(this.path, {this._exists = true});
+  new(this.path, {this._exists = true});
 }
 
 RepoEntry fakeEntry(

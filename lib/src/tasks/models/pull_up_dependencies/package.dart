@@ -15,15 +15,14 @@ sealed class Package with _$Package {
     checked: true,
     disallowUnrecognizedKeys: false,
   )
-  const factory Package({
+  const factory({
     required String dependency,
     @JsonKey(toJson: Package._versionToJson, fromJson: Package._versionFromJson)
     required Version version,
   }) = _Package;
 
   /// @nodoc
-  factory Package.fromJson(Map<String, dynamic> json) =>
-      _$PackageFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PackageFromJson(json);
 
   static Version _versionFromJson(String json) => Version.parse(json);
 

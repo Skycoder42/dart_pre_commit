@@ -9,7 +9,7 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockIOSink extends Mock implements IOSink {}
+class MockIOSink extends Mock implements IOSink;
 
 void main() {
   final mockOutSink = MockIOSink();

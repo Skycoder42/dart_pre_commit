@@ -16,11 +16,9 @@ sealed class PubspecLock with _$PubspecLock {
     checked: true,
     disallowUnrecognizedKeys: false,
   )
-  const factory PubspecLock({
-    @Default(<String, Package>{}) Map<String, Package> packages,
-  }) = _PubspecLock;
+  const factory({@Default(<String, Package>{}) Map<String, Package> packages}) =
+      _PubspecLock;
 
   /// @nodoc
-  factory PubspecLock.fromJson(Map<String, dynamic> json) =>
-      _$PubspecLockFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PubspecLockFromJson(json);
 }

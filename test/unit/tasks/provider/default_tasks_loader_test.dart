@@ -14,13 +14,13 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockPubspecConfigLoader extends Mock implements PubspecConfigLoader {}
+class MockPubspecConfigLoader extends Mock implements PubspecConfigLoader;
 
-class MockProgramDetector extends Mock implements ProgramDetector {}
+class MockProgramDetector extends Mock implements ProgramDetector;
 
-class MockTaskLoader extends Mock implements TaskLoader {}
+class MockTaskLoader extends Mock implements TaskLoader;
 
-class MockLogger extends Mock implements Logger {}
+class MockLogger extends Mock implements Logger;
 
 void main() {
   group('$DefaultTasksLoader', () {
@@ -49,9 +49,8 @@ void main() {
         when(mockPubspecConfigLoader.loadPubspecConfig).thenReturnAsync(
           const PubspecConfig(isFlutterProject: true, isPublished: false),
         );
-        when(
-          () => mockProgramDetector.hasProgram(any()),
-        ).thenReturnAsync(false);
+        when(() => mockProgramDetector.hasProgram(any()))
+            .thenReturnAsync(false);
 
         await sut.registerDefaultTasks();
 
@@ -84,9 +83,8 @@ void main() {
       });
 
       test('registers all tasks if extra configs do apply', () async {
-        when(
-          mockPubspecConfigLoader.loadPubspecConfig,
-        ).thenReturnAsync(const PubspecConfig());
+        when(mockPubspecConfigLoader.loadPubspecConfig)
+            .thenReturnAsync(const PubspecConfig());
         when(() => mockProgramDetector.hasProgram(any())).thenReturnAsync(true);
 
         await sut.registerDefaultTasks();

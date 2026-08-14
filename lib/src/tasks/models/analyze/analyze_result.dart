@@ -14,12 +14,9 @@ sealed class AnalyzeResult with _$AnalyzeResult {
     'version == 1',
     'Only version 1 of the analyzer json format is supported',
   )
-  const factory AnalyzeResult({
-    required int version,
-    required List<Diagnostic> diagnostics,
-  }) = _AnalyzeResult;
+  const factory({required int version, required List<Diagnostic> diagnostics}) =
+      _AnalyzeResult;
 
   /// @nodoc
-  factory AnalyzeResult.fromJson(Map<String, dynamic> json) =>
-      _$AnalyzeResultFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$AnalyzeResultFromJson(json);
 }

@@ -95,7 +95,7 @@ void main() {
     final configFile = File.fromUri(testDir.uri.resolve('config.yaml'));
     await configFile.writeAsString(configEditor.toString());
 
-    return pub(
+    return await pub(
       [
         'run',
         'dart_pre_commit',

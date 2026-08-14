@@ -6,11 +6,11 @@ import 'package:dart_pre_commit/src/util/program_runner.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
 void main() {
   group('$AnalyzeTask', () {

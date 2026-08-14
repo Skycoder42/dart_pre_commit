@@ -25,7 +25,7 @@ class _SimpleTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
   @override
   final bool enabledByDefault;
 
-  _SimpleTaskConfig(this.taskName, {required this.enabledByDefault});
+  new(this.taskName, {required this.enabledByDefault});
 
   @override
   TTask create(GetIt getIt, YamlMap config) => getIt.get<TTask>();
@@ -40,11 +40,7 @@ class _ConfigurableTaskConfig<TTask extends TaskBase, TArg>
   @override
   final bool enabledByDefault;
 
-  _ConfigurableTaskConfig(
-    this.taskName,
-    this._fromJson, {
-    required this.enabledByDefault,
-  });
+  new(this.taskName, this._fromJson, {required this.enabledByDefault});
 
   @override
   TTask create(GetIt getIt, YamlMap config) {
@@ -63,11 +59,7 @@ class _CustomTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
 
   final TTask Function() _factory;
 
-  _CustomTaskConfig(
-    this.taskName,
-    this._factory, {
-    required this.enabledByDefault,
-  });
+  new(this.taskName, this._factory, {required this.enabledByDefault});
 
   @override
   TTask create(GetIt getIt, YamlMap config) => _factory();
@@ -83,7 +75,7 @@ class TaskLoader {
   final _tasks = <_TaskConfig>[];
 
   /// Default constructor
-  TaskLoader(this._getIt, this._configLoader);
+  new(this._getIt, this._configLoader);
 
   /// Registers a custom task using the given [factory] function to create new
   /// instances.

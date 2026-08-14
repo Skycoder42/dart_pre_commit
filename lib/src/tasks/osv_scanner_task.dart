@@ -24,14 +24,14 @@ sealed class OsvScannerConfig with _$OsvScannerConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory OsvScannerConfig({
+  const factory({
     @JsonKey(name: 'lockfile-only') @Default(true) bool lockfileOnly,
     @JsonKey(name: 'config') String? configFile,
     @Default(false) bool legacy,
   }) = _OsvScannerConfig;
 
   /// @nodoc
-  factory OsvScannerConfig.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$OsvScannerConfigFromJson(json);
 }
 
@@ -51,7 +51,7 @@ class OsvScannerTask implements RepoTask {
   final OsvScannerConfig _config;
 
   /// @nodoc
-  const OsvScannerTask(
+  const new(
     this._programRunner,
     this._fileResolver,
     this._lockfileResolver,
@@ -79,7 +79,7 @@ class OsvScannerTask implements RepoTask {
         .stream(osvScannerBinary, [
           if (_config.legacy) '--json' else ...['scan', '--format', 'json'],
           if (_config.configFile case final String path) ...['--config', path],
-          if (lockfile case File(path: final path)) ...[
+          if (lockfile case File(:final path)) ...[
             '--lockfile',
             await _fileResolver.resolve(path),
           ],

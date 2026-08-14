@@ -17,7 +17,7 @@ class ConfigLoader {
   late YamlMap _globalConfig;
 
   /// @nodoc
-  ConfigLoader(this._fileResolver);
+  new(this._fileResolver);
 
   /// @nodoc
   Future<bool> loadGlobalConfig([File? customConfig]) {

@@ -14,14 +14,14 @@ import 'package:test/test.dart';
 
 import '../global_mocks.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
 final class TestableAnalysisTaskBase extends AnalysisTaskBase {
-  const TestableAnalysisTaskBase({
+  const new({
     required super.programRunner,
     required super.fileResolver,
     required super.logger,
@@ -187,9 +187,8 @@ void main() {
         ),
       );
 
-      when(
-        () => mockResolver.resolve(any()),
-      ).thenAnswer((i) async => i.positionalArguments.first as String);
+      when(() => mockResolver.resolve(any()))
+          .thenAnswer((i) async => i.positionalArguments.first as String);
       when(() => mockResolver.resolveAll(any())).thenAnswer(
         (i) => Stream.fromIterable(
           i.positionalArguments.first as Iterable<String>,

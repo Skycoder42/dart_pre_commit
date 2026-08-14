@@ -10,10 +10,9 @@ part 'osv_scanner_result.g.dart';
 @freezed
 sealed class OsvScannerResult with _$OsvScannerResult {
   /// @nodoc
-  const factory OsvScannerResult({required List<Result> results}) =
-      _OsvScannerResult;
+  const factory({required List<Result> results}) = _OsvScannerResult;
 
   /// @nodoc
-  factory OsvScannerResult.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$OsvScannerResultFromJson(json);
 }

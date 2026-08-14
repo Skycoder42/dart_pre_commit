@@ -19,12 +19,10 @@ void main() {
   test(
     'resolve resolves symlinks to a relative path',
     () async {
-      final f1 = await File(
-        join(testDir.path, 'dir1', 'file1.dart'),
-      ).create(recursive: true);
-      final l1 = await Link(
-        join(testDir.path, 'dir2', 'file2.dart'),
-      ).create(f1.path, recursive: true);
+      final f1 = await File(join(testDir.path, 'dir1', 'file1.dart'))
+          .create(recursive: true);
+      final l1 = await Link(join(testDir.path, 'dir2', 'file2.dart'))
+          .create(f1.path, recursive: true);
 
       final resPath = await sut.resolve(l1.absolute.path, testDir);
       expect(resPath, join('dir1', 'file1.dart'));
@@ -39,18 +37,14 @@ void main() {
   test(
     'resolveAll resolves all symlinks to relative paths',
     () async {
-      final f1 = await File(
-        join(testDir.path, 'dir1', 'file1.dart'),
-      ).create(recursive: true);
-      final f2 = await File(
-        join(testDir.path, 'dir2', 'file2.dart'),
-      ).create(recursive: true);
-      final l1 = await Link(
-        join(testDir.path, 'dir2', 'file1.dart'),
-      ).create(f1.path, recursive: true);
-      final l2 = await Link(
-        join(testDir.path, 'dir1', 'file2.dart'),
-      ).create(f2.path, recursive: true);
+      final f1 = await File(join(testDir.path, 'dir1', 'file1.dart'))
+          .create(recursive: true);
+      final f2 = await File(join(testDir.path, 'dir2', 'file2.dart'))
+          .create(recursive: true);
+      final l1 = await Link(join(testDir.path, 'dir2', 'file1.dart'))
+          .create(f1.path, recursive: true);
+      final l2 = await Link(join(testDir.path, 'dir1', 'file2.dart'))
+          .create(f2.path, recursive: true);
 
       final resPath = await sut.resolveAll([
         l1.absolute.path,

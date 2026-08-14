@@ -8,9 +8,9 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockFile extends Mock implements File {}
+class MockFile extends Mock implements File;
 
 void main() {
   group('ConfigLoader', () {
@@ -62,9 +62,8 @@ void main() {
         test(
           'returns true and sets config to empty map if config is true',
           () async {
-            when(
-              () => mockFile.readAsString(),
-            ).thenReturnAsync('dart_pre_commit: true');
+            when(() => mockFile.readAsString())
+                .thenReturnAsync('dart_pre_commit: true');
 
             final result = await sut.loadGlobalConfig();
 
@@ -76,9 +75,8 @@ void main() {
         test(
           'returns false and sets config to empty map if config is false',
           () async {
-            when(
-              () => mockFile.readAsString(),
-            ).thenReturnAsync('dart_pre_commit: false');
+            when(() => mockFile.readAsString())
+                .thenReturnAsync('dart_pre_commit: false');
 
             final result = await sut.loadGlobalConfig();
 
@@ -106,9 +104,8 @@ dart_pre_commit:
         );
 
         test('throws if config has an invalid value', () {
-          when(
-            () => mockFile.readAsString(),
-          ).thenReturnAsync('dart_pre_commit: 42');
+          when(() => mockFile.readAsString())
+              .thenReturnAsync('dart_pre_commit: 42');
 
           expect(
             () => sut.loadGlobalConfig(),

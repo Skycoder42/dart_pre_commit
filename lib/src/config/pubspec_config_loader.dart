@@ -15,7 +15,7 @@ part 'pubspec_config_loader.freezed.dart';
 @freezed
 sealed class PubspecConfig with _$PubspecConfig {
   /// @nodoc
-  const factory PubspecConfig({
+  const factory({
     @Default(false) bool isFlutterProject,
     @Default(true) bool isPublished,
   }) = _PubspecConfig;
@@ -29,7 +29,7 @@ class PubspecConfigLoader {
   final Logger _logger;
 
   /// @nodoc
-  const PubspecConfigLoader(this._fileResolver, this._logger);
+  const new(this._fileResolver, this._logger);
 
   /// @nodoc
   Future<PubspecConfig> loadPubspecConfig() async {

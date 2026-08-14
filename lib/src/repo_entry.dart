@@ -8,7 +8,7 @@ part 'repo_entry.freezed.dart';
 @freezed
 sealed class RepoEntry with _$RepoEntry {
   /// Creates a new repo entry.
-  const factory RepoEntry({
+  const factory({
     /// The file in the local file system that this entry represents.
     required File file,
 

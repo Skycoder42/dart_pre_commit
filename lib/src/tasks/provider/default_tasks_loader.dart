@@ -21,7 +21,7 @@ class DefaultTasksLoader {
   final TaskLoader _taskLoader;
   final Logger _logger;
 
-  const DefaultTasksLoader({
+  const new({
     required this._pubspecConfigLoader,
     required this._programDetector,
     required this._taskLoader,

@@ -11,12 +11,11 @@ part 'package.g.dart';
 @freezed
 sealed class Package with _$Package {
   /// @nodoc
-  const factory Package({
+  const factory({
     required PackageInfo package,
     required List<Vulnerability> vulnerabilities,
   }) = _Package;
 
   /// @nodoc
-  factory Package.fromJson(Map<String, dynamic> json) =>
-      _$PackageFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PackageFromJson(json);
 }

@@ -17,19 +17,19 @@ import 'package:test/test.dart';
 
 import 'global_mocks.dart';
 
-class MockLogger extends Mock implements Logger {}
+class MockLogger extends Mock implements Logger;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockConfigLoader extends Mock implements ConfigLoader {}
+class MockConfigLoader extends Mock implements ConfigLoader;
 
-class MockTaskLoader extends Mock implements TaskLoader {}
+class MockTaskLoader extends Mock implements TaskLoader;
 
-class MockFileTask extends Mock with PatternTaskMixin implements FileTask {}
+class MockFileTask extends Mock with PatternTaskMixin implements FileTask;
 
-class MockRepoTask extends Mock with PatternTaskMixin implements RepoTask {}
+class MockRepoTask extends Mock with PatternTaskMixin implements RepoTask;
 
 void main() {
   final mockLogger = MockLogger();
@@ -75,28 +75,23 @@ void main() {
     ).thenReturn(null);
     when(() => mockLogger.completeStatus()).thenReturn(null);
 
-    when(
-      () => mockResolver.file(any()),
-    ).thenAnswer((i) => FakeFile(i.positionalArguments.first as String));
-    when(
-      () => mockRunner.stream(any(), any()),
-    ).thenAnswer((_) => Stream.fromIterable(const []));
+    when(() => mockResolver.file(any()))
+        .thenAnswer((i) => FakeFile(i.positionalArguments.first as String));
+    when(() => mockRunner.stream(any(), any()))
+        .thenAnswer((_) => Stream.fromIterable(const []));
 
     when(() => mockFileTask.taskName).thenReturn('file-task');
     when(() => mockFileTask.filePattern).thenReturn(RegExp('.*'));
-    when(
-      () => mockFileTask(any()),
-    ).thenAnswer((_) async => TaskResult.accepted);
+    when(() => mockFileTask(any()))
+        .thenAnswer((_) async => TaskResult.accepted);
     when(() => mockRepoTask.taskName).thenReturn('repo-task');
     when(() => mockRepoTask.filePattern).thenReturn(RegExp('.*'));
     when(() => mockRepoTask.callForEmptyEntries).thenReturn(true);
-    when(
-      () => mockRepoTask(any()),
-    ).thenAnswer((_) async => TaskResult.accepted);
+    when(() => mockRepoTask(any()))
+        .thenAnswer((_) async => TaskResult.accepted);
 
-    when(
-      () => mockRunner.stream('git', ['rev-parse', '--show-toplevel']),
-    ).thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
+    when(() => mockRunner.stream('git', ['rev-parse', '--show-toplevel']))
+        .thenAnswer((_) => Stream.fromIterable([Directory.current.path]));
 
     when(() => mockConfigLoader.loadGlobalConfig(any())).thenReturnAsync(true);
     when(() => mockConfigLoader.loadExcludePatterns()).thenReturn(const []);
@@ -105,9 +100,8 @@ void main() {
   group('config', () {
     test('skips all tests if config is disabled', () async {
       when(() => mockConfigLoader.loadGlobalConfig()).thenReturnAsync(false);
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenStream(Stream.fromIterable(const ['a.dart']));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenStream(Stream.fromIterable(const ['a.dart']));
 
       final sut = createSut();
 
@@ -155,16 +149,15 @@ void main() {
     });
 
     test('processes staged files', () async {
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer(
-        (_) => Stream.fromIterable(const [
-          'a.dart',
-          'path/b.dart',
-          'c.g.dart',
-          'any().txt',
-        ]),
-      );
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+            (_) => Stream.fromIterable(const [
+              'a.dart',
+              'path/b.dart',
+              'c.g.dart',
+              'any().txt',
+            ]),
+          );
       when(() => mockTaskLoader.loadTasks()).thenReturn([]);
 
       final sut = createSut();
@@ -213,11 +206,10 @@ void main() {
         (i) => FakeFile(i.positionalArguments.first as String, exists: false),
       );
       when(() => mockResolver.file('b.dart')).thenReturn(FakeFile('b.dart'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer(
-        (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.dart']),
-      );
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+            (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.dart']),
+          );
       when(() => mockTaskLoader.loadTasks()).thenReturn([]);
 
       final sut = createSut();
@@ -244,11 +236,10 @@ void main() {
       'only processes files in the subdir if pwd is not the root dir',
       () async {
         final dirName = basename(Directory.current.path);
-        when(
-          () => mockRunner.stream('git', ['rev-parse', '--show-toplevel']),
-        ).thenAnswer(
-          (_) => Stream.fromIterable([Directory.current.parent.path]),
-        );
+        when(() => mockRunner.stream('git', ['rev-parse', '--show-toplevel']))
+            .thenAnswer(
+              (_) => Stream.fromIterable([Directory.current.parent.path]),
+            );
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer(
@@ -290,14 +281,13 @@ void main() {
     );
 
     test('skips excluded files', () async {
-      when(
-        () => mockConfigLoader.loadExcludePatterns(),
-      ).thenReturn([RegExp(r'b\.dart'), RegExp(r'.*c\.dart$')]);
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer(
-        (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'sub/c.dart']),
-      );
+      when(() => mockConfigLoader.loadExcludePatterns())
+          .thenReturn([RegExp(r'b\.dart'), RegExp(r'.*c\.dart$')]);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+            (_) =>
+                Stream.fromIterable(const ['a.dart', 'b.dart', 'sub/c.dart']),
+          );
       when(() => mockTaskLoader.loadTasks()).thenReturn([]);
 
       final sut = createSut();
@@ -324,11 +314,10 @@ void main() {
   group('file task', () {
     test('gets called for matching collected files', () async {
       when(() => mockFileTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer(
-        (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.js']),
-      );
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+            (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.js']),
+          );
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
       final sut = createSut();
 
@@ -336,19 +325,18 @@ void main() {
       expect(result, HookResult.clean);
       verify(() => mockTaskLoader.loadTasks());
       verify(() => mockFileTask.filePattern);
-      final captures = verify(
-        () => mockFileTask(captureAny()),
-      ).captured.cast<RepoEntry>().map((e) => e.file.path).toList();
+      final captures = verify(() => mockFileTask(captureAny())).captured
+          .cast<RepoEntry>()
+          .map((e) => e.file.path)
+          .toList();
       expect(captures, ['a.dart', 'b.dart']);
     });
 
     test('returns hasChanges for staged modified files', () async {
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-      when(
-        () => mockFileTask(any()),
-      ).thenAnswer((_) async => TaskResult.modified);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+      when(() => mockFileTask(any()))
+          .thenAnswer((_) async => TaskResult.modified);
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
       final sut = createSut();
 
@@ -360,15 +348,13 @@ void main() {
     test(
       'returns hasUnstagedChanges for partially staged modified files',
       () async {
-        when(
-          () => mockRunner.stream('git', ['diff', '--name-only']),
-        ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+        when(() => mockRunner.stream('git', ['diff', '--name-only']))
+            .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-        when(
-          () => mockFileTask(any()),
-        ).thenAnswer((_) async => TaskResult.modified);
+        when(() => mockFileTask(any()))
+            .thenAnswer((_) async => TaskResult.modified);
         when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
         final sut = createSut();
 
@@ -385,9 +371,8 @@ void main() {
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart', 'b.dart']));
-        when(
-          () => mockFileTask(any()),
-        ).thenAnswer((_) async => TaskResult.rejected);
+        when(() => mockFileTask(any()))
+            .thenAnswer((_) async => TaskResult.rejected);
         when(() => mockTaskLoader.loadTasks()).thenReturn([mockFileTask]);
         final sut = createSut(continueOnRejected: fixture.$1);
 
@@ -398,12 +383,10 @@ void main() {
     );
 
     test('calls all tasks', () async {
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-      when(
-        () => mockTaskLoader.loadTasks(),
-      ).thenReturn([mockFileTask, mockFileTask, mockFileTask]);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+      when(() => mockTaskLoader.loadTasks())
+          .thenReturn([mockFileTask, mockFileTask, mockFileTask]);
       final sut = createSut();
 
       final result = await sut();
@@ -415,11 +398,10 @@ void main() {
   group('repo task', () {
     test('gets called with all matching files', () async {
       when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer(
-        (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.js']),
-      );
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer(
+            (_) => Stream.fromIterable(const ['a.dart', 'b.dart', 'c.js']),
+          );
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
       final sut = createSut();
 
@@ -427,17 +409,17 @@ void main() {
       expect(result, HookResult.clean);
       verify(() => mockTaskLoader.loadTasks());
       verify(() => mockRepoTask.filePattern);
-      final capture = verify(
-        () => mockRepoTask(captureAny()),
-      ).captured.cast<Iterable<RepoEntry>>().single.map((e) => e.file.path);
+      final capture = verify(() => mockRepoTask(captureAny())).captured
+          .cast<Iterable<RepoEntry>>()
+          .single
+          .map((e) => e.file.path);
       expect(capture, const ['a.dart', 'b.dart']);
     });
 
     test('does get called without any matching files if enabled', () async {
       when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer((_) => Stream.fromIterable(const ['a.js']));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer((_) => Stream.fromIterable(const ['a.js']));
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
       final sut = createSut();
 
@@ -450,9 +432,8 @@ void main() {
     test('does not get called without any() files if disabled', () async {
       when(() => mockRepoTask.callForEmptyEntries).thenReturn(false);
       when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer((_) => Stream.fromIterable(const ['a.js']));
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer((_) => Stream.fromIterable(const ['a.js']));
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
       final sut = createSut();
 
@@ -469,9 +450,8 @@ void main() {
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart', 'b.txt']));
-        when(
-          () => mockRepoTask(any()),
-        ).thenAnswer((_) async => TaskResult.modified);
+        when(() => mockRepoTask(any()))
+            .thenAnswer((_) async => TaskResult.modified);
         when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
         final sut = createSut();
 
@@ -484,12 +464,10 @@ void main() {
 
     test('returns hasChanges for no files but still modified', () async {
       when(() => mockRepoTask.filePattern).thenReturn(RegExp(r'^.*\.dart$'));
-      when(
-        () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
-      ).thenAnswer((_) => Stream.fromIterable(const ['b.txt']));
-      when(
-        () => mockRepoTask(any()),
-      ).thenAnswer((_) async => TaskResult.modified);
+      when(() => mockRunner.stream('git', ['diff', '--name-only', '--cached']))
+          .thenAnswer((_) => Stream.fromIterable(const ['b.txt']));
+      when(() => mockRepoTask(any()))
+          .thenAnswer((_) async => TaskResult.modified);
       when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
       final sut = createSut();
 
@@ -500,15 +478,13 @@ void main() {
     test(
       'returns hasUnstagedChanges for partially staged modified files',
       () async {
-        when(
-          () => mockRunner.stream('git', ['diff', '--name-only']),
-        ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
+        when(() => mockRunner.stream('git', ['diff', '--name-only']))
+            .thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
-        when(
-          () => mockRepoTask(any()),
-        ).thenAnswer((_) async => TaskResult.modified);
+        when(() => mockRepoTask(any()))
+            .thenAnswer((_) async => TaskResult.modified);
         when(() => mockTaskLoader.loadTasks()).thenReturn([mockRepoTask]);
         final sut = createSut();
 
@@ -536,12 +512,10 @@ void main() {
             () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
           ).thenAnswer((_) => Stream.value('other.txt'));
         }
-        when(
-          () => mockRepoTask(any()),
-        ).thenAnswer((_) async => TaskResult.rejected);
-        when(
-          () => mockTaskLoader.loadTasks(),
-        ).thenReturn([mockRepoTask, mockRepoTask]);
+        when(() => mockRepoTask(any()))
+            .thenAnswer((_) async => TaskResult.rejected);
+        when(() => mockTaskLoader.loadTasks())
+            .thenReturn([mockRepoTask, mockRepoTask]);
         final sut = createSut(continueOnRejected: fixture.$2);
 
         final result = await sut();
@@ -567,9 +541,8 @@ void main() {
         ).thenAnswer((_) => Stream.fromIterable(const ['a.dart']));
         when(() => mockFileTask(any())).thenAnswer((i) async => fixture.$1);
         when(() => mockRepoTask(any())).thenAnswer((i) async => fixture.$2);
-        when(
-          () => mockTaskLoader.loadTasks(),
-        ).thenReturn([mockRepoTask, mockFileTask]);
+        when(() => mockTaskLoader.loadTasks())
+            .thenReturn([mockRepoTask, mockFileTask]);
         final sut = createSut(continueOnRejected: true);
 
         final result = await sut();
@@ -585,9 +558,8 @@ void main() {
         when(
           () => mockRunner.stream('git', ['diff', '--name-only', '--cached']),
         ).thenAnswer((_) => const Stream.empty());
-        when(
-          () => mockTaskLoader.loadTasks(),
-        ).thenReturn([mockRepoTask, mockFileTask]);
+        when(() => mockTaskLoader.loadTasks())
+            .thenReturn([mockRepoTask, mockFileTask]);
 
         final sut = createSut(continueOnRejected: true);
 

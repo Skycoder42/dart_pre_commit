@@ -7,7 +7,7 @@ class LinterException implements Exception {
   final String message;
 
   /// @nodoc
-  LinterException(this.message);
+  new(this.message);
 
   // coverage:ignore-start
   @override

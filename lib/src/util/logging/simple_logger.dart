@@ -24,12 +24,12 @@ class SimpleLogger implements Logger {
   @override
   final LogLevel logLevel;
 
-  String _statusMessage = '';
+  var _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
 
   /// Default constructor.
-  SimpleLogger(
+  new(
     LogLevelFactory logLevelFactory, {
     @ignoreParam IOSink? outSink,
     @ignoreParam IOSink? errSink,

@@ -22,12 +22,11 @@ sealed class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory PullUpDependenciesConfig({
-    @Default(<String>[]) List<String> allowed,
-  }) = _PullUpDependenciesConfig;
+  const factory({@Default(<String>[]) List<String> allowed}) =
+      _PullUpDependenciesConfig;
 
   /// @nodoc
-  factory PullUpDependenciesConfig.fromJson(Map<String, dynamic> json) =>
+  factory fromJson(Map<String, dynamic> json) =>
       _$PullUpDependenciesConfigFromJson(json);
 }
 
@@ -48,7 +47,7 @@ class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
   final PullUpDependenciesConfig _config;
 
   /// @nodoc
-  const PullUpDependenciesTask(
+  const new(
     this._programRunner,
     this._fileResolver,
     this._lockfileResolver,

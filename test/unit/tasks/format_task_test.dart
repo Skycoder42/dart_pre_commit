@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 import '../global_mocks.dart' as mocks;
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
 void main() {
   group('$FormatConfig', () {

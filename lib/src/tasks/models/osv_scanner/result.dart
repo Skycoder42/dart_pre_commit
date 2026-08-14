@@ -10,8 +10,8 @@ part 'result.g.dart';
 @freezed
 sealed class Result with _$Result {
   /// @nodoc
-  const factory Result({required List<Package> packages}) = _Result;
+  const factory({required List<Package> packages}) = _Result;
 
   /// @nodoc
-  factory Result.fromJson(Map<String, dynamic> json) => _$ResultFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$ResultFromJson(json);
 }

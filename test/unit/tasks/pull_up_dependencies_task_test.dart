@@ -19,13 +19,13 @@ class MockFile extends Mock implements File {
   Uri get uri => Uri();
 }
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockLockfileResolver extends Mock implements LockfileResolver {}
+class MockLockfileResolver extends Mock implements LockfileResolver;
 
 void main() {
   group('$PullUpDependenciesConfig', () {
@@ -103,17 +103,16 @@ name: pull_up
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
       });
 
       test('processes packages if lockfile is ignored', () async {
@@ -191,12 +190,11 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.0.0'
@@ -217,9 +215,9 @@ packages:
     version: '1.0.1'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.rejected);
@@ -250,12 +248,11 @@ dev_dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.0.0'
@@ -276,9 +273,9 @@ packages:
     version: '1.0.1'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.accepted);
@@ -299,17 +296,16 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.accepted);
@@ -330,20 +326,19 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.2.0-prelease.1'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.accepted);
@@ -364,20 +359,19 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.2.0-nullsafety.0'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.rejected);
@@ -403,20 +397,19 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.2.0'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         sut = PullUpDependenciesTask(
           mockRunner,
@@ -447,20 +440,19 @@ dependencies:
           return res;
         });
 
-        when(() => mockLockfileResolver.findWorkspaceLockfile()).thenAnswer((
-          i,
-        ) {
-          final res = MockFile();
-          when(() => res.readAsString()).thenAnswer(
-            (i) async => '''
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenAnswer((i) {
+              final res = MockFile();
+              when(() => res.readAsString()).thenAnswer(
+                (i) async => '''
 packages:
   a:
     version: '1.2.0'
     dependency: 'direct'
 ''',
-          );
-          return Future.value(res);
-        });
+              );
+              return Future.value(res);
+            });
 
         final result = await sut([]);
         expect(result, TaskResult.accepted);
@@ -479,9 +471,8 @@ name: pull_up
           return res;
         });
 
-        when(
-          () => mockLockfileResolver.findWorkspaceLockfile(),
-        ).thenReturnAsync(null);
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenReturnAsync(null);
 
         final result = await sut([]);
         expect(result, TaskResult.rejected);

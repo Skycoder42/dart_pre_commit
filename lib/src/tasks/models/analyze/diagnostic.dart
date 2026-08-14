@@ -55,11 +55,11 @@ enum DiagnosticType {
 @internal
 @freezed
 sealed class Diagnostic with _$Diagnostic {
-  const Diagnostic._();
+  const new _();
 
   /// @nodoc
   // ignore: sort_unnamed_constructors_first
-  const factory Diagnostic({
+  const factory({
     required String code,
     required DiagnosticSeverity severity,
     required DiagnosticType type,
@@ -70,8 +70,7 @@ sealed class Diagnostic with _$Diagnostic {
   }) = _Diagnostic;
 
   /// @nodoc
-  factory Diagnostic.fromJson(Map<String, dynamic> json) =>
-      _$DiagnosticFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$DiagnosticFromJson(json);
 
   @override
   String toString() => '${severity.name} - $location - $_description - $code';

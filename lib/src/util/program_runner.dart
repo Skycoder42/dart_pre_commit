@@ -24,7 +24,7 @@ class ProgramExitException implements Exception {
   final List<String>? arguments;
 
   /// @nodoc
-  const ProgramExitException(this.exitCode, [this.program, this.arguments]);
+  const new(this.exitCode, [this.program, this.arguments]);
 
   @override
   String toString() {
@@ -49,7 +49,7 @@ class ProgramRunner {
   final TaskLogger _logger;
 
   /// @nodoc
-  const ProgramRunner(this._logger);
+  const new(this._logger);
 
   /// @nodoc
   Stream<String> stream(

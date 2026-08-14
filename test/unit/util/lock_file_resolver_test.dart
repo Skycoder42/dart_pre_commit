@@ -18,11 +18,11 @@ class MockFile extends Mock implements File {
   Uri get uri => Uri();
 }
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
 void main() {
   group('$LockfileResolver', () {
@@ -42,15 +42,14 @@ void main() {
 
     group('findWorkspaceLockfile', () {
       setUp(() {
-        when(
-          () => mockResolver.file(any(that: endsWith('pubspec.lock'))),
-        ).thenAnswer((i) {
-          final [String path] = i.positionalArguments;
-          final res = MockFile();
-          when(() => res.path).thenReturn(path);
-          when(() => res.existsSync()).thenReturn(path.contains('found'));
-          return res;
-        });
+        when(() => mockResolver.file(any(that: endsWith('pubspec.lock'))))
+            .thenAnswer((i) {
+              final [String path] = i.positionalArguments;
+              final res = MockFile();
+              when(() => res.path).thenReturn(path);
+              when(() => res.existsSync()).thenReturn(path.contains('found'));
+              return res;
+            });
       });
 
       test('uses first workspace package with existing lockfile', () async {

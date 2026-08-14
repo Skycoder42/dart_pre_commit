@@ -29,7 +29,7 @@ enum AnalyzeErrorLevel {
   final List<String> _params;
 
   /// @nodoc
-  const AnalyzeErrorLevel(this._params);
+  new(this._params);
 }
 
 /// @nodoc
@@ -39,7 +39,7 @@ sealed class AnalysisConfig with _$AnalysisConfig {
   /// @nodoc
   // ignore: invalid_annotation_target
   @JsonSerializable(anyMap: true, checked: true, disallowUnrecognizedKeys: true)
-  const factory AnalysisConfig({
+  const factory({
     @JsonKey(name: 'error-level')
     @Default(AnalyzeErrorLevel.info)
     AnalyzeErrorLevel errorLevel,
@@ -49,8 +49,7 @@ sealed class AnalysisConfig with _$AnalysisConfig {
   }) = _AnalysisConfig;
 
   /// @nodoc
-  factory AnalysisConfig.fromJson(Map<String, dynamic> json) =>
-      _$AnalysisConfigFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$AnalysisConfigFromJson(json);
 }
 
 /// @nodoc
@@ -62,7 +61,7 @@ abstract base class AnalysisTaskBase with PatternTaskMixin implements RepoTask {
   final AnalysisConfig _config;
 
   /// @nodoc
-  const AnalysisTaskBase({
+  const new({
     required this._programRunner,
     required this._fileResolver,
     required this._logger,

@@ -21,13 +21,13 @@ import 'package:test/test.dart';
 import '../global_mocks.dart';
 import 'flutter_compat_task_test.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner {}
+class MockProgramRunner extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver {}
+class MockFileResolver extends Mock implements FileResolver;
 
-class MockLockfileResolver extends Mock implements LockfileResolver {}
+class MockLockfileResolver extends Mock implements LockfileResolver;
 
-class MockTaskLogger extends Mock implements TaskLogger {}
+class MockTaskLogger extends Mock implements TaskLogger;
 
 const osvScannerResult = OsvScannerResult(
   results: [
@@ -96,13 +96,11 @@ void main() {
         (_) => Stream.value(json.encode(const OsvScannerResult(results: []))),
       );
 
-      when(
-        () => mockFileResolver.resolve(any()),
-      ).thenAnswer((i) async => i.positionalArguments.first as String);
+      when(() => mockFileResolver.resolve(any()))
+          .thenAnswer((i) async => i.positionalArguments.first as String);
 
-      when(
-        () => mockLockfileResolver.findWorkspaceLockfile(),
-      ).thenReturnAsync(FakeFile('pubspec.lock'));
+      when(() => mockLockfileResolver.findWorkspaceLockfile())
+          .thenReturnAsync(FakeFile('pubspec.lock'));
 
       sut = OsvScannerTask(
         mockRunner,
@@ -211,11 +209,10 @@ void main() {
         ),
       ],
       (fixture) async {
-        when(
-          () => mockLockfileResolver.findWorkspaceLockfile(),
-        ).thenReturnAsync(
-          fixture.hasLockfile ? FakeFile('pubspec.lock') : null,
-        );
+        when(() => mockLockfileResolver.findWorkspaceLockfile())
+            .thenReturnAsync(
+              fixture.hasLockfile ? FakeFile('pubspec.lock') : null,
+            );
 
         sut = OsvScannerTask(
           mockRunner,
@@ -244,9 +241,8 @@ void main() {
     );
 
     test('throws if lockfile is missing but required', () async {
-      when(
-        () => mockLockfileResolver.findWorkspaceLockfile(),
-      ).thenReturnAsync(null);
+      when(() => mockLockfileResolver.findWorkspaceLockfile())
+          .thenReturnAsync(null);
 
       final result = await sut(const []);
 

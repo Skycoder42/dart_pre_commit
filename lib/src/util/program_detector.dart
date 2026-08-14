@@ -15,7 +15,7 @@ class ProgramDetector {
   final ProgramRunner _programRunner;
 
   /// @nodoc
-  ProgramDetector(this._programRunner);
+  new(this._programRunner);
 
   /// @nodoc
   Future<bool> hasProgram(

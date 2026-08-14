@@ -9,7 +9,7 @@ part 'version_info.g.dart';
 @internal
 sealed class VersionInfo with _$VersionInfo {
   /// @nodoc
-  const factory VersionInfo({
+  const factory({
     @JsonKey(
       fromJson: VersionInfo._versionFromJson,
       toJson: VersionInfo._versionToJson,
@@ -19,8 +19,7 @@ sealed class VersionInfo with _$VersionInfo {
   }) = _VersionInfo;
 
   /// @nodoc
-  factory VersionInfo.fromJson(Map<String, dynamic> json) =>
-      _$VersionInfoFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$VersionInfoFromJson(json);
 
   static String? _versionToJson(Version? version) => version?.toString();
 
