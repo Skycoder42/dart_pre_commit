@@ -129,18 +129,18 @@ name: test_project
 version: 0.0.1
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.13.0
 
 dependencies:
-  meta: ^1.8.0
-  image: 4.0.0
-  mobx: 2.1.0
+  meta: ">=1.0.0"
+  image: 4.9.0
+  mobx: 2.5.0
   dart_pre_commit:
     path: ${Directory.current.path}
 
 dev_dependencies:
   lint: null
-  dart_test_tools: '>=5.0.0'
+  dart_test_tools: null
 ''');
 
     await writeFile('bin/format.dart', '''
@@ -233,7 +233,7 @@ void main() {
       onStdout: lines.add,
     );
     expect(code, HookResult.rejected.index);
-    expect(lines, contains(startsWith('  [INF] meta: ^1.8.0 -> 1.')));
+    expect(lines, contains(startsWith('  [INF] meta: >=1.0.0 -> 1.')));
   });
 
   test('outdated', () async {
@@ -252,8 +252,8 @@ void main() {
     expect(
       lines,
       allOf([
-        contains(startsWith('  [INF] Required:    mobx: 2.1.0 -> ')),
-        contains(startsWith('  [WRN] Ignored:     image: 4.0.0 -> ')),
+        contains(startsWith('  [INF] Required:    mobx: 2.')),
+        contains(startsWith('  [WRN] Ignored:     image: 4.')),
       ]),
     );
     expect(code, HookResult.rejected.index);
