@@ -4,12 +4,9 @@ import 'package:dart_pre_commit/src/repo_entry.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 
-class FakeFile extends Fake implements File {
-  final bool _exists;
-
-  @override
-  final String path;
-
+class FakeFile(@override final String path, {final bool _exists = true})
+    extends Fake
+    implements File {
   @override
   File get absolute => FakeFile(p.absolute(path), exists: _exists);
 
@@ -18,8 +15,6 @@ class FakeFile extends Fake implements File {
 
   @override
   String resolveSymbolicLinksSync() => path;
-
-  new(this.path, {this._exists = true});
 }
 
 RepoEntry fakeEntry(

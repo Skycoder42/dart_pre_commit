@@ -8,9 +8,9 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockFileResolver extends Mock implements FileResolver;
+class MockFileResolver() extends Mock implements FileResolver;
 
-class MockFile extends Mock implements File;
+class MockFile() extends Mock implements File;
 
 void main() {
   group('ConfigLoader', () {

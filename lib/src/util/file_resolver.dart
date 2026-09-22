@@ -7,7 +7,10 @@ import 'package:path/path.dart';
 /// @nodoc
 @internal
 @injectable
-class FileResolver {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+class FileResolver() {
   /// @nodoc
   Future<String> resolve(String path, [Directory? from]) async => relative(
     await File(path).resolveSymbolicLinks(),

@@ -2,12 +2,12 @@ import 'package:meta/meta.dart';
 
 /// @nodoc
 @internal
-class LinterException implements Exception {
+class LinterException(
   /// @nodoc
-  final String message;
-
+  final String message,
+) implements Exception {
   /// @nodoc
-  new(this.message);
+  this;
 
   // coverage:ignore-start
   @override

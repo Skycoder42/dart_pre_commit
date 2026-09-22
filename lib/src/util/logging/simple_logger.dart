@@ -12,30 +12,28 @@ const noAnsiEnv = Environment('noAnsi');
 @internal
 @Singleton(as: Logger)
 @noAnsiEnv
-class SimpleLogger implements Logger {
+class SimpleLogger(
+  LogLevelFactory logLevelFactory, {
+  @ignoreParam IOSink? outSink,
+  @ignoreParam IOSink? errSink,
+}) implements Logger {
   /// The [IOSink] for normal log messages
-  final IOSink outSink;
+  final IOSink outSink = outSink ?? stdout;
 
   /// The [IOSink] for forwarding error output from subprocesses.
   ///
   /// See [pipeStderr()] for more details.
-  final IOSink errSink;
+  final IOSink errSink = errSink ?? stderr;
 
   @override
-  final LogLevel logLevel;
+  final LogLevel logLevel = logLevelFactory();
 
   var _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
 
   /// Default constructor.
-  new(
-    LogLevelFactory logLevelFactory, {
-    @ignoreParam IOSink? outSink,
-    @ignoreParam IOSink? errSink,
-  }) : logLevel = logLevelFactory(),
-       outSink = outSink ?? stdout,
-       errSink = errSink ?? stderr;
+  this;
 
   @override
   void updateStatus({

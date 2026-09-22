@@ -38,26 +38,20 @@ sealed class OsvScannerConfig with _$OsvScannerConfig {
 /// @nodoc
 @internal
 @injectable
-class OsvScannerTask implements RepoTask {
+class const OsvScannerTask(
+  final ProgramRunner _programRunner,
+  final FileResolver _fileResolver,
+  final LockfileResolver _lockfileResolver,
+  final TaskLogger _taskLogger,
+  @factoryParam final OsvScannerConfig _config,
+) implements RepoTask {
   static const name = 'osv-scanner';
 
   /// @nodoc
   static const osvScannerBinary = 'osv-scanner';
 
-  final ProgramRunner _programRunner;
-  final FileResolver _fileResolver;
-  final LockfileResolver _lockfileResolver;
-  final TaskLogger _taskLogger;
-  final OsvScannerConfig _config;
-
   /// @nodoc
-  const new(
-    this._programRunner,
-    this._fileResolver,
-    this._lockfileResolver,
-    this._taskLogger,
-    @factoryParam this._config,
-  );
+  this;
 
   @override
   String get taskName => name;

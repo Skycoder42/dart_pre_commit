@@ -6,13 +6,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
-class MockGetIt extends Mock implements GetIt;
+class MockGetIt() extends Mock implements GetIt;
 
-class MockConfigLoader extends Mock implements ConfigLoader;
+class MockConfigLoader() extends Mock implements ConfigLoader;
 
-class SimpleFakeTask extends Fake implements TaskBase;
+class SimpleFakeTask() extends Fake implements TaskBase;
 
-class ConfigurableFakeTask extends Fake implements TaskBase;
+class ConfigurableFakeTask() extends Fake implements TaskBase;
 
 void main() {
   const testTask1Name = 'task-1';

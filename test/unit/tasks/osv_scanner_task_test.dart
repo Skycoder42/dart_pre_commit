@@ -21,13 +21,13 @@ import 'package:test/test.dart';
 import '../global_mocks.dart';
 import 'flutter_compat_task_test.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver;
+class MockFileResolver() extends Mock implements FileResolver;
 
-class MockLockfileResolver extends Mock implements LockfileResolver;
+class MockLockfileResolver() extends Mock implements LockfileResolver;
 
-class MockTaskLogger extends Mock implements TaskLogger;
+class MockTaskLogger() extends Mock implements TaskLogger;
 
 const osvScannerResult = OsvScannerResult(
   results: [

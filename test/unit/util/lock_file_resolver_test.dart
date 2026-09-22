@@ -13,16 +13,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
-class MockFile extends Mock implements File {
+class MockFile() extends Mock implements File {
   @override
   Uri get uri => Uri();
 }
 
-class MockTaskLogger extends Mock implements TaskLogger;
+class MockTaskLogger() extends Mock implements TaskLogger;
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver;
+class MockFileResolver() extends Mock implements FileResolver;
 
 void main() {
   group('$LockfileResolver', () {

@@ -9,15 +9,13 @@ import '../util/file_resolver.dart';
 /// @nodoc
 @internal
 @singleton
-class ConfigLoader {
+class ConfigLoader(final FileResolver _fileResolver) {
   static const _excludedFilesKey = 'exclude';
-
-  final FileResolver _fileResolver;
 
   late YamlMap _globalConfig;
 
   /// @nodoc
-  new(this._fileResolver);
+  this;
 
   /// @nodoc
   Future<bool> loadGlobalConfig([File? customConfig]) {

@@ -17,19 +17,19 @@ import 'package:test/test.dart';
 
 import 'global_mocks.dart';
 
-class MockLogger extends Mock implements Logger;
+class MockLogger() extends Mock implements Logger;
 
-class MockFileResolver extends Mock implements FileResolver;
+class MockFileResolver() extends Mock implements FileResolver;
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockConfigLoader extends Mock implements ConfigLoader;
+class MockConfigLoader() extends Mock implements ConfigLoader;
 
-class MockTaskLoader extends Mock implements TaskLoader;
+class MockTaskLoader() extends Mock implements TaskLoader;
 
-class MockFileTask extends Mock with PatternTaskMixin implements FileTask;
+class MockFileTask() extends Mock with PatternTaskMixin implements FileTask;
 
-class MockRepoTask extends Mock with PatternTaskMixin implements RepoTask;
+class MockRepoTask() extends Mock with PatternTaskMixin implements RepoTask;
 
 void main() {
   final mockLogger = MockLogger();

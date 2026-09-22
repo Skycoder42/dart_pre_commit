@@ -14,13 +14,13 @@ import 'package:dart_test_tools/test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockPubspecConfigLoader extends Mock implements PubspecConfigLoader;
+class MockPubspecConfigLoader() extends Mock implements PubspecConfigLoader;
 
-class MockProgramDetector extends Mock implements ProgramDetector;
+class MockProgramDetector() extends Mock implements ProgramDetector;
 
-class MockTaskLoader extends Mock implements TaskLoader;
+class MockTaskLoader() extends Mock implements TaskLoader;
 
-class MockLogger extends Mock implements Logger;
+class MockLogger() extends Mock implements Logger;
 
 void main() {
   group('$DefaultTasksLoader', () {

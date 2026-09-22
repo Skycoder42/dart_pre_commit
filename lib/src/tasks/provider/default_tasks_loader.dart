@@ -13,21 +13,18 @@ import '../outdated_task.dart';
 import '../pull_up_dependencies_task.dart';
 import 'task_loader.dart';
 
+/// @nodoc
 @internal
 @injectable
-class DefaultTasksLoader {
-  final PubspecConfigLoader _pubspecConfigLoader;
-  final ProgramDetector _programDetector;
-  final TaskLoader _taskLoader;
-  final Logger _logger;
-
-  const new({
-    required this._pubspecConfigLoader,
-    required this._programDetector,
-    required this._taskLoader,
-    required this._logger,
-  });
-
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+class const DefaultTasksLoader({
+  required final PubspecConfigLoader _pubspecConfigLoader,
+  required final ProgramDetector _programDetector,
+  required final TaskLoader _taskLoader,
+  required final Logger _logger,
+}) {
   Future<void> registerDefaultTasks() async {
     final pubspecConfig = await _pubspecConfigLoader.loadPubspecConfig();
 

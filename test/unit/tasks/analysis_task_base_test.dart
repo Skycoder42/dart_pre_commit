@@ -14,20 +14,18 @@ import 'package:test/test.dart';
 
 import '../global_mocks.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockFileResolver extends Mock implements FileResolver;
+class MockFileResolver() extends Mock implements FileResolver;
 
-class MockTaskLogger extends Mock implements TaskLogger;
+class MockTaskLogger() extends Mock implements TaskLogger;
 
-final class TestableAnalysisTaskBase extends AnalysisTaskBase {
-  const new({
-    required super.programRunner,
-    required super.fileResolver,
-    required super.logger,
-    required super.config,
-  });
-
+final class const TestableAnalysisTaskBase({
+  required super.programRunner,
+  required super.fileResolver,
+  required super.logger,
+  required super.config,
+}) extends AnalysisTaskBase {
   @override
   String get taskName => 'test-analysis-task';
 

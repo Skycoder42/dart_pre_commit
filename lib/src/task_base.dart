@@ -4,7 +4,7 @@ import 'hooks.dart';
 import 'repo_entry.dart';
 
 /// The possible result states of a generic task.
-enum TaskResult {
+enum TaskResult() {
   /// The task completed with success, nothing had to be modified.
   accepted,
 
@@ -26,7 +26,10 @@ enum TaskResult {
 /// **Important:** Do *not* implement this class directly, instead user either
 /// [FileTask] or [RepoTask], as one of these to is expected by [Hooks]. This
 /// class only exists to perform common operations on all types of tasks.
-abstract interface class TaskBase {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract interface class TaskBase() {
   /// Returns the user-visible name of the task.
   String get taskName;
 
@@ -52,7 +55,10 @@ abstract interface class TaskBase {
 /// the same order they have been added to [Hooks]. Only then will the next file
 /// be processed in the same manner. All [FileTask]s are always run before any
 /// [RepoTask].
-abstract interface class FileTask extends TaskBase {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract interface class FileTask() extends TaskBase {
   /// Executes the task on the given [entry].
   ///
   /// **Important:** This function should run without side effects, i.e. the
@@ -97,7 +103,10 @@ abstract interface class FileTask extends TaskBase {
 /// tasks that can process a file, all tasks are called in order, each with all
 /// files that match the task. All [RepoTask]s are always run after any
 /// [FileTask].
-abstract interface class RepoTask extends TaskBase {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract interface class RepoTask() extends TaskBase {
   /// Specifies, whether the task should still be executed, even if no files
   /// match.
   ///

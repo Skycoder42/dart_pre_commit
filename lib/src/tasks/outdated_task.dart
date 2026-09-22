@@ -14,7 +14,7 @@ part 'outdated_task.g.dart';
 
 /// @nodoc
 @internal
-enum OutdatedLevel {
+enum OutdatedLevel() {
   /// @nodoc
   major,
 
@@ -47,17 +47,15 @@ sealed class OutdatedConfig with _$OutdatedConfig {
 /// @nodoc
 @internal
 @injectable
-class OutdatedTask with PatternTaskMixin implements RepoTask {
+class const OutdatedTask(
+  final ProgramRunner _programRunner,
+  final TaskLogger _logger,
+  @factoryParam final OutdatedConfig _config,
+) with PatternTaskMixin implements RepoTask {
   static const name = 'outdated';
 
-  final ProgramRunner _programRunner;
-
-  final TaskLogger _logger;
-
-  final OutdatedConfig _config;
-
   /// @nodoc
-  const new(this._programRunner, this._logger, @factoryParam this._config);
+  this;
 
   @override
   String get taskName => name;

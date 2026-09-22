@@ -12,16 +12,15 @@ import '../util/program_runner.dart';
 /// @nodoc
 @internal
 @injectable
-class FlutterCompatTask implements RepoTask {
+class const FlutterCompatTask(
+  final ProgramRunner _programRunner,
+  final TaskLogger _taskLogger,
+) implements RepoTask {
   static const name = 'flutter-compat';
   static final _pubspecRegexp = RegExp(r'^pubspec.ya?ml$');
 
-  final ProgramRunner _programRunner;
-
-  final TaskLogger _taskLogger;
-
   /// @nodoc
-  const new(this._programRunner, this._taskLogger);
+  this;
 
   @override
   String get taskName => name;

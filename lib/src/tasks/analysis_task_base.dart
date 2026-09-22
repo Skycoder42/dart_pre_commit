@@ -16,7 +16,7 @@ part 'analysis_task_base.g.dart';
 
 /// @nodoc
 @internal
-enum AnalyzeErrorLevel {
+enum AnalyzeErrorLevel(final List<String> _params) {
   /// @nodoc
   error(['--no-fatal-warnings']),
 
@@ -26,10 +26,8 @@ enum AnalyzeErrorLevel {
   /// @nodoc
   info(['--fatal-warnings', '--fatal-infos']);
 
-  final List<String> _params;
-
   /// @nodoc
-  new(this._params);
+  this;
 }
 
 /// @nodoc
@@ -54,19 +52,14 @@ sealed class AnalysisConfig with _$AnalysisConfig {
 
 /// @nodoc
 @internal
-abstract base class AnalysisTaskBase with PatternTaskMixin implements RepoTask {
-  final ProgramRunner _programRunner;
-  final FileResolver _fileResolver;
-  final TaskLogger _logger;
-  final AnalysisConfig _config;
-
+abstract base class const AnalysisTaskBase({
+  required final ProgramRunner _programRunner,
+  required final FileResolver _fileResolver,
+  required final TaskLogger _logger,
+  required final AnalysisConfig _config,
+}) with PatternTaskMixin implements RepoTask {
   /// @nodoc
-  const new({
-    required this._programRunner,
-    required this._fileResolver,
-    required this._logger,
-    required this._config,
-  });
+  this;
 
   @override
   Pattern get filePattern => RegExp(r'^(?:pubspec\.ya?ml|.*\.dart)$');

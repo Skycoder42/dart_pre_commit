@@ -25,15 +25,14 @@ sealed class FormatConfig with _$FormatConfig {
 /// @nodoc
 @internal
 @injectable
-class FormatTask with PatternTaskMixin implements FileTask {
+class const FormatTask(
+  final ProgramRunner _programRunner,
+  @factoryParam final FormatConfig _config,
+) with PatternTaskMixin implements FileTask {
   static const name = 'format';
 
-  final ProgramRunner _programRunner;
-
-  final FormatConfig _config;
-
   /// @nodoc
-  const new(this._programRunner, @factoryParam this._config);
+  this;
 
   @override
   String get taskName => name;

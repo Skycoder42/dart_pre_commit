@@ -10,7 +10,7 @@ import '../../config/config_loader.dart';
 import '../../dart_pre_commit.dart' show DartPreCommit;
 import '../../task_base.dart';
 
-abstract interface class _TaskConfig<TTask extends TaskBase> {
+abstract interface class _TaskConfig<TTask extends TaskBase>() {
   String get taskName;
 
   bool get enabledByDefault;
@@ -18,30 +18,19 @@ abstract interface class _TaskConfig<TTask extends TaskBase> {
   TTask create(GetIt getIt, YamlMap config);
 }
 
-class _SimpleTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
-  @override
-  final String taskName;
-
-  @override
-  final bool enabledByDefault;
-
-  new(this.taskName, {required this.enabledByDefault});
-
+class _SimpleTaskConfig<TTask extends TaskBase>(
+  @override final String taskName, {
+  @override required final bool enabledByDefault,
+}) implements _TaskConfig<TTask> {
   @override
   TTask create(GetIt getIt, YamlMap config) => getIt.get<TTask>();
 }
 
-class _ConfigurableTaskConfig<TTask extends TaskBase, TArg>
-    implements _TaskConfig<TTask> {
-  @override
-  final String taskName;
-  final TArg Function(Map<String, dynamic> json) _fromJson;
-
-  @override
-  final bool enabledByDefault;
-
-  new(this.taskName, this._fromJson, {required this.enabledByDefault});
-
+class _ConfigurableTaskConfig<TTask extends TaskBase, TArg>(
+  @override final String taskName,
+  final TArg Function(Map<String, dynamic> json) _fromJson, {
+  @override required final bool enabledByDefault,
+}) implements _TaskConfig<TTask> {
   @override
   TTask create(GetIt getIt, YamlMap config) {
     final configMap = config.cast<String, dynamic>();
@@ -50,17 +39,11 @@ class _ConfigurableTaskConfig<TTask extends TaskBase, TArg>
   }
 }
 
-class _CustomTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
-  @override
-  final String taskName;
-
-  @override
-  final bool enabledByDefault;
-
-  final TTask Function() _factory;
-
-  new(this.taskName, this._factory, {required this.enabledByDefault});
-
+class _CustomTaskConfig<TTask extends TaskBase>(
+  @override final String taskName,
+  final TTask Function() _factory, {
+  @override required final bool enabledByDefault,
+}) implements _TaskConfig<TTask> {
   @override
   TTask create(GetIt getIt, YamlMap config) => _factory();
 }
@@ -68,14 +51,11 @@ class _CustomTaskConfig<TTask extends TaskBase> implements _TaskConfig<TTask> {
 /// A helper class to register [TaskBase]s in the application to be used by
 /// the [DartPreCommit] instance.
 @singleton
-class TaskLoader {
-  final GetIt _getIt;
-  final ConfigLoader _configLoader;
-
+class TaskLoader(final GetIt _getIt, final ConfigLoader _configLoader) {
   final _tasks = <_TaskConfig>[];
 
   /// Default constructor
-  new(this._getIt, this._configLoader);
+  this;
 
   /// Registers a custom task using the given [factory] function to create new
   /// instances.

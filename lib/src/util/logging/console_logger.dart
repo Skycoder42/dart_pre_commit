@@ -14,20 +14,20 @@ const ansiEnv = Environment('ansi');
 @internal
 @Singleton(as: Logger)
 @ansiEnv
-class ConsoleLogger implements Logger {
+class ConsoleLogger(LogLevelFactory logLevelFactory) implements Logger {
   var _statusMessage = '';
   TaskStatus? _statusState;
   String? _statusDetail;
   var _freshStatus = false;
 
   @override
-  final LogLevel logLevel;
+  final LogLevel logLevel = logLevelFactory();
 
   /// Default constructor.
   ///
   /// The [logLevel], which is [LogLevel.info] by default, can be adjusted to
   /// control how much is logged.
-  new(LogLevelFactory logLevelFactory) : logLevel = logLevelFactory();
+  this;
 
   @override
   void updateStatus({

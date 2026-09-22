@@ -12,9 +12,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockTaskLogger extends Mock implements TaskLogger;
+class MockTaskLogger() extends Mock implements TaskLogger;
 
 void main() {
   group('$OutdatedConfig', () {

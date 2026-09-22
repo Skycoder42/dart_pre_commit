@@ -8,7 +8,7 @@ part 'diagnostic.g.dart';
 /// @nodoc
 @internal
 @JsonEnum(fieldRename: FieldRename.screamingSnake)
-enum DiagnosticSeverity {
+enum DiagnosticSeverity() {
   /// @nodoc
   none,
 
@@ -25,7 +25,7 @@ enum DiagnosticSeverity {
 /// @nodoc
 @internal
 @JsonEnum(fieldRename: FieldRename.screamingSnake)
-enum DiagnosticType {
+enum DiagnosticType() {
   /// @nodoc
   todo,
 
@@ -54,11 +54,8 @@ enum DiagnosticType {
 /// @nodoc
 @internal
 @freezed
-sealed class Diagnostic with _$Diagnostic {
-  const new _();
-
+sealed class const Diagnostic._() with _$Diagnostic {
   /// @nodoc
-  // ignore: sort_unnamed_constructors_first
   const factory({
     required String code,
     required DiagnosticSeverity severity,

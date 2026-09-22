@@ -24,12 +24,12 @@ sealed class PubspecConfig with _$PubspecConfig {
 /// @nodoc
 @internal
 @injectable
-class PubspecConfigLoader {
-  final FileResolver _fileResolver;
-  final Logger _logger;
-
+class const PubspecConfigLoader(
+  final FileResolver _fileResolver,
+  final Logger _logger,
+) {
   /// @nodoc
-  const new(this._fileResolver, this._logger);
+  this;
 
   /// @nodoc
   Future<PubspecConfig> loadPubspecConfig() async {

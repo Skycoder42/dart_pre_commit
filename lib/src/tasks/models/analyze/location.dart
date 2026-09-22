@@ -30,11 +30,8 @@ sealed class Range with _$Range {
 /// @nodoc
 @internal
 @freezed
-sealed class Location with _$Location {
-  const new _();
-
+sealed class const Location._() with _$Location {
   /// @nodoc
-  // ignore: sort_unnamed_constructors_first
   const factory({required String file, required Range range}) = _Location;
 
   /// @nodoc

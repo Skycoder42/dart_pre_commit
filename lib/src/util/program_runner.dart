@@ -13,18 +13,18 @@ typedef ExitCodeHandlerCb = void Function(int exitCode);
 
 /// @nodoc
 @internal
-class ProgramExitException implements Exception {
+class const ProgramExitException(
   /// @nodoc
-  final int exitCode;
+  final int exitCode, [
 
   /// @nodoc
-  final String? program;
+  final String? program,
 
   /// @nodoc
-  final List<String>? arguments;
-
+  final List<String>? arguments,
+]) implements Exception {
   /// @nodoc
-  const new(this.exitCode, [this.program, this.arguments]);
+  this;
 
   @override
   String toString() {
@@ -45,11 +45,9 @@ class ProgramExitException implements Exception {
 /// @nodoc
 @internal
 @injectable
-class ProgramRunner {
-  final TaskLogger _logger;
-
+class const ProgramRunner(final TaskLogger _logger) {
   /// @nodoc
-  const new(this._logger);
+  this;
 
   /// @nodoc
   Stream<String> stream(

@@ -6,7 +6,7 @@ import '../hooks.dart';
 import '../task_base.dart';
 
 /// The status a [TaskBase] can be in.
-enum TaskStatus {
+enum TaskStatus() {
   /// The task is currently running.
   scanning,
 
@@ -24,7 +24,7 @@ enum TaskStatus {
 }
 
 /// The logging level that different log messages can have.
-enum LogLevel {
+enum LogLevel() {
   /// Print all messages.
   debug,
 
@@ -49,7 +49,10 @@ enum LogLevel {
 /// This can be used to log messages in a task context, without the extended
 /// status logic. This class is typically not implemented directly, instead
 /// implement [Logger] and implement the methods there.
-abstract interface class TaskLogger {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract interface class TaskLogger() {
   /// Logs a message with [LogLevel.debug].
   void debug(String message);
 
@@ -73,7 +76,10 @@ abstract interface class TaskLogger {
 ///
 /// Extends the [TaskLogger] and provides the status methods that are used by
 /// [Hooks] in addition to the normal log methods.
-abstract interface class Logger implements TaskLogger {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract interface class Logger() implements TaskLogger {
   /// The current [LogLevel] level of the logger.
   ///
   /// Based on this level, different log messages may or may not be visible. The

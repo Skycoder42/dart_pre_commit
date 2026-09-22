@@ -18,9 +18,7 @@ typedef RegisterTasksCallback = FutureOr<void> Function(TaskLoader taskLoader);
 
 /// A simple static class that provides a method to simply run the pre commit
 /// hooks.
-abstract class DartPreCommit {
-  new _();
-
+abstract class DartPreCommit._() {
   /// Runs all predefined hooks using the given [config].
   ///
   /// By default, all built in tasks are enabled. By setting

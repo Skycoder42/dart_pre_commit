@@ -6,10 +6,10 @@ import '../logger.dart';
 @internal
 @immutable
 @singleton
-class LogLevelFactory {
+class LogLevelFactory([@ignoreParam LogLevel? logLevel]) {
   static LogLevel logLevel = .nothing;
 
-  new([@ignoreParam LogLevel? logLevel]) {
+  this {
     if (logLevel != null) {
       LogLevelFactory.logLevel = logLevel;
     }
@@ -18,9 +18,13 @@ class LogLevelFactory {
   LogLevel call() => logLevel;
 }
 
+/// @nodoc
 @internal
 @module
-abstract class LoggingModule {
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+abstract class LoggingModule() {
   @singleton
   TaskLogger taskLogger(Logger logger) => logger;
 }

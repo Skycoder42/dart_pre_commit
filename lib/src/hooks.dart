@@ -42,7 +42,10 @@ sealed class HooksConfig with _$HooksConfig {
 }
 
 /// The result of a [Hooks] call.
-enum HookResult {
+enum HookResult(
+  /// @nodoc
+  @internal final int exitCode,
+) {
   /// All is ok, nothing was modified.
   clean(0),
 
@@ -60,11 +63,7 @@ enum HookResult {
 
   /// @nodoc
   @internal
-  final int exitCode;
-
-  /// @nodoc
-  @internal
-  new(this.exitCode);
+  this;
 
   /// Returns a boolean that indicates whether the result should be treated as
   /// success or as failure.
@@ -101,31 +100,22 @@ extension _HookResultStreamX on Stream<HookResult> {
       fold(base, (previous, element) => previous._raiseTo(element));
 }
 
-class _RejectedException implements Exception {
-  const new();
-}
+class const _RejectedException() implements Exception;
 
+/// @nodoc
 @internal
 @injectable
-class Hooks {
-  final FileResolver _fileResolver;
-  final ProgramRunner _programRunner;
-  final ConfigLoader _configLoader;
-  final TaskLoader _taskLoader;
-
-  final Logger _logger;
-
-  final HooksConfig config;
-
-  const new(
-    this._fileResolver,
-    this._programRunner,
-    this._configLoader,
-    this._taskLoader,
-    this._logger,
-    @factoryParam this.config,
-  );
-
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+class const Hooks(
+  final FileResolver _fileResolver,
+  final ProgramRunner _programRunner,
+  final ConfigLoader _configLoader,
+  final TaskLoader _taskLoader,
+  final Logger _logger,
+  @factoryParam final HooksConfig config,
+) {
   Future<HookResult> call() async {
     try {
       final configFile = config.configFile != null

@@ -10,15 +10,17 @@ import 'logger.dart';
 import 'models/workspace.dart';
 import 'program_runner.dart';
 
+/// @nodoc
 @internal
 @injectable
-class LockfileResolver {
-  final ProgramRunner _programRunner;
-  final FileResolver _fileResolver;
-  final TaskLogger _logger;
-
-  const new(this._programRunner, this._fileResolver, this._logger);
-
+// Analyzer bug: fails to associate the doc comment above with this
+// primary-constructor class; the class is documented.
+// ignore: public_member_api_docs
+class const LockfileResolver(
+  final ProgramRunner _programRunner,
+  final FileResolver _fileResolver,
+  final TaskLogger _logger,
+) {
   Future<File?> findWorkspaceLockfile() async {
     final workspace = await _programRunner
         .stream('dart', [

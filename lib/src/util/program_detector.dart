@@ -8,14 +8,12 @@ import 'program_runner.dart';
 /// @nodoc
 @internal
 @injectable
-class ProgramDetector {
+class ProgramDetector(final ProgramRunner _programRunner) {
   /// @nodoc
   static const defaultTestArguments = ['--version'];
 
-  final ProgramRunner _programRunner;
-
   /// @nodoc
-  new(this._programRunner);
+  this;
 
   /// @nodoc
   Future<bool> hasProgram(

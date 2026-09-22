@@ -14,20 +14,17 @@ import 'package:test/test.dart';
 
 import '../global_mocks.dart';
 
-class MockProgramRunner extends Mock implements ProgramRunner;
+class MockProgramRunner() extends Mock implements ProgramRunner;
 
-class MockTaskLogger extends Mock implements TaskLogger;
+class MockTaskLogger() extends Mock implements TaskLogger;
 
-class MockFile extends Mock implements File;
+class MockFile() extends Mock implements File;
 
-class FakeDirectory extends Fake implements Directory {
-  @override
-  final String path;
-
+class FakeDirectory(@override final String path)
+    extends Fake
+    implements Directory {
   @override
   Directory get absolute => FakeDirectory(path);
-
-  new(this.path);
 }
 
 void main() {

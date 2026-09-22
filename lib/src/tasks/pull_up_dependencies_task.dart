@@ -33,27 +33,17 @@ sealed class PullUpDependenciesConfig with _$PullUpDependenciesConfig {
 /// @nodoc
 @internal
 @injectable
-class PullUpDependenciesTask with PatternTaskMixin implements RepoTask {
+class const PullUpDependenciesTask(
+  final ProgramRunner _programRunner,
+  final FileResolver _fileResolver,
+  final LockfileResolver _lockfileResolver,
+  final TaskLogger _logger,
+  @factoryParam final PullUpDependenciesConfig _config,
+) with PatternTaskMixin implements RepoTask {
   static const name = 'pull-up-dependencies';
 
-  final ProgramRunner _programRunner;
-
-  final FileResolver _fileResolver;
-
-  final LockfileResolver _lockfileResolver;
-
-  final TaskLogger _logger;
-
-  final PullUpDependenciesConfig _config;
-
   /// @nodoc
-  const new(
-    this._programRunner,
-    this._fileResolver,
-    this._lockfileResolver,
-    this._logger,
-    @factoryParam this._config,
-  );
+  this;
 
   @override
   String get taskName => name;
